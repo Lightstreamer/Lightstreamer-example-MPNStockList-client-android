@@ -16,5 +16,6 @@
 <resources>
 
     <string name="app_name">Lightstreamer StockListDemo</string>
+    <string name="no_data">N/A</string>
 
 </resources>

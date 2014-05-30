@@ -15,14 +15,14 @@
  */
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class StocksFragment extends ListFragment {
@@ -37,7 +37,7 @@ public class StocksFragment extends ListFragment {
     private final static String[] items = {"item1", "item2", "item3",
             "item4", "item5", "item6", "item7", "item8", "item9", "item10",
             "item11", "item12", "item13", "item14", "item15"};
-
+    ArrayList<Stock> list;
      
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -50,10 +50,14 @@ public class StocksFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        int layout = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
-                android.R.layout.simple_list_item_activated_1 : android.R.layout.simple_list_item_1;
+        int layout = R.layout.row_layout;
 
-        setListAdapter(new ArrayAdapter<String>(getActivity(), layout, items));
+        list = new ArrayList<Stock>(items.length);
+        for (int i = 0; i < items.length; i++) {
+            list.add(new Stock(items[i]));
+        }
+        
+        setListAdapter(new StocksAdapter(getActivity(), layout, list));
     }
     
     
