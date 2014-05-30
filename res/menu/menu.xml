@@ -1,1 +1,12 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android"></menu>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:lssld="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/stop"
+          android:icon="@drawable/ic_action_pause"
+          android:title="@string/stop"
+          lssld:showAsAction="ifRoom" />
+    <item android:id="@+id/start"
+          android:icon="@drawable/ic_action_play"
+          android:title="@string/start"
+          android:visible="false"
+          lssld:showAsAction="ifRoom" />
+</menu>

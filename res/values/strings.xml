@@ -17,5 +17,7 @@
 
     <string name="app_name">Lightstreamer StockListDemo</string>
     <string name="no_data">N/A</string>
+    <string name="stop">Pause Lightstreamer Connection</string>
+    <string name="start">Restart Lightstreamer Connection</string>
 
 </resources>

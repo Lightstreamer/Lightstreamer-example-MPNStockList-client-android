@@ -23,9 +23,13 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 
 
 public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener {
+
+    private boolean userDisconnect = false;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,10 +64,36 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+        
         return super.onCreateOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.start).setVisible(this.userDisconnect);
+        menu.findItem(R.id.stop).setVisible(!this.userDisconnect);
+        
+        return true;
+    }
+    
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+       
+        switch (item.getItemId()) {
+            case R.id.stop:
+                this.userDisconnect = true;
+                supportInvalidateOptionsMenu();
+                return true;
+            case R.id.start:
+                this.userDisconnect = false;
+                supportInvalidateOptionsMenu();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
     
      
@@ -77,9 +107,6 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                 detailsFrag.updateStocksView(item);
 
             } else {
-                // If the frag is not available, we're in the one-pane layout and must swap frags...
-
-                // Create fragment and give it an argument for the selected article
                 DetailsFragment newFragment = new DetailsFragment();
                 Bundle args = new Bundle();
                 args.putInt(DetailsFragment.ARG_ITEM, item);
