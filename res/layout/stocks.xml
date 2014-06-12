@@ -14,8 +14,25 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fragment_container"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+
+    <ImageView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:id="@+id/status_image"
+        android:src="@drawable/status_disconnected"
+        android:contentDescription="@string/status_disconnected"
+    />
+     
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+    />
+</LinearLayout>	

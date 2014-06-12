@@ -19,5 +19,11 @@
     <string name="no_data">N/A</string>
     <string name="stop">Pause Lightstreamer Connection</string>
     <string name="start">Restart Lightstreamer Connection</string>
+    <string name="status_disconnected">Disconnected</string>
+    <string name="status_streaming">Streaming</string>
+    <string name="status_polling">Polling</string>
+    <string name="status_stalled">Stalled</string>
+    <string name="status_connecting">Connecting</string>
+    <string name="status_waiting">Disconnected, waiting to connect again</string>
 
 </resources>
