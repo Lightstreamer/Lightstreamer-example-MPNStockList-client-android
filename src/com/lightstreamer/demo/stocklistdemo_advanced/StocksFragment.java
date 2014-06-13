@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,8 +47,12 @@ public class StocksFragment extends SubscriptionFragment {
             "item4", "item5", "item6", "item7", "item8", "item9", "item10",
             "item11", "item12", "item13", "item14", "item15"};
     ArrayList<Stock> list;
-
-    public final static String[] fields = {"stock_name", "last_price", "time"};
+    
+    public final static String[] numericFields = {"last_price"};
+    public final static String[] otherFields = {"stock_name", "time"};
+    public final static String[] subscriptionFields = {"stock_name", "last_price", "time"};
+    
+    private Handler handler;
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -60,11 +65,13 @@ public class StocksFragment extends SubscriptionFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        handler = new Handler();
+        
         int layout = R.layout.row_layout;
 
         list = new ArrayList<Stock>(items.length);
         for (int i = 0; i < items.length; i++) {
-            list.add(new Stock(items[i]));
+            list.add(new Stock(items[i],numericFields,otherFields));
         }
         
         setListAdapter(new StocksAdapter(getActivity(), layout, list));
@@ -120,7 +127,7 @@ public class StocksFragment extends SubscriptionFragment {
         
         public MainSubscription() {
             try {
-                this.tableInfo = new ExtendedTableInfo(items, "MERGE", fields , true);
+                this.tableInfo = new ExtendedTableInfo(items, "MERGE", subscriptionFields , true);
                 this.tableInfo.setDataAdapter("QUOTE_ADAPTER");
                 this.tableInfo.setRequestedMaxFrequency(1);
             } catch (SubscrException e) {
@@ -173,8 +180,12 @@ public class StocksFragment extends SubscriptionFragment {
         @Override
         public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
             Log.v(TAG,"Update for " + itemName);
+            final Stock toUpdate = list.get(itemPos-1);
+            toUpdate.update(newData,handler);
         }
         
     }
+    
+    
 
 }
