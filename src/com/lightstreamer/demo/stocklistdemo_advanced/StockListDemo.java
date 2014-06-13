@@ -16,6 +16,7 @@
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
 
+import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.StatusChangeListener;
 
 import android.annotation.TargetApi;
@@ -31,7 +32,7 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 
 
-public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener {
+public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
 
     private boolean userDisconnect = false;
     private LightstreamerClient lsClient;
@@ -70,7 +71,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         
         
         lsClient = new LightstreamerClient("http://192.168.0.192",this);
-        lsClient.start();
+        this.start();
         
     }
     
@@ -105,21 +106,21 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                 Log.i(TAG,"Stop");
                 this.userDisconnect = true;
                 supportInvalidateOptionsMenu();
-                lsClient.stop();
+                this.stop();
                 return true;
             case R.id.start:
                 Log.i(TAG,"Start");
                 this.userDisconnect = false;
                 supportInvalidateOptionsMenu();
-                lsClient.start();
+                this.start();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
     
-     
-     public void onStockSelected(int item) {
+    @Override
+    public void onStockSelected(int item) {
 
         DetailsFragment detailsFrag = (DetailsFragment)
                 getSupportFragmentManager().findFragmentById(R.id.details_fragment);
@@ -202,7 +203,26 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         }
         
     }
-    
+
+    @Override
+    public void start() {
+        this.lsClient.start();
+    }
+
+    @Override
+    public void stop() {
+        this.lsClient.stop();
+    }
+
+    @Override
+    public void addSubscription(Subscription sub) {
+        this.lsClient.addSubscription(sub);
+    }
+
+    @Override
+    public void removeSubscription(Subscription sub) {
+        this.lsClient.removeSubscription(sub);
+    }
     
     
     

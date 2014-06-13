@@ -19,13 +19,19 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-public class StocksFragment extends ListFragment {
+import com.lightstreamer.ls_client.ExtendedTableInfo;
+import com.lightstreamer.ls_client.HandyTableListener;
+import com.lightstreamer.ls_client.SubscrException;
+import com.lightstreamer.ls_client.SubscribedTableKey;
+import com.lightstreamer.ls_client.UpdateInfo;
+
+public class StocksFragment extends SubscriptionFragment {
     
     onStockSelectedListener listener;
     
@@ -34,11 +40,15 @@ public class StocksFragment extends ListFragment {
         public void onStockSelected(int item);
     }
     
+    private static final String TAG = "StocksFragment";
+    
     private final static String[] items = {"item1", "item2", "item3",
             "item4", "item5", "item6", "item7", "item8", "item9", "item10",
             "item11", "item12", "item13", "item14", "item15"};
     ArrayList<Stock> list;
-     
+
+    public final static String[] fields = {"stock_name", "last_price", "time"};
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
@@ -58,6 +68,8 @@ public class StocksFragment extends ListFragment {
         }
         
         setListAdapter(new StocksAdapter(getActivity(), layout, list));
+        
+        this.setSubscription(new MainSubscription());
     }
     
     
@@ -68,7 +80,9 @@ public class StocksFragment extends ListFragment {
         if (getFragmentManager().findFragmentById(R.id.details_fragment) != null) {
             getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         }
+        
     }
+    
     
     @Override
     public void onAttach(Activity activity) {
@@ -82,6 +96,9 @@ public class StocksFragment extends ListFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnHeadlineSelectedListener");
         }
+        
+        
+        
     }
 
     @Override
@@ -91,6 +108,73 @@ public class StocksFragment extends ListFragment {
         
         // Set the item as checked to be highlighted when in two-pane layout
         getListView().setItemChecked(position, true);
+    }
+    
+    
+    
+    
+    private class MainSubscription implements Subscription, HandyTableListener {
+
+        private SubscribedTableKey key;
+        private ExtendedTableInfo tableInfo;
+        
+        public MainSubscription() {
+            try {
+                this.tableInfo = new ExtendedTableInfo(items, "MERGE", fields , true);
+                this.tableInfo.setDataAdapter("QUOTE_ADAPTER");
+                this.tableInfo.setRequestedMaxFrequency(1);
+            } catch (SubscrException e) {
+                Log.wtf(TAG, "I'm pretty sure MERGE is compatible with the snapshot request!");
+            }
+        }
+
+        @Override
+        public HandyTableListener getTableListener() {
+            return this;
+        }
+
+        @Override
+        public SubscribedTableKey getTableKey() {
+            return key;
+        }
+
+        @Override
+        public ExtendedTableInfo getTableInfo() {
+            return this.tableInfo;
+        }
+
+        @Override
+        public void setTableKey(SubscribedTableKey key) {
+            this.key = key;
+        }
+
+
+
+        @Override
+        public void onRawUpdatesLost(int arg0, String arg1, int arg2) {
+            Log.wtf(TAG,"Not expecting lost updates");
+        }
+
+        @Override
+        public void onSnapshotEnd(int itemPos, String itemName) {
+            Log.v(TAG,"Snapshot end for " + itemName);
+        }
+
+        @Override
+        public void onUnsubscr(int itemPos, String itemName) {
+            Log.v(TAG,"Unsubscribed " + itemName);
+        }
+
+        @Override
+        public void onUnsubscrAll() {
+            Log.v(TAG,"Unsubscribed all");
+        }
+
+        @Override
+        public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
+            Log.v(TAG,"Update for " + itemName);
+        }
+        
     }
 
 }

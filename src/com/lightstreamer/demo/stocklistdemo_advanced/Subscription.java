@@ -6,12 +6,12 @@ import com.lightstreamer.ls_client.SubscribedTableKey;
 
 public interface Subscription {
 
-	public HandyTableListener getTableListener();
+    public HandyTableListener getTableListener();
 
-	public SubscribedTableKey getTableKey();
+    public SubscribedTableKey getTableKey();
 
-	public ExtendedTableInfo getTableInfo();
+    public ExtendedTableInfo getTableInfo();
 
-	public void setTableKey(SubscribedTableKey key);
+    public void setTableKey(SubscribedTableKey key);
 
 }
