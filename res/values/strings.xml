@@ -25,5 +25,17 @@
     <string name="status_stalled">Stalled</string>
     <string name="status_connecting">Connecting</string>
     <string name="status_waiting">Disconnected, waiting to connect again</string>
-
+    <string name="details">Details</string>
+    <string name="last_price">Last Price</string>
+    <string name="time">Time</string>
+    <string name="pct_change">Change</string>
+    <string name="bid">Bid</string>
+    <string name="bid_quantity">Bid Size</string>
+    <string name="ask">Ask</string>
+    <string name="ask_quantity">Ask Size</string>
+    <string name="open_price">Open</string>
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    
+    
 </resources>
