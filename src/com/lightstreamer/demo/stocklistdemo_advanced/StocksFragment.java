@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +33,7 @@ import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.UpdateInfo;
 
-public class StocksFragment extends SubscriptionFragment {
+public class StocksFragment extends ListFragment {
     
     onStockSelectedListener listener;
     
@@ -53,6 +54,8 @@ public class StocksFragment extends SubscriptionFragment {
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time"};
     
     private Handler handler;
+    
+    private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -76,7 +79,7 @@ public class StocksFragment extends SubscriptionFragment {
         
         setListAdapter(new StocksAdapter(getActivity(), layout, list));
         
-        this.setSubscription(new MainSubscription());
+        this.subscriptionHandling.setSubscription(new MainSubscription());
     }
     
     
@@ -90,10 +93,24 @@ public class StocksFragment extends SubscriptionFragment {
         
     }
     
+    @Override
+    public void onPause() {
+        super.onPause();
+        this.subscriptionHandling.onPause();
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.subscriptionHandling.onResume();
+    }
+    
     
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        
+        this.subscriptionHandling.onAttach(activity);
 
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception.
@@ -103,9 +120,6 @@ public class StocksFragment extends SubscriptionFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnHeadlineSelectedListener");
         }
-        
-        
-        
     }
 
     @Override
@@ -116,9 +130,6 @@ public class StocksFragment extends SubscriptionFragment {
         // Set the item as checked to be highlighted when in two-pane layout
         getListView().setItemChecked(position, true);
     }
-    
-    
-    
     
     private class MainSubscription implements Subscription, HandyTableListener {
 
