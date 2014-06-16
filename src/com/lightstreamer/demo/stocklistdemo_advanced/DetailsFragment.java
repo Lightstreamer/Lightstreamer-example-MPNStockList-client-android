@@ -15,17 +15,49 @@
  */
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.lightstreamer.ls_client.ExtendedTableInfo;
+import com.lightstreamer.ls_client.HandyTableListener;
+import com.lightstreamer.ls_client.SubscrException;
+import com.lightstreamer.ls_client.SubscribedTableKey;
+import com.lightstreamer.ls_client.UpdateInfo;
+
+import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class DetailsFragment extends Fragment {
-
+    
+    private static final String TAG = "Details";
+    
+    public final static String[] numericFields = {"last_price", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
+    public final static String[] otherFields = {"stock_name", "time"};
+    public final static String[] subscriptionFields = {"stock_name", "last_price", "time", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
+    
+    
+    private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
+    private Handler handler;
+    HashMap<String, TextView> holder =  new HashMap<String, TextView>();
+    
     public static final String ARG_ITEM = "item";
     int currentItem = -1;
+
+    private ItemSubscription currentSubscription = null;
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        handler = new Handler();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -37,9 +69,24 @@ public class DetailsFragment extends Fragment {
         if (savedInstanceState != null) {
         	currentItem = savedInstanceState.getInt(ARG_ITEM);
         }
+        
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.details_view, container, false);
+        View view = inflater.inflate(R.layout.details_view, container, false);
+
+        holder.put("stock_name",(TextView)view.findViewById(R.id.d_stock_name));
+        holder.put("last_price",(TextView)view.findViewById(R.id.d_last_price));
+        holder.put("time",(TextView)view.findViewById(R.id.d_time));
+        holder.put("pct_change",(TextView)view.findViewById(R.id.d_pct_change));
+        holder.put("bid_quantity",(TextView)view.findViewById(R.id.d_bid_quantity));
+        holder.put("bid",(TextView)view.findViewById(R.id.d_bid));
+        holder.put("ask",(TextView)view.findViewById(R.id.d_ask));
+        holder.put("ask_quantity",(TextView)view.findViewById(R.id.d_ask_quantity));
+        holder.put("min",(TextView)view.findViewById(R.id.d_min));
+        holder.put("max",(TextView)view.findViewById(R.id.d_max));
+        holder.put("open_price",(TextView)view.findViewById(R.id.d_open_price));
+        
+        return view;
     }
     
     @Override
@@ -54,10 +101,35 @@ public class DetailsFragment extends Fragment {
         }
     }
     
+    @Override
+    public void onPause() {
+        super.onPause();
+        this.subscriptionHandling.onPause();
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.subscriptionHandling.onResume();
+    }
+    
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        this.subscriptionHandling.onAttach(activity);
+    }
+    
+    
     public void updateStocksView(int item) {
-    	TextView details = (TextView) getActivity().findViewById(R.id.details);
-    	details.setText("item"+item);
-    	currentItem = item;
+        if (item != currentItem) {
+            if (this.currentSubscription != null) {
+                this.currentSubscription.disable();
+            }
+            this.currentSubscription = new ItemSubscription("item"+item);
+            this.subscriptionHandling.setSubscription(this.currentSubscription);
+            
+            currentItem = item;
+        }
     }
     
     @Override
@@ -67,6 +139,98 @@ public class DetailsFragment extends Fragment {
         outState.putInt(ARG_ITEM, currentItem);
     }
     
+    private class ItemSubscription implements Subscription {
     
+        private final Stock stock;
+        private ExtendedTableInfo tableInfo;
+        private SubscribedTableKey key;
+        private StockListener listener;
+        
+        public ItemSubscription(String item) {
+            this.stock = new Stock(item,numericFields,otherFields);
+            stock.setHolder(holder);
+            
+            this.listener = new StockListener(stock);
+            
+            try {
+                this.tableInfo = new ExtendedTableInfo(new String[] {item}, "MERGE", subscriptionFields , true);
+                this.tableInfo.setDataAdapter("QUOTE_ADAPTER");
+            } catch (SubscrException e) {
+                Log.wtf(TAG, "I'm pretty sure MERGE is compatible with the snapshot request!");
+            }
+        }
+
+        public void disable() {
+            this.listener.disable();
+        }
+
+        @Override
+        public HandyTableListener getTableListener() {
+            return this.listener;
+        }
+
+        @Override
+        public SubscribedTableKey getTableKey() {
+            return  this.key;
+        }
+
+        @Override
+        public ExtendedTableInfo getTableInfo() {
+            return this.tableInfo;
+        }
+
+        @Override
+        public void setTableKey(SubscribedTableKey key) {
+            this.key = key;
+        }
+        
+        
+       
+    }
+    
+    private class StockListener implements HandyTableListener {
+        
+        private AtomicBoolean disabled = new AtomicBoolean(false);
+        private final Stock stock;
+        
+        public StockListener(Stock stock) {
+            this.stock = stock;
+        }
+        
+        public void disable() {
+            disabled.set(true);
+        }
+        
+        @Override
+        public void onRawUpdatesLost(int arg0, String arg1, int arg2) {
+            Log.wtf(TAG,"Not expecting lost updates");
+        }
+
+        @Override
+        public void onSnapshotEnd(int itemPos, String itemName) {
+            Log.v(TAG,"Snapshot end for " + itemName);
+        }
+
+        @Override
+        public void onUnsubscr(int itemPos, String itemName) {
+            Log.v(TAG,"Unsubscribed " + itemName);
+        }
+
+        @Override
+        public void onUnsubscrAll() {
+            Log.v(TAG,"Unsubscribed all");
+        }
+
+        @Override
+        public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
+            if (disabled.get()) {
+                return;
+            }
+            Log.v(TAG,"Update for " + itemName);
+            this.stock.update(newData,handler);
+        }
+        
+    }
+        
 
 }
