@@ -48,20 +48,20 @@ public class StocksFragment extends ListFragment {
             "item4", "item5", "item6", "item7", "item8", "item9", "item10",
             "item11", "item12", "item13", "item14", "item15", "item16", 
             "item17", "item18", "item19", "item20" };
-    ArrayList<StockForList> list;
+   
     
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time"};
     
     private Handler handler;
     
     private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
-
-    public StocksFragment() {
+    
+    private static ArrayList<StockForList> list;
+    static {
         list = new ArrayList<StockForList>(items.length);
         for (int i = 0; i < items.length; i++) {
             list.add(new StockForList(items[i],i));
         }
-        this.subscriptionHandling.onResume();
     }
     
     
