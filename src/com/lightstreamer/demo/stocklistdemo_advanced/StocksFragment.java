@@ -46,16 +46,16 @@ public class StocksFragment extends ListFragment {
     
     private final static String[] items = {"item1", "item2", "item3",
             "item4", "item5", "item6", "item7", "item8", "item9", "item10",
-            "item11", "item12", "item13", "item14", "item15"};
-    ArrayList<Stock> list;
+            "item11", "item12", "item13", "item14", "item15", "item16", 
+            "item17", "item18", "item19", "item20" };
+    ArrayList<StockForList> list;
     
-    public final static String[] numericFields = {"last_price"};
-    public final static String[] otherFields = {"stock_name", "time"};
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time"};
     
     private Handler handler;
     
     private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
+
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -72,9 +72,9 @@ public class StocksFragment extends ListFragment {
         
         int layout = R.layout.row_layout;
 
-        list = new ArrayList<Stock>(items.length);
+        list = new ArrayList<StockForList>(items.length);
         for (int i = 0; i < items.length; i++) {
-            list.add(new Stock(items[i],numericFields,otherFields));
+            list.add(new StockForList(items[i],i));
         }
         
         setListAdapter(new StocksAdapter(getActivity(), layout, list));
@@ -191,8 +191,8 @@ public class StocksFragment extends ListFragment {
         @Override
         public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
             Log.v(TAG,"Update for " + itemName);
-            final Stock toUpdate = list.get(itemPos-1);
-            toUpdate.update(newData,handler);
+            final StockForList toUpdate = list.get(itemPos-1);
+            toUpdate.update(newData,handler,getListView());
         }
         
     }
