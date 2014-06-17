@@ -34,7 +34,7 @@ import android.widget.ImageView;
 
 public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
 
-    private boolean userDisconnect = false;
+    private static boolean userDisconnect = false;
     public static LightstreamerClient lsClient = new LightstreamerClient("http://push.lightstreamer.com");
     
     private static final String TAG = "StockListDemo";
@@ -55,6 +55,8 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         setContentView(R.layout.stocks);
 
         if (findViewById(R.id.fragment_container) != null) {
+            
+            //single fragment view
 
             if (savedInstanceState != null) {
                 return;
@@ -66,6 +68,10 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, firstFragment).commit();
+        } else {
+            onStockSelected(1);
+            
+            
         }
         
         
