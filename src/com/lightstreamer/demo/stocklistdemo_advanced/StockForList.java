@@ -1,5 +1,7 @@
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
+import java.text.DecimalFormat;
+
 import android.os.Handler;
 import android.view.View;
 import android.widget.ListView;
@@ -20,6 +22,8 @@ public class StockForList {
     
     private int pos;
     private TurnOffRunnable turningOff;
+    
+    private DecimalFormat format = new DecimalFormat("#.00");
 
     
     public StockForList(String item, int pos) {
@@ -37,11 +41,12 @@ public class StockForList {
             timeColor = isSnapshot ? R.color.snapshot_highlight : R.color.higher_highlight;
         }
         if (newData.isValueChanged("last_price")) {
-            lastPrice = newData.getNewValue("last_price");
+            double newPrice = Double.parseDouble(newData.getNewValue("last_price"));
+            lastPrice = format.format(newPrice);
+            
             if (isSnapshot) {
                 lastPriceColor = R.color.snapshot_highlight;
             } else {
-                double newPrice = Double.parseDouble(lastPrice);
                 lastPriceColor = newPrice < lastPriceNum ? R.color.lower_highlight : R.color.higher_highlight;
                 lastPriceNum = newPrice;
             }
