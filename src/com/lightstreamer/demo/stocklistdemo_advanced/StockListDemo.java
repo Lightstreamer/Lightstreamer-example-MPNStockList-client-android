@@ -35,7 +35,7 @@ import android.widget.ImageView;
 public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
 
     private boolean userDisconnect = false;
-    private static LightstreamerClient lsClient = new LightstreamerClient("http://push.lightstreamer.com");
+    public static LightstreamerClient lsClient = new LightstreamerClient("http://push.lightstreamer.com");
     
     private static final String TAG = "StockListDemo";
     
@@ -222,22 +222,22 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
     @Override
     public void start() {
-        this.lsClient.start();
+        lsClient.start();
     }
 
     @Override
     public void stop() {
-        this.lsClient.stop();
+        lsClient.stop();
     }
 
     @Override
     public void addSubscription(Subscription sub) {
-        this.lsClient.addSubscription(sub);
+        lsClient.addSubscription(sub);
     }
 
     @Override
     public void removeSubscription(Subscription sub) {
-        this.lsClient.removeSubscription(sub);
+        lsClient.removeSubscription(sub);
     }
     
     

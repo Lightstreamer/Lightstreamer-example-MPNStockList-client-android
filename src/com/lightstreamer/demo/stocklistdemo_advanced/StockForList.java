@@ -2,10 +2,10 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 
 import java.text.DecimalFormat;
 
-import android.os.Handler;
 import android.view.View;
 import android.widget.ListView;
 
+import com.lightstreamer.demo.stocklistdemo_advanced.MainSubscription.Context;
 import com.lightstreamer.demo.stocklistdemo_advanced.StocksAdapter.RowHolder;
 import com.lightstreamer.ls_client.UpdateInfo;
 
@@ -30,7 +30,7 @@ public class StockForList {
         this.pos = pos;
     }
     
-    public void update(UpdateInfo newData, Handler handler, final ListView listView) {
+    public void update(UpdateInfo newData, final Context context) {
         boolean isSnapshot = newData.isSnapshot();
         if (newData.isValueChanged("stock_name")) {
             stockName = newData.getNewValue("stock_name");
@@ -58,11 +58,11 @@ public class StockForList {
         
         
         
-        handler.post(new Runnable() {
+        context.handler.post(new Runnable() {
 
             @Override
             public void run() {
-                RowHolder holder = extractHolder(listView);
+                RowHolder holder = extractHolder(context.listView);
                 if (holder != null) {
                     fill(holder);
                 }
@@ -70,8 +70,8 @@ public class StockForList {
             
         });
         
-        this.turningOff = new TurnOffRunnable(listView);
-        handler.postDelayed(this.turningOff,600);
+        this.turningOff = new TurnOffRunnable(context);
+        context.handler.postDelayed(this.turningOff,600);
     }
     
 
@@ -101,10 +101,10 @@ public class StockForList {
     private class TurnOffRunnable implements Runnable {
 
         private boolean valid = true;
-        private ListView listView;
+        private Context context;
         
-        public TurnOffRunnable(ListView listView) {
-            this.listView = listView;
+        public TurnOffRunnable(Context context) {
+            this.context = context;
         }
         
         public synchronized void disable() {
@@ -121,7 +121,7 @@ public class StockForList {
             timeColor = R.color.transparent;
             
             
-            RowHolder holder = extractHolder(listView);
+            RowHolder holder = extractHolder(context.listView);
             if(holder != null) {
                 fillColor(holder);
             }

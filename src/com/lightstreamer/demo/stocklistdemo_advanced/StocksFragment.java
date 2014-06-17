@@ -21,17 +21,10 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
-import com.lightstreamer.ls_client.ExtendedTableInfo;
-import com.lightstreamer.ls_client.HandyTableListener;
-import com.lightstreamer.ls_client.SubscrException;
-import com.lightstreamer.ls_client.SubscribedTableKey;
-import com.lightstreamer.ls_client.UpdateInfo;
 
 public class StocksFragment extends ListFragment {
     
@@ -42,9 +35,7 @@ public class StocksFragment extends ListFragment {
         public void onStockSelected(int item);
     }
     
-    private static final String TAG = "StocksFragment";
-    
-    private final static String[] items = {"item1", "item2", "item3",
+    final static String[] items = {"item1", "item2", "item3",
             "item4", "item5", "item6", "item7", "item8", "item9", "item10",
             "item11", "item12", "item13", "item14", "item15", "item16", 
             "item17", "item18", "item19", "item20" };
@@ -54,15 +45,19 @@ public class StocksFragment extends ListFragment {
     
     private Handler handler;
     
-    private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
-    
     private static ArrayList<StockForList> list;
+    private final static MainSubscription mainSubscription;
+    
     static {
         list = new ArrayList<StockForList>(items.length);
         for (int i = 0; i < items.length; i++) {
             list.add(new StockForList(items[i],i));
         }
+        
+        mainSubscription = new MainSubscription(list);
+        StockListDemo.lsClient.addSubscription(mainSubscription);
     }
+    
     
     
     @Override
@@ -79,40 +74,29 @@ public class StocksFragment extends ListFragment {
         handler = new Handler();
         
         setListAdapter(new StocksAdapter(getActivity(), R.layout.row_layout, list));
-        
-        this.subscriptionHandling.setSubscription(new MainSubscription());
     }
     
     
     @Override
     public void onStart() {
         super.onStart();
-
+        
+        //there's always only one StocksFragment at a time
+        mainSubscription.changeContext(handler, getListView()); 
+        
         if (getFragmentManager().findFragmentById(R.id.details_fragment) != null) {
             getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         }
         
     }
     
-    @Override
-    public void onPause() {
-        super.onPause();
-        this.subscriptionHandling.onPause();
-    }
-    
-    @Override
-    public void onResume() {
-        super.onResume();
-        this.subscriptionHandling.onResume();
-    }
     
     
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         
-        this.subscriptionHandling.onAttach(activity);
-
+      
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception.
         try {
@@ -130,72 +114,6 @@ public class StocksFragment extends ListFragment {
         
         // Set the item as checked to be highlighted when in two-pane layout
         getListView().setItemChecked(position, true);
-    }
-    
-    private class MainSubscription implements Subscription, HandyTableListener {
-
-        private SubscribedTableKey key;
-        private ExtendedTableInfo tableInfo;
-        
-        public MainSubscription() {
-            try {
-                this.tableInfo = new ExtendedTableInfo(items, "MERGE", subscriptionFields , true);
-                this.tableInfo.setDataAdapter("QUOTE_ADAPTER");
-                this.tableInfo.setRequestedMaxFrequency(1);
-            } catch (SubscrException e) {
-                Log.wtf(TAG, "I'm pretty sure MERGE is compatible with the snapshot request!");
-            }
-        }
-
-        @Override
-        public HandyTableListener getTableListener() {
-            return this;
-        }
-
-        @Override
-        public SubscribedTableKey getTableKey() {
-            return key;
-        }
-
-        @Override
-        public ExtendedTableInfo getTableInfo() {
-            return this.tableInfo;
-        }
-
-        @Override
-        public void setTableKey(SubscribedTableKey key) {
-            this.key = key;
-        }
-
-
-
-        @Override
-        public void onRawUpdatesLost(int arg0, String arg1, int arg2) {
-            Log.wtf(TAG,"Not expecting lost updates");
-        }
-
-        @Override
-        public void onSnapshotEnd(int itemPos, String itemName) {
-            Log.v(TAG,"Snapshot end for " + itemName);
-        }
-
-        @Override
-        public void onUnsubscr(int itemPos, String itemName) {
-            Log.v(TAG,"Unsubscribed " + itemName);
-        }
-
-        @Override
-        public void onUnsubscrAll() {
-            Log.v(TAG,"Unsubscribed all");
-        }
-
-        @Override
-        public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
-            Log.v(TAG,"Update for " + itemName);
-            final StockForList toUpdate = list.get(itemPos-1);
-            toUpdate.update(newData,handler,getListView());
-        }
-        
     }
     
     

@@ -159,7 +159,7 @@ public class LightstreamerClient {
             if(this.wait) {
                 //waits to see if the user/app changes its mind
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(500);
                 } catch (InterruptedException e1) {
                 }
             }
