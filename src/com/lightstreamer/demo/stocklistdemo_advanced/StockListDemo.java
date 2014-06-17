@@ -35,7 +35,7 @@ import android.widget.ImageView;
 public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
 
     private boolean userDisconnect = false;
-    private LightstreamerClient lsClient;
+    private LightstreamerClient lsClient = new LightstreamerClient("http://push.lightstreamer.com",this);
     
     private static final String TAG = "StockListDemo";
     
@@ -70,10 +70,23 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         
         
         
-        lsClient = new LightstreamerClient("http://192.168.0.192",this);
-        this.start();
         
     }
+    
+    @Override
+    public void onStop() {
+        super.onStop();
+        this.stop();
+    }
+    
+    @Override 
+    public void onStart() {
+        super.onStart();
+        if (!userDisconnect) {
+            this.start();
+        }
+    }
+    
     
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void hideActionBarTitle() {
@@ -82,6 +95,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         
@@ -90,6 +104,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         Log.v(TAG,"Switch button: " + this.userDisconnect);
         menu.findItem(R.id.start).setVisible(this.userDisconnect);
         menu.findItem(R.id.stop).setVisible(!this.userDisconnect);
