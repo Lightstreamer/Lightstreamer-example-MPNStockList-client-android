@@ -14,7 +14,7 @@ public class Stock {
     HashMap<String,TextView> holder = null;
     private HashMap<String,UpdateRunnable> turnOffRunnables = new HashMap<String,UpdateRunnable>();
 
-    private String[] numericFields;
+        private String[] numericFields;
     private String[] otherFields;
 
     
@@ -65,9 +65,9 @@ public class Stock {
                         if (numeric) {
                             String oldValue = newData.getOldValue(fields[i]);
                             try {
-                                double valueInt = Double.parseDouble(value);
-                                double oldValueInt = Double.parseDouble(oldValue);
-                                upDown = valueInt - oldValueInt;
+                                double valueNum = Double.parseDouble(value);
+                                double oldValueNum = Double.parseDouble(oldValue);
+                                upDown = valueNum - oldValueNum;
                             } catch (NumberFormatException nfe) {
                                 //unexpected o_O
                             }
