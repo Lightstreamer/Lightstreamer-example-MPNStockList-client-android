@@ -81,8 +81,8 @@ public class LightstreamerClient {
     }
 
     public void setStatus(int status) {
-        Log.i(TAG,statusToString(this.status)); 
         this.status = status;
+        Log.i(TAG,statusToString(this.status)); 
         notifyStatusChanged();
     }
 
