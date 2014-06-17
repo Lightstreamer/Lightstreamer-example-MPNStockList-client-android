@@ -73,25 +73,41 @@ public class LightstreamerClient {
     private ClientListener currentListener = null;
     
     private StatusChangeListener statusListener;
+
+    private int status;
     
-    public LightstreamerClient(String pushServerUrl, StatusChangeListener statusListener) {
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        Log.i(TAG,statusToString(this.status)); 
+        this.status = status;
+        notifyStatusChanged();
+    }
+
+    public LightstreamerClient(String pushServerUrl) {
          this.cInfo.pushServerUrl = pushServerUrl;
          this.cInfo.adapter = "DEMO";
          
-         this.statusListener = statusListener;
+         
+    }
+    
+    public void setListener(StatusChangeListener statusListener) {
+        this.statusListener = statusListener;
     }
     
     public void start() {
         Log.d(TAG,"Connection enabled");
         if (expectingConnected.compareAndSet(false,true)) {
-            this.startConnectionThread();
+            this.startConnectionThread(false);
         }
     }
     
     public void stop() {
         Log.d(TAG,"Connection disabled");
         if (expectingConnected.compareAndSet(true,false)) {
-            this.startConnectionThread();
+            this.startConnectionThread(true);
         }
     }    
     
@@ -103,8 +119,8 @@ public class LightstreamerClient {
     }
     
     
-    private void startConnectionThread() {
-        eventsThread.execute(new ConnectionThread());
+    private void startConnectionThread(boolean wait) {
+        eventsThread.execute(new ConnectionThread(wait));
     }
     
     //ClientListener calls it through eventsThread
@@ -113,26 +129,45 @@ public class LightstreamerClient {
             return;
         }
         
-        Log.i(TAG,statusToString(status)); 
-        this.statusListener.onStatusChange(status);
-        
         this.connected = connected;
+        this.setStatus(status);
         
         
         if (connected != expectingConnected.get()) {
-            this.startConnectionThread();
+            this.startConnectionThread(false);
+        }
+    }
+    
+    private void notifyStatusChanged() {
+        if (this.statusListener != null) {
+            this.statusListener.onStatusChange(this.status);
         }
     }
     
     
     private class ConnectionThread implements Runnable {
+        
+        boolean wait = false;
+        
+        public ConnectionThread(boolean wait) {
+            this.wait = wait;
+        }
+
         public void run() {
             //expectingConnected can be changed by outside events
             
+            if(this.wait) {
+                //waits to see if the user/app changes its mind
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                }
+            }
+            
             while(connected != expectingConnected.get()) { 
+                
                 if (!connected) {
-                    Log.i(TAG,statusToString(CONNECTING));
-                    statusListener.onStatusChange(CONNECTING);
+                    setStatus(CONNECTING);
                     try {
                         currentListener = new ClientListener();
                         client.openConnection(cInfo, currentListener);
@@ -151,9 +186,7 @@ public class LightstreamerClient {
                     
                     if (!connected) {
                         try {
-                            Log.i(TAG,statusToString(WAITING));
-                            statusListener.onStatusChange(WAITING);
-                            Log.d(TAG,"Connecting failure: will retry");
+                            setStatus(WAITING);
                             Thread.sleep(5000);
                         } catch (InterruptedException e) {
                         }
@@ -162,8 +195,7 @@ public class LightstreamerClient {
                 } else {
                     Log.v(TAG,"Disconnecting");
                     client.closeConnection();
-                    statusListener.onStatusChange(DISCONNECTED);
-                    Log.i(TAG,statusToString(DISCONNECTED)); 
+                    setStatus(DISCONNECTED);
                     currentListener = null;
                     connected = false;
                 }
