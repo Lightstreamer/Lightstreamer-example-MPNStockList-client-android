@@ -56,6 +56,14 @@ public class StocksFragment extends ListFragment {
     
     private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
 
+    public StocksFragment() {
+        list = new ArrayList<StockForList>(items.length);
+        for (int i = 0; i < items.length; i++) {
+            list.add(new StockForList(items[i],i));
+        }
+        this.subscriptionHandling.onResume();
+    }
+    
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -70,14 +78,7 @@ public class StocksFragment extends ListFragment {
 
         handler = new Handler();
         
-        int layout = R.layout.row_layout;
-
-        list = new ArrayList<StockForList>(items.length);
-        for (int i = 0; i < items.length; i++) {
-            list.add(new StockForList(items[i],i));
-        }
-        
-        setListAdapter(new StocksAdapter(getActivity(), layout, list));
+        setListAdapter(new StocksAdapter(getActivity(), R.layout.row_layout, list));
         
         this.subscriptionHandling.setSubscription(new MainSubscription());
     }
