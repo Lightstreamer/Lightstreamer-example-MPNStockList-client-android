@@ -18,6 +18,11 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.StatusChangeListener;
+import com.lightstreamer.ls_client.LSClient;
+import com.lightstreamer.ls_client.mpn.MpnRegistrationException;
+import com.lightstreamer.ls_client.mpn.MpnRegistrationIdChangeInfo;
+import com.lightstreamer.ls_client.mpn.MpnRegistrationIdStatus;
+import com.lightstreamer.ls_client.mpn.MpnRegistrationListener;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -40,13 +45,52 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     public static LightstreamerClient lsClient = new LightstreamerClient("http://push.lightstreamer.com");
     
     private static final String TAG = "StockListDemo";
+    private static final String SENDER_ID= "";
+    
     
     private Handler handler;
+    
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        try {
+            LSClient.registerForMpn(getApplicationContext(), SENDER_ID, new MpnRegistrationListener(){
+
+                @Override
+                public void registrationFailed(Exception arg0) {
+                    Log.e(TAG,"Can't register MPN ID, push notifications are disabled");
+                    //TODO disable mpn
+                }
+
+                @Override
+                public void registrationIdChangeFailed(Exception arg0) {
+                    Log.e(TAG,"Can't change MPN ID, push notifications are disabled");//TODO disable mpn
+                }
+
+                @Override
+                public void registrationIdChangeSucceeded(
+                        MpnRegistrationIdChangeInfo arg0) {
+                    Log.v(TAG,"MPN ID changed"); //TODO enable mpn 
+                    
+                }
+
+                @Override
+                public void registrationSucceeded(String arg0,
+                        MpnRegistrationIdStatus arg1) {
+                    Log.d(TAG,"MPN ID registered"); //TODO enable mpn
+                }
+                
+            }); //TODO add listener
+        } catch (MpnRegistrationException e) {
+            Log.e(TAG, "Can't register MPN, push notifications are disabled",e);
+            //TODO disable mpn
+        } 
+        
+        
+        
         
         this.handler = new Handler();
         
@@ -72,9 +116,11 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                     .add(R.id.fragment_container, firstFragment).commit();
         } else {
             onStockSelected(1);
-            
-            
+
         }
+        
+        
+        
         
         
         
@@ -271,6 +317,8 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     public void removeSubscription(Subscription sub) {
         lsClient.removeSubscription(sub);
     }
+    
+    
     
     
     
