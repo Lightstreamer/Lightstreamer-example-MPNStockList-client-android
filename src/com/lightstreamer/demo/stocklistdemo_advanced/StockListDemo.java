@@ -62,31 +62,34 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                 @Override
                 public void registrationFailed(Exception arg0) {
                     Log.e(TAG,"Can't register MPN ID, push notifications are disabled");
-                    //TODO disable mpn
+                    lsClient.enablePM(false);
                 }
 
                 @Override
                 public void registrationIdChangeFailed(Exception arg0) {
-                    Log.e(TAG,"Can't change MPN ID, push notifications are disabled");//TODO disable mpn
+                    Log.e(TAG,"Can't change MPN ID, push notifications are disabled");
+                    lsClient.enablePM(false);
                 }
 
                 @Override
                 public void registrationIdChangeSucceeded(
                         MpnRegistrationIdChangeInfo arg0) {
-                    Log.v(TAG,"MPN ID changed"); //TODO enable mpn 
+                    Log.v(TAG,"MPN ID changed");
+                    lsClient.enablePM(true);
                     
                 }
 
                 @Override
                 public void registrationSucceeded(String arg0,
                         MpnRegistrationIdStatus arg1) {
-                    Log.d(TAG,"MPN ID registered"); //TODO enable mpn
+                    Log.d(TAG,"MPN ID registered");
+                    lsClient.enablePM(true);
                 }
                 
             }); //TODO add listener
         } catch (MpnRegistrationException e) {
             Log.e(TAG, "Can't register MPN, push notifications are disabled",e);
-            //TODO disable mpn
+            lsClient.enablePM(false);
         } 
         
         
@@ -316,6 +319,21 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     @Override
     public void removeSubscription(Subscription sub) {
         lsClient.removeSubscription(sub);
+    }
+
+    @Override
+    public void activatePMForItem() {
+        lsClient.activatePMForItem();
+    }
+
+    @Override
+    public void deactivatePMForItem() {
+        lsClient.deactivatePMForItem();
+    }
+
+    @Override
+    public boolean isPMActiveForItem() {
+        return lsClient.isPMActiveForItem();
     }
     
     

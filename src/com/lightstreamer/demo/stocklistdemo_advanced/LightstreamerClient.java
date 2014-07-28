@@ -63,13 +63,17 @@ public class LightstreamerClient {
     }
     
     private LinkedList<Subscription> subscriptions = new LinkedList<Subscription>();
+    
     private AtomicBoolean expectingConnected = new AtomicBoolean(false);
+    private AtomicBoolean pmEnabled = new AtomicBoolean(false);
+    
     private boolean connected = false; // do not get/set this outside the eventsThread
     
     final private ExecutorService eventsThread = Executors.newSingleThreadExecutor();
     
     final private ConnectionInfo cInfo = new ConnectionInfo();
     final private LSClient client = new LSClient();
+
     private ClientListener currentListener = null;
     
     private StatusChangeListener statusListener;
@@ -89,8 +93,6 @@ public class LightstreamerClient {
     public LightstreamerClient(String pushServerUrl) {
          this.cInfo.pushServerUrl = pushServerUrl;
          this.cInfo.adapter = "DEMO";
-         
-         
     }
     
     public void setListener(StatusChangeListener statusListener) {
@@ -117,6 +119,8 @@ public class LightstreamerClient {
     public void removeSubscription(Subscription sub) {
         eventsThread.execute(new SubscriptionThread(sub,false));
     }
+    
+    
     
     
     private void startConnectionThread(boolean wait) {
@@ -376,9 +380,6 @@ public class LightstreamerClient {
         
     }
     
-    
-    
-    
     private class BatchSubscriptionThread implements Runnable {
         
         Subscription sub;
@@ -432,5 +433,36 @@ public class LightstreamerClient {
          public void stop();
          public void addSubscription(Subscription sub);
          public void removeSubscription(Subscription sub);
+         public void activatePMForItem();
+         public void deactivatePMForItem(); 
+         public boolean isPMActiveForItem();
+         
+    }
+
+
+   public void activatePMForItem() {
+      //TODO to PM thread ->
+        //add as pending subscriptions
+        //dequeue pending subscriptions
+    }
+    
+    public void deactivatePMForItem() {
+      //TODO to PM thread ->
+        //add as pending subscriptions
+        //dequeue pending subscriptions
+    }
+    
+    public boolean isPMActiveForItem() {
+        //TODO check both current list and pending list to answer this
+        return false;
+    }
+
+    public void enablePM(boolean enabled) {
+        this.pmEnabled.set(enabled);
+        if (enabled) {
+            //TODO to PM thread ->
+                //TODO retrieve active PM subscription
+                //TODO handle pending mpn subscriptions
+        }
     }
 }
