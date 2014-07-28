@@ -34,23 +34,6 @@
         android:textStyle="bold"
         />
     
-    <LinearLayout 
-	    android:baselineAligned="false"
-	    android:orientation="horizontal"
-	    android:layout_width="match_parent"
-	    android:layout_height="0dp"
-	    android:layout_weight="5"
-	    android:background="@color/background">
-    
-            <TextView 
-			    android:text="chart here"
-			    android:layout_width="match_parent"
-			    android:layout_height="match_parent"
-			    android:padding="16dp"
-			    android:textSize="18sp" 
-			    />
-    </LinearLayout>
-    
      <LinearLayout
          android:layout_width="match_parent"
          android:layout_height="0dp"
@@ -346,6 +329,35 @@
             />
             
      </LinearLayout>
+     
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="0dp"
+         android:layout_weight="1"
+         android:background="@color/background"
+         android:baselineAligned="false"
+         android:gravity="center_horizontal"
+         android:orientation="vertical" >
+
+         
+         <TextView 
+            android:text="@string/push_notifications"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp" 
+            android:textColor="@color/white"
+            android:textStyle="bold"    
+            />
+         
+         <ToggleButton
+             android:id="@+id/pn_switch"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="@+id/push_notifications" 
+             android:onClick="onTogglePNClicked"
+             />
+         
+    </LinearLayout>
 
 
 </LinearLayout>

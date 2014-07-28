@@ -36,6 +36,7 @@
     <string name="open_price">Open</string>
     <string name="min">Min</string>
     <string name="max">Max</string>
+    <string name="push_notifications">Push Notifications</string>
     
     
 </resources>

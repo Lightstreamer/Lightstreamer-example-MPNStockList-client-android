@@ -33,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 public class DetailsFragment extends Fragment {
     
@@ -129,6 +130,25 @@ public class DetailsFragment extends Fragment {
             this.subscriptionHandling.setSubscription(this.currentSubscription);
             
             currentItem = item;
+            
+            //TODO verify PN and set toggle accordingly
+            //ToggleButton toggle = (ToggleButton)view.findViewById(R.id.pn_switch);
+            //toggle.setChecked(checked);
+            
+        }
+    }
+    
+    public void togglePN(ToggleButton toggle) {
+        boolean on = toggle.isChecked();
+        if (currentItem != -1) {
+            if (on) {
+                Log.v(TAG,"PN enabled for item" + currentItem);
+                //TODO enable PN
+            } else {
+                Log.v(TAG,"PN disabled for item" +currentItem);
+                //TODO disable PN
+            }
+            
         }
     }
     
@@ -231,6 +251,5 @@ public class DetailsFragment extends Fragment {
         }
         
     }
-        
 
 }

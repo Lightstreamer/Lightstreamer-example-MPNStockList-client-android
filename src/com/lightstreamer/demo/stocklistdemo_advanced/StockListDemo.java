@@ -29,7 +29,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ToggleButton;
 
 
 public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
@@ -112,9 +114,9 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        Log.v(TAG,"Switch button: " + this.userDisconnect);
-        menu.findItem(R.id.start).setVisible(this.userDisconnect);
-        menu.findItem(R.id.stop).setVisible(!this.userDisconnect);
+        Log.v(TAG,"Switch button: " + userDisconnect);
+        menu.findItem(R.id.start).setVisible(userDisconnect);
+        menu.findItem(R.id.stop).setVisible(!userDisconnect);
         
         return true;
     }
@@ -126,13 +128,13 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         switch (item.getItemId()) {
             case R.id.stop:
                 Log.i(TAG,"Stop");
-                this.userDisconnect = true;
+                userDisconnect = true;
                 supportInvalidateOptionsMenu();
                 this.stop();
                 return true;
             case R.id.start:
                 Log.i(TAG,"Start");
-                this.userDisconnect = false;
+                userDisconnect = false;
                 supportInvalidateOptionsMenu();
                 this.start();
                 return true;
@@ -148,22 +150,46 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                 getSupportFragmentManager().findFragmentById(R.id.details_fragment);
 
         if (detailsFrag != null) {
-          
+            //tablets
             detailsFrag.updateStocksView(item);
 
         } else {
+            //phones
             DetailsFragment newFragment = new DetailsFragment();
             Bundle args = new Bundle();
             args.putInt(DetailsFragment.ARG_ITEM, item);
             newFragment.setArguments(args);
             
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, newFragment);
+            transaction.replace(R.id.fragment_container, newFragment,"DETAILS_FRAGMENT");
             transaction.addToBackStack(null);
             transaction.commit();
         }
     }
      
+    
+    public void onTogglePNClicked(View view) {
+        Log.v(TAG,"Toggle PN clicked");
+        
+        DetailsFragment detailsFrag = (DetailsFragment)
+                getSupportFragmentManager().findFragmentById(R.id.details_fragment);
+        
+        if (detailsFrag == null) {
+            //phones
+            
+            detailsFrag = (DetailsFragment)getSupportFragmentManager().findFragmentByTag("DETAILS_FRAGMENT");
+            if (!detailsFrag.isVisible()) {
+                //not visible, can't be as AFAIK you can't click something that is not there :) 
+                return;
+            }
+            
+        } // else is tablet
+        
+        
+        detailsFrag.togglePN((ToggleButton) view);
+        
+        
+    }
      
     //Status handling
 
