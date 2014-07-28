@@ -131,10 +131,8 @@ public class DetailsFragment extends Fragment {
             
             currentItem = item;
             
-            //TODO verify PN and set toggle accordingly
-            //ToggleButton toggle = (ToggleButton)view.findViewById(R.id.pn_switch);
-            //toggle.setChecked(checked);
-            
+            ToggleButton toggle = (ToggleButton)getView().findViewById(R.id.pn_switch);
+            toggle.setChecked(this.subscriptionHandling.isMPNActive());
         }
     }
     
@@ -143,10 +141,10 @@ public class DetailsFragment extends Fragment {
         if (currentItem != -1) {
             if (on) {
                 Log.v(TAG,"PN enabled for item" + currentItem);
-                //TODO enable PN
+                this.subscriptionHandling.activateMPN();
             } else {
                 Log.v(TAG,"PN disabled for item" +currentItem);
-                //TODO disable PN
+                this.subscriptionHandling.deactivateMPN();
             }
             
         }
@@ -169,7 +167,7 @@ public class DetailsFragment extends Fragment {
         public ItemSubscription(String item) {
             this.stock = new Stock(item,numericFields,otherFields);
             stock.setHolder(holder);
-            
+           
             this.listener = new StockListener(stock);
             
             try {

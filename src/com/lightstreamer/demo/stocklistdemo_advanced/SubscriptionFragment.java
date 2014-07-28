@@ -25,8 +25,22 @@ public class SubscriptionFragment /*extends Fragment*/ {
         if (running) {
             this.lsClient.addSubscription(this.subscription);
         }
+        
+        
+    }
+    
+    protected synchronized void activateMPN() {
+                
+    }
+    
+    protected synchronized void deactivateMPN() {
+        
     }
 
+    protected synchronized boolean isMPNActive() {
+        return false;
+    }
+    
     public synchronized void onResume() {
         //subscribe
         if (this.lsClient != null && this.subscription != null) {
