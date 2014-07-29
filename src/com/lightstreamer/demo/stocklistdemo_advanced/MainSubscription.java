@@ -6,11 +6,14 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.MpnStatusListener;
 import com.lightstreamer.ls_client.ExtendedTableInfo;
 import com.lightstreamer.ls_client.HandyTableListener;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.UpdateInfo;
+import com.lightstreamer.ls_client.mpn.MpnInfo;
+import com.lightstreamer.ls_client.mpn.MpnKey;
 
 class MainSubscription implements Subscription, HandyTableListener {
 
@@ -94,6 +97,23 @@ class MainSubscription implements Subscription, HandyTableListener {
     public class Context {
         public Handler handler;
         public ListView listView;
+    }
+
+
+    @Override
+    public MpnInfo getMpnInfo() {
+        return null;
+    }
+
+    @Override
+    public void setMpnInfoKey(MpnKey key) {
+        //can't be called as our mpn info is null
+    }
+
+    @Override
+    public MpnStatusListener getMpnStatusListener() {
+        //not interested
+        return null;
     }
     
 }

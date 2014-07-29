@@ -18,11 +18,14 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.MpnStatusListener;
 import com.lightstreamer.ls_client.ExtendedTableInfo;
 import com.lightstreamer.ls_client.HandyTableListener;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.UpdateInfo;
+import com.lightstreamer.ls_client.mpn.MpnInfo;
+import com.lightstreamer.ls_client.mpn.MpnKey;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -201,8 +204,26 @@ public class DetailsFragment extends Fragment {
         public void setTableKey(SubscribedTableKey key) {
             this.key = key;
         }
-        
-        
+
+        @Override
+        public MpnInfo getMpnInfo() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public void setMpnInfoKey(MpnKey key) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public MpnStatusListener getMpnStatusListener() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+       
        
     }
     

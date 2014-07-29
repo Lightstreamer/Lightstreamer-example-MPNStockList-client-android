@@ -19,6 +19,7 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.StatusChangeListener;
 import com.lightstreamer.ls_client.LSClient;
+import com.lightstreamer.ls_client.mpn.MpnInfo;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationException;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationIdChangeInfo;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationIdStatus;
@@ -322,20 +323,15 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     }
 
     @Override
-    public void activatePMForItem() {
-        lsClient.activatePMForItem();
+    public void activateMPN(Subscription info) {
+        //lsClient.activateMPN(info);
     }
 
     @Override
-    public void deactivatePMForItem() {
-        lsClient.deactivatePMForItem();
+    public void deactivateMPN(Subscription info) {
+        //lsClient.deactivateMPN(info);
     }
 
-    @Override
-    public boolean isPMActiveForItem() {
-        return lsClient.isPMActiveForItem();
-    }
-    
     
     
     

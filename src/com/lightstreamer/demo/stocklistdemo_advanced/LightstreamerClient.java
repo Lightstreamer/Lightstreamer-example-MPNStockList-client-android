@@ -1,7 +1,10 @@
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +20,7 @@ import com.lightstreamer.ls_client.PushServerException;
 import com.lightstreamer.ls_client.PushUserException;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
+import com.lightstreamer.ls_client.mpn.MpnInfo;
 
 
 public class LightstreamerClient {
@@ -63,11 +67,15 @@ public class LightstreamerClient {
     }
     
     private LinkedList<Subscription> subscriptions = new LinkedList<Subscription>();
+    Map<String,MpnInfo> mpns = new HashMap<String,MpnInfo>();
+    Map<String,MpnStatusListener> mpnListeners = new HashMap<String,MpnStatusListener>();
+    
     
     private AtomicBoolean expectingConnected = new AtomicBoolean(false);
     private AtomicBoolean pmEnabled = new AtomicBoolean(false);
     
     private boolean connected = false; // do not get/set this outside the eventsThread
+    private boolean mpnStatusRetrieved = false; // do not get/set this outside the eventsThread
     
     final private ExecutorService eventsThread = Executors.newSingleThreadExecutor();
     
@@ -134,6 +142,9 @@ public class LightstreamerClient {
         }
         
         this.connected = connected;
+        if (!this.connected) {
+            this.mpnStatusRetrieved = false;
+        }
         this.setStatus(status);
         
         
@@ -149,7 +160,7 @@ public class LightstreamerClient {
     }
     
     
-    private class ConnectionThread implements Runnable {
+    private class ConnectionThread implements Runnable { 
         
         boolean wait = false;
         
@@ -157,7 +168,7 @@ public class LightstreamerClient {
             this.wait = wait;
         }
 
-        public void run() {
+        public void run() { //called from the eventsThread
             //expectingConnected can be changed by outside events
             
             if(this.wait) {
@@ -179,6 +190,9 @@ public class LightstreamerClient {
                         connected = true;
                         
                         resubscribeAll();
+                        retrieveMPNStatus();
+                        
+                        
                         
                     } catch (PushConnException e) {
                         Log.v(TAG, e.getMessage());
@@ -297,6 +311,10 @@ public class LightstreamerClient {
         }
         
     }
+    
+
+    
+//Subscription handling    
     
     
     private void resubscribeAll() {
@@ -428,41 +446,73 @@ public class LightstreamerClient {
     }
     
     
-    public interface LightstreamerClientProxy {
-         public void start();
-         public void stop();
-         public void addSubscription(Subscription sub);
-         public void removeSubscription(Subscription sub);
-         public void activatePMForItem();
-         public void deactivatePMForItem(); 
-         public boolean isPMActiveForItem();
-         
-    }
-
-
-   public void activatePMForItem() {
-      //TODO to PM thread ->
-        //add as pending subscriptions
-        //dequeue pending subscriptions
-    }
+//Mpn handling    
     
-    public void deactivatePMForItem() {
-      //TODO to PM thread ->
-        //add as pending subscriptions
-        //dequeue pending subscriptions
-    }
-    
-    public boolean isPMActiveForItem() {
-        //TODO check both current list and pending list to answer this
-        return false;
-    }
 
     public void enablePM(boolean enabled) {
         this.pmEnabled.set(enabled);
         if (enabled) {
-            //TODO to PM thread ->
-                //TODO retrieve active PM subscription
-                //TODO handle pending mpn subscriptions
+            eventsThread.execute(new Runnable() {
+                public void run() {
+                    retrieveMPNStatus();
+                }
+            });
+        } 
+    }
+    
+    private void retrieveMPNStatus() { //called from the eventsThread
+        if (!connected || mpnStatusRetrieved || !pmEnabled.get()) {
+            return;
+        }
+        List<MpnInfo>mpnList = null;
+        try {
+            mpnList = this.client.inquireAllMpn();
+            mpnStatusRetrieved = true;
+        } catch (SubscrException e) {
+            Log.d(TAG,"Connection problems: " + e.getMessage());
+        } catch (PushServerException e) {
+            Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+        } catch (PushUserException e) {
+            if (e.getErrorCode() != 45) {
+                Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+            } //else we do not have active MPN subscriptions
+        } catch (PushConnException e) {
+            Log.d(TAG,"Connection problems: " + e.getMessage());
+        }
+    
+        mpns.clear();
+        if (mpnList != null) {
+            for (Iterator<MpnInfo> i = mpnList.iterator(); i.hasNext(); ) {
+                MpnInfo info = i.next();
+                String key = info.getTableInfo().getGroup(); //currently handling one trigger per subscription
+                mpns.put(key, info);
+            }
+        }
+        
+        //notify all the listeners of their current status
+        
+        for (Iterator<String> i = mpnListeners.keySet().iterator(); i.hasNext(); ) {
+            String listenerKey = i.next();
+            MpnStatusListener listener = mpnListeners.get(listenerKey);
+            listener.onStatusChanged(mpns.containsKey(listenerKey));
         }
     }
+    
+    public interface MpnStatusListener {
+        public void onStatusChanged(boolean activated);
+    }
+
+    public interface LightstreamerClientProxy {
+        public void start();
+        public void stop();
+        public void addSubscription(Subscription sub);
+        public void removeSubscription(Subscription sub);
+        
+        public void activateMPN(Subscription info);
+        public void deactivateMPN(Subscription info); 
+
+        
+   }
+    
+    
 }
