@@ -496,7 +496,7 @@ public class LightstreamerClient {
             String listenerKey = i.next();
             MpnStatusListener listener = mpnListeners.get(listenerKey);
             if (listener != null) {
-                listener.onStatusChanged(mpns.containsKey(listenerKey));
+                listener.onMpnStatusChanged(mpns.containsKey(listenerKey));
             }
         }
         
@@ -504,17 +504,59 @@ public class LightstreamerClient {
     }
     
     private void handlePendingMpnOps() { //called from the eventsThread
-        //TODO
+        for (Iterator<String> i = pendingMpns.keySet().iterator(); i.hasNext();) {
+            try {
+                handlePendingMpnOp(pendingMpns.get(i.next()));
+            } catch (SubscrException e) {
+            } catch (PushServerException e) {
+            } catch (PushUserException e) {
+            } catch (PushConnException e) {
+            }
+        }
     }
     
-    private void handlePendingMpnOp(PendingMpnOp op) { //called from the eventsThread
-        //TODO 
+    private void handlePendingMpnOp(PendingMpnOp op) 
+        throws SubscrException, PushServerException, PushUserException, PushConnException { //called from the eventsThread
+        MpnInfo info = op.sub.getMpnInfo();
+        String key = op.sub.getTableInfo().getGroup();
+        
+        if (mpns.containsKey(key) == op.add) {
+            //already in the desired state, remove pending op and exit
+            pendingMpns.remove(key);
+            if (op.add) {
+                Log.d(TAG,"Can't add mpn subscription: mpn subscription already in: " + op.sub);
+            } else {
+                Log.d(TAG,"Can't remove mpn subscription: mpn subscription not in: " + op.sub);
+            }
+            return;
+        }
+
+        if (op.add) {
+            client.activateMpn(info); //in case of failure we leave the pending op (we might want to change this behavior)
+            mpns.put(key, info);
+            
+        } else {
+            info = mpns.get(key); //get the info from the collection as we are sure that that one contains the mpnKey
+            client.deactivateMpn(info.getMpnKey()); //in case of failure we leave the pending op (we might want to change this behavior)
+            mpns.remove(key);
+        }
+        
+        //remove from pending op and fire listener
+        pendingMpns.remove(key);
+     
+        MpnStatusListener listener = mpnListeners.get(key);
+        if (listener != null) {
+           listener.onMpnStatusChanged(mpns.containsKey(key));
+        }
+        
     }
     
+    //note that the TableInfo group will be used to uniquely identify its MpnInfo
     public synchronized void activateMPN(Subscription info) {
         eventsThread.execute(new MpnSubscriptionThread(info,true));
     }
 
+    //note that the TableInfo group will be used to uniquely identify its MpnInfo
     public synchronized void deactivateMPN(Subscription info) {
         eventsThread.execute(new MpnSubscriptionThread(info,false));
     }
@@ -533,7 +575,7 @@ public class LightstreamerClient {
                     //not active anymore
                     mpns.remove(key);
                     MpnStatusListener listener = mpnListeners.get(key);
-                    listener.onStatusChanged(false);
+                    listener.onMpnStatusChanged(false);
                 } else {
                     throw e;
                 }
@@ -590,7 +632,7 @@ public class LightstreamerClient {
             boolean refreshedStatus = false;
             try {
                 retrieveCurrentMpnStatus(sub);
-                refreshedStatus = true;
+                handlePendingMpnOp(op);
             } catch (PushConnException e) {
             } catch (SubscrException e) {
             } catch (PushServerException e) {
@@ -599,11 +641,9 @@ public class LightstreamerClient {
             
             //if an exception was thrown we fail and wait for the pending operations to be 
             //handled again later
-            if (!refreshedStatus) {
-                return;
-            }
+
             
-            handlePendingMpnOp(op);
+            
         }
         
     }
@@ -622,7 +662,7 @@ public class LightstreamerClient {
     
     
     public interface MpnStatusListener {
-        public void onStatusChanged(boolean activated);
+        public void onMpnStatusChanged(boolean activated);
     }
 
     public interface LightstreamerClientProxy {
