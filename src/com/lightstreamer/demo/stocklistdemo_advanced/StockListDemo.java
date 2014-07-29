@@ -16,6 +16,8 @@
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.StatusChangeListener;
 import com.lightstreamer.ls_client.LSClient;
@@ -47,14 +49,13 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     private static final String TAG = "StockListDemo";
     private static final String SENDER_ID= "";
     
-    
     private Handler handler;
-    
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        checkPlayServices();
         
         try {
             LSClient.registerForMpn(getApplicationContext(), SENDER_ID, new MpnRegistrationListener(){
@@ -86,7 +87,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                     lsClient.enablePM(true);
                 }
                 
-            }); //TODO add listener
+            });
         } catch (MpnRegistrationException e) {
             Log.e(TAG, "Can't register MPN, push notifications are disabled",e);
             lsClient.enablePM(false);
@@ -138,10 +139,24 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     @Override 
     public void onResume() {
         super.onResume();
+        checkPlayServices();
         handler.post(new StatusChange(lsClient.getStatus()));
         lsClient.setListener(this);
         if (!userDisconnect) {
             this.start();
+        }
+    }
+    
+    
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private void checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+
+            }         
         }
     }
     
