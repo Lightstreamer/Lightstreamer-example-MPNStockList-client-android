@@ -276,12 +276,20 @@ public class DetailsFragment extends Fragment {
         }
 
         @Override
-        public void onMpnStatusChanged(boolean activated) {
+        public void onMpnStatusChanged(final boolean activated) {
             if (disabled.get()) {
                 return;
             }
             Log.v(TAG,"Mpn status changed");
-            toggle.setChecked(activated);
+            handler.post(new Runnable() {
+                public void run() {
+                    if (disabled.get()) {
+                        return;
+                    }
+                    toggle.setChecked(activated);
+                }
+            });
+            
         }
         
     }
