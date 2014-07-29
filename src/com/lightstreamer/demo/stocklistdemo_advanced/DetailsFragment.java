@@ -228,12 +228,11 @@ public class DetailsFragment extends Fragment {
 
         @Override
         public MpnStatusListener getMpnStatusListener() {
-            // TODO Auto-generated method stub
-            return null;
+            return this.listener;
         }
     }
     
-    private class StockListener implements HandyTableListener {
+    private class StockListener implements HandyTableListener, MpnStatusListener {
         
         private AtomicBoolean disabled = new AtomicBoolean(false);
         private final Stock stock;
@@ -273,6 +272,15 @@ public class DetailsFragment extends Fragment {
             }
             Log.v(TAG,"Update for " + itemName);
             this.stock.update(newData,handler);
+        }
+
+        @Override
+        public void onMpnStatusChanged(boolean activated) {
+            if (disabled.get()) {
+                return;
+            }
+            Log.v(TAG,"Mpn status changed");
+            toggle.setChecked(activated);
         }
         
     }
