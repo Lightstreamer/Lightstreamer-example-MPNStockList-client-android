@@ -142,6 +142,7 @@ public class DetailsFragment extends Fragment {
     }
     
     public void togglePN(ToggleButton toggle) {
+        //TODO toggle status can be overridden by the onMpnStatusChanged: find a user friendly to handle the case
         boolean on = toggle.isChecked();
         if (currentItem != -1) {
             if (on) {
