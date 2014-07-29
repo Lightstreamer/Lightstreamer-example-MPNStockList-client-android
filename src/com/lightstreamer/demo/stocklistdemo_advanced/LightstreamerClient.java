@@ -375,6 +375,8 @@ public class LightstreamerClient {
                 
                 Log.i(TAG,"Removing subscription " + sub);
                 subscriptions.remove(sub);
+                String key = sub.getTableInfo().getGroup();
+                mpnListeners.remove(key);
                 
             } else {
                 if (!this.add) {
@@ -384,6 +386,14 @@ public class LightstreamerClient {
                 }
                 Log.i(TAG,"Adding subscription " + sub);
                 subscriptions.add(sub);
+                
+                MpnStatusListener listener = sub.getMpnStatusListener();
+                if (listener != null)  {
+                    String key = sub.getTableInfo().getGroup();
+                    mpnListeners.put(key,listener);
+                    listener.onMpnStatusChanged(mpns.containsKey(key));
+                }
+                
             }
             
             
@@ -476,7 +486,10 @@ public class LightstreamerClient {
         } catch (PushUserException e) {
             if (e.getErrorCode() != 45) {
                 Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
-            } //else we do not have active MPN subscriptions
+            } else {
+                //else we do not have active MPN subscriptions
+                mpnStatusRetrieved = true;
+            }
         } catch (PushConnException e) {
             Log.d(TAG,"Connection problems: " + e.getMessage());
         }
@@ -629,7 +642,6 @@ public class LightstreamerClient {
             }
             
             //status may have changed on the server, refresh it
-            boolean refreshedStatus = false;
             try {
                 retrieveCurrentMpnStatus(sub);
                 handlePendingMpnOp(op);
