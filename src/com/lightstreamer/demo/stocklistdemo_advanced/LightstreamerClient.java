@@ -507,24 +507,32 @@ public class LightstreamerClient {
         
         for (Iterator<String> i = mpnListeners.keySet().iterator(); i.hasNext(); ) {
             String listenerKey = i.next();
-            MpnStatusListener listener = mpnListeners.get(listenerKey);
-            if (listener != null) {
-                listener.onMpnStatusChanged(mpns.containsKey(listenerKey));
-            }
+            notifyMpnStatus(listenerKey);
         }
         
         handlePendingMpnOps();
     }
     
+    private void notifyMpnStatus(String key) {
+        MpnStatusListener listener = mpnListeners.get(key);
+        if (listener != null) {
+            listener.onMpnStatusChanged(mpns.containsKey(key));
+        }
+    }
+    
     private void handlePendingMpnOps() { //called from the eventsThread
         for (Iterator<String> i = pendingMpns.keySet().iterator(); i.hasNext();) {
+            String key = i.next();
+            
             try {
-                handlePendingMpnOp(pendingMpns.get(i.next()));
+                handlePendingMpnOp(pendingMpns.get(key));
             } catch (SubscrException e) {
             } catch (PushServerException e) {
             } catch (PushUserException e) {
             } catch (PushConnException e) {
             }
+            
+            notifyMpnStatus(key); //in any case notify status
         }
     }
     
@@ -557,11 +565,6 @@ public class LightstreamerClient {
         //remove from pending op and fire listener
         pendingMpns.remove(key);
      
-        MpnStatusListener listener = mpnListeners.get(key);
-        if (listener != null) {
-           listener.onMpnStatusChanged(mpns.containsKey(key));
-        }
-        
     }
     
     //note that the TableInfo group will be used to uniquely identify its MpnInfo
@@ -650,6 +653,8 @@ public class LightstreamerClient {
             } catch (PushServerException e) {
             } catch (PushUserException e) {
             }
+            
+            notifyMpnStatus(sub.getTableInfo().getGroup()); 
             
             //if an exception was thrown we fail and wait for the pending operations to be 
             //handled again later
