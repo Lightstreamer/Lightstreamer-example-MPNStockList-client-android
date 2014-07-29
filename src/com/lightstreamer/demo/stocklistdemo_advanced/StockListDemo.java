@@ -324,12 +324,12 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
     @Override
     public void activateMPN(Subscription info) {
-        //lsClient.activateMPN(info);
+        lsClient.activateMPN(info);
     }
 
     @Override
     public void deactivateMPN(Subscription info) {
-        //lsClient.deactivateMPN(info);
+        lsClient.deactivateMPN(info);
     }
 
     

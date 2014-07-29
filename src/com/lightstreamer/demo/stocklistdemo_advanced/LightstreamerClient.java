@@ -21,6 +21,7 @@ import com.lightstreamer.ls_client.PushUserException;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
+import com.lightstreamer.ls_client.mpn.MpnKey;
 
 
 public class LightstreamerClient {
@@ -67,7 +68,10 @@ public class LightstreamerClient {
     }
     
     private LinkedList<Subscription> subscriptions = new LinkedList<Subscription>();
+    
     Map<String,MpnInfo> mpns = new HashMap<String,MpnInfo>();
+    Map<String,PendingMpnOp> pendingMpns = new HashMap<String,PendingMpnOp>();
+    
     Map<String,MpnStatusListener> mpnListeners = new HashMap<String,MpnStatusListener>();
     
     
@@ -92,7 +96,7 @@ public class LightstreamerClient {
         return status;
     }
 
-    public void setStatus(int status) {
+    void setStatus(int status) {
         this.status = status;
         Log.i(TAG,statusToString(this.status)); 
         notifyStatusChanged();
@@ -121,16 +125,13 @@ public class LightstreamerClient {
         }
     }    
     
-    public void addSubscription(Subscription sub) {
+    public synchronized void addSubscription(Subscription sub) {
         eventsThread.execute(new SubscriptionThread(sub,true));
     }
-    public void removeSubscription(Subscription sub) {
+    public synchronized void removeSubscription(Subscription sub) {
         eventsThread.execute(new SubscriptionThread(sub,false));
     }
-    
-    
-    
-    
+        
     private void startConnectionThread(boolean wait) {
         eventsThread.execute(new ConnectionThread(wait));
     }
@@ -368,7 +369,7 @@ public class LightstreamerClient {
             if (subscriptions.contains(sub)) {
                 if (this.add) {
                     //already contained, exit now
-                    Log.d(TAG,"Can't remove subscription: Subscription not in: " + sub);
+                    Log.d(TAG,"Can't add subscription: Subscription already in: " + sub);
                     return;
                 }
                 
@@ -378,7 +379,7 @@ public class LightstreamerClient {
             } else {
                 if (!this.add) {
                     //already removed, exit now
-                    Log.d(TAG,"Can't add subscription: Subscription already in: " + sub);
+                    Log.d(TAG,"Can't remove subscription: Subscription not in: " + sub);
                     return;
                 }
                 Log.i(TAG,"Adding subscription " + sub);
@@ -494,9 +495,131 @@ public class LightstreamerClient {
         for (Iterator<String> i = mpnListeners.keySet().iterator(); i.hasNext(); ) {
             String listenerKey = i.next();
             MpnStatusListener listener = mpnListeners.get(listenerKey);
-            listener.onStatusChanged(mpns.containsKey(listenerKey));
+            if (listener != null) {
+                listener.onStatusChanged(mpns.containsKey(listenerKey));
+            }
+        }
+        
+        handlePendingMpnOps();
+    }
+    
+    private void handlePendingMpnOps() { //called from the eventsThread
+        //TODO
+    }
+    
+    private void handlePendingMpnOp(PendingMpnOp op) { //called from the eventsThread
+        //TODO 
+    }
+    
+    public synchronized void activateMPN(Subscription info) {
+        eventsThread.execute(new MpnSubscriptionThread(info,true));
+    }
+
+    public synchronized void deactivateMPN(Subscription info) {
+        eventsThread.execute(new MpnSubscriptionThread(info,false));
+    }
+    
+    void retrieveCurrentMpnStatus(Subscription sub) 
+            throws PushConnException, SubscrException, PushServerException, PushUserException {
+        String key = sub.getTableInfo().getGroup();
+        
+        if (mpns.containsKey(key)) {
+            MpnKey mpnKey = mpns.get(key).getMpnKey();
+            
+            try {
+                client.inquireMpn(mpnKey);
+            } catch (PushUserException e) {
+                if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
+                    //not active anymore
+                    mpns.remove(key);
+                    MpnStatusListener listener = mpnListeners.get(key);
+                    listener.onStatusChanged(false);
+                } else {
+                    throw e;
+                }
+            }
         }
     }
+    
+    
+    private class MpnSubscriptionThread implements Runnable {
+
+        Subscription sub;
+        private boolean add;
+        
+        public MpnSubscriptionThread(Subscription sub, boolean add) {
+            this.sub = sub;
+            this.add = add;
+        }
+        
+        private PendingMpnOp updatePendingStatus() {
+            String key = sub.getTableInfo().getGroup();
+            PendingMpnOp op;
+            if (pendingMpns.containsKey(key)) {
+                //something pending
+                op = pendingMpns.get(key);
+                //update the pending operation status
+                op.add = this.add;
+            } else {
+                //fill pending
+                op = new PendingMpnOp(sub,this.add);
+                pendingMpns.put(key, op);
+            }
+            return op;
+        }
+        
+        
+        
+        @Override
+        public void run() {
+            
+            if (sub.getMpnInfo() == null) {
+                //nothing to do
+                return;
+            }
+            
+            //save the pending operation in case we're not able to handle it now
+            PendingMpnOp op = this.updatePendingStatus();
+            
+            if (!connected || !pmEnabled.get() || !mpnStatusRetrieved) {
+                //can't handle it now, pending subscriptions will be fired once re-connected
+                return;
+            }
+            
+            //status may have changed on the server, refresh it
+            boolean refreshedStatus = false;
+            try {
+                retrieveCurrentMpnStatus(sub);
+                refreshedStatus = true;
+            } catch (PushConnException e) {
+            } catch (SubscrException e) {
+            } catch (PushServerException e) {
+            } catch (PushUserException e) {
+            }
+            
+            //if an exception was thrown we fail and wait for the pending operations to be 
+            //handled again later
+            if (!refreshedStatus) {
+                return;
+            }
+            
+            handlePendingMpnOp(op);
+        }
+        
+    }
+    
+    private class PendingMpnOp {
+        
+        public Subscription sub;
+        public boolean add;
+        
+        public PendingMpnOp(Subscription sub, boolean add) {
+            this.add = add;
+            this.sub = sub;
+        }
+        
+    }
+    
     
     public interface MpnStatusListener {
         public void onStatusChanged(boolean activated);
