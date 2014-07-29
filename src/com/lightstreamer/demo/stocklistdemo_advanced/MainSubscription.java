@@ -13,7 +13,6 @@ import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.UpdateInfo;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
-import com.lightstreamer.ls_client.mpn.MpnKey;
 
 class MainSubscription implements Subscription, HandyTableListener {
 
@@ -103,11 +102,6 @@ class MainSubscription implements Subscription, HandyTableListener {
     @Override
     public MpnInfo getMpnInfo() {
         return null;
-    }
-
-    @Override
-    public void setMpnInfoKey(MpnKey key) {
-        //can't be called as our mpn info is null
     }
 
     @Override

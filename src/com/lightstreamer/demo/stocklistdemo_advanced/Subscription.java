@@ -5,7 +5,6 @@ import com.lightstreamer.ls_client.ExtendedTableInfo;
 import com.lightstreamer.ls_client.HandyTableListener;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
-import com.lightstreamer.ls_client.mpn.MpnKey;
 
 public interface Subscription {
 
@@ -18,8 +17,6 @@ public interface Subscription {
     public void setTableKey(SubscribedTableKey key);
     
     public MpnInfo getMpnInfo();
-    
-    public void setMpnInfoKey(MpnKey key);
     
     public MpnStatusListener getMpnStatusListener();
 

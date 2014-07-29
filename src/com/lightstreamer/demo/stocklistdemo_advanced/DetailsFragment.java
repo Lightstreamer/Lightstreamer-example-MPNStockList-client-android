@@ -16,6 +16,7 @@
 package com.lightstreamer.demo.stocklistdemo_advanced;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.MpnStatusListener;
@@ -25,7 +26,6 @@ import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.UpdateInfo;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
-import com.lightstreamer.ls_client.mpn.MpnKey;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -50,6 +50,7 @@ public class DetailsFragment extends Fragment {
     private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
     private Handler handler;
     HashMap<String, TextView> holder =  new HashMap<String, TextView>();
+    ToggleButton toggle;
     
     public static final String ARG_ITEM = "item";
     int currentItem = -1;
@@ -77,6 +78,8 @@ public class DetailsFragment extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.details_view, container, false);
+        
+        toggle = (ToggleButton)view.findViewById(R.id.pn_switch);
 
         holder.put("stock_name",(TextView)view.findViewById(R.id.d_stock_name));
         holder.put("last_price",(TextView)view.findViewById(R.id.d_last_price));
@@ -126,6 +129,8 @@ public class DetailsFragment extends Fragment {
     
     public void updateStocksView(int item) {
         if (item != currentItem) {
+            toggle.setChecked(false);
+            
             if (this.currentSubscription != null) {
                 this.currentSubscription.disable();
             }
@@ -133,9 +138,6 @@ public class DetailsFragment extends Fragment {
             this.subscriptionHandling.setSubscription(this.currentSubscription);
             
             currentItem = item;
-            
-            ToggleButton toggle = (ToggleButton)getView().findViewById(R.id.pn_switch);
-            toggle.setChecked(this.subscriptionHandling.isMPNActive());
         }
     }
     
@@ -166,6 +168,7 @@ public class DetailsFragment extends Fragment {
         private ExtendedTableInfo tableInfo;
         private SubscribedTableKey key;
         private StockListener listener;
+        private MpnInfo mpnInfo;
         
         public ItemSubscription(String item) {
             this.stock = new Stock(item,numericFields,otherFields);
@@ -207,14 +210,20 @@ public class DetailsFragment extends Fragment {
 
         @Override
         public MpnInfo getMpnInfo() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public void setMpnInfoKey(MpnKey key) {
-            // TODO Auto-generated method stub
-            
+            if (this.mpnInfo == null) {
+                Map<String, String> data= new HashMap<String, String>();
+                data.put("stock_name", "Stock value of ${stock_name} is now ${last_price}");
+                
+                ExtendedTableInfo clone = null;
+                try {
+                    clone = new ExtendedTableInfo(tableInfo.getItems(), "MERGE", subscriptionFields , false);
+                } catch (SubscrException e) {
+                    Log.wtf(TAG, "can't happen");
+                }
+                clone.setDataAdapter("QUOTE_ADAPTER");
+                this.mpnInfo = new MpnInfo(clone,"Stock update",data);
+            }
+            return this.mpnInfo;
         }
 
         @Override
@@ -222,9 +231,6 @@ public class DetailsFragment extends Fragment {
             // TODO Auto-generated method stub
             return null;
         }
-
-       
-       
     }
     
     private class StockListener implements HandyTableListener {
