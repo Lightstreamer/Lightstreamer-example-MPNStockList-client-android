@@ -19,7 +19,6 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.StatusChangeListener;
 import com.lightstreamer.ls_client.LSClient;
-import com.lightstreamer.ls_client.mpn.MpnInfo;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationException;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationIdChangeInfo;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationIdStatus;
