@@ -45,7 +45,7 @@ public class DetailsFragment extends Fragment {
     public final static String[] numericFields = {"last_price", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
     public final static String[] otherFields = {"stock_name", "time"};
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
-    
+    public final static String[] mpnSubscriptionFields = {"stock_name", "last_price", "time"};
     
     private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
     private Handler handler;
@@ -213,16 +213,21 @@ public class DetailsFragment extends Fragment {
         public MpnInfo getMpnInfo() {
             if (this.mpnInfo == null) {
                 Map<String, String> data= new HashMap<String, String>();
-                data.put("stock_name", "Stock value of ${stock_name} is now ${last_price}");
+                data.put("stock_name", "${stock_name}");
+                data.put("last_price", "${last_price}");
+                data.put("time", "${time}");
                 
                 ExtendedTableInfo clone = null;
                 try {
-                    clone = new ExtendedTableInfo(tableInfo.getItems(), "MERGE", subscriptionFields , false);
+                    clone = new ExtendedTableInfo(tableInfo.getItems(), "MERGE", mpnSubscriptionFields , false);
                 } catch (SubscrException e) {
                     Log.wtf(TAG, "can't happen");
                 }
                 clone.setDataAdapter("QUOTE_ADAPTER");
                 this.mpnInfo = new MpnInfo(clone,"Stock update",data);
+                this.mpnInfo.setDelayWhileIdle("false");
+                this.mpnInfo.setTimeToLive("300");
+                
             }
             return this.mpnInfo;
         }
