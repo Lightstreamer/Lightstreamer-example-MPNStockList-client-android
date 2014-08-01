@@ -38,7 +38,7 @@ You may want to read more detailed information regarding the required ADT Eclips
 <i>NOTE: You may also use the sources of the demo with another IDE or without any IDE but such approach is not covered in this readme. In any case you need at least the Android SDK.</i>
 <br>
 
-You're now ready to import the project into eclipse, click on File->Import... then under General select Existing Projects into Workspace and choose the folder where the demo sources are.
+In the eclipse project of this demo you have to add two dependencies to external projects of the Android SDK: `android-support-v7-appcompat` and `google-play-services_lib`.
 
 ### Compile and Run
 
