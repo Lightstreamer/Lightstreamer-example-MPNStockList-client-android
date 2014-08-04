@@ -27,6 +27,7 @@ import com.lightstreamer.ls_client.mpn.MpnRegistrationIdStatus;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationListener;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -108,7 +109,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
         if (findViewById(R.id.fragment_container) != null) {
             
-            //single fragment view
+            //single fragment view (phone)
 
             if (savedInstanceState != null) {
                 return;
@@ -120,16 +121,26 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, firstFragment).commit();
-        } else {
-            onStockSelected(1);
-
+        } 
+        
+    }
+    
+    private int getIntentItem() {
+        int openItem = 0;
+        Intent launchIntent = getIntent();
+        if (launchIntent != null) {
+            Bundle extras = launchIntent.getExtras();
+            if (extras != null) {
+                openItem = extras.getInt("itemNum");
+            }
         }
-        
-        
-        
-        
-        
-        
+        return openItem;
+    }
+    
+    @Override 
+    public void onNewIntent(Intent intent) {
+        Log.d(TAG,"New intent received");
+        setIntent(intent);
     }
     
     @Override
@@ -147,8 +158,16 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         if (!userDisconnect) {
             this.start();
         }
+        int openItem = getIntentItem();
+        if (openItem == 0 && findViewById(R.id.fragment_container) == null) {
+            //tablet, always start with an open stock
+            openItem = 1;
+        }
+        
+        if (openItem != 0) {
+            onStockSelected(openItem);
+        }
     }
-    
     
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private void checkPlayServices() {
@@ -220,16 +239,22 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
             detailsFrag.updateStocksView(item);
 
         } else {
-            //phones
-            DetailsFragment newFragment = new DetailsFragment();
-            Bundle args = new Bundle();
-            args.putInt(DetailsFragment.ARG_ITEM, item);
-            newFragment.setArguments(args);
-            
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, newFragment,"DETAILS_FRAGMENT");
-            transaction.addToBackStack(null);
-            transaction.commit();
+          //phones
+            detailsFrag = (DetailsFragment)getSupportFragmentManager().findFragmentByTag("DETAILS_FRAGMENT");
+            if (detailsFrag != null && detailsFrag.isVisible()) {
+                detailsFrag.updateStocksView(item);
+                
+            } else {
+                DetailsFragment newFragment = new DetailsFragment();
+                Bundle args = new Bundle();
+                args.putInt(DetailsFragment.ARG_ITEM, item);
+                newFragment.setArguments(args);
+                
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.fragment_container, newFragment,"DETAILS_FRAGMENT");
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
         }
     }
      
