@@ -216,6 +216,7 @@ public class DetailsFragment extends Fragment {
                 data.put("stock_name", "${stock_name}");
                 data.put("last_price", "${last_price}");
                 data.put("time", "${time}");
+                data.put("item", tableInfo.getItems()[0]);
                 
                 ExtendedTableInfo clone = null;
                 try {
