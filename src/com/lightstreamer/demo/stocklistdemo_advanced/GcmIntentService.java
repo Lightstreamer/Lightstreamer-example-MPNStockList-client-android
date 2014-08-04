@@ -55,19 +55,8 @@ public class GcmIntentService extends IntentService {
         String messageType = gcm.getMessageType(intent);
 
         if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
-            /*
-             * Filter messages based on message type. Since it is likely that GCM will be
-             * extended in the future with new message types, just ignore any message types you're
-             * not interested in, or that you don't recognize.
-             */
-            if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-                sendNotification("Send error: " + extras.toString());
-
-            } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
-                sendNotification("Deleted messages on server: " + extras.toString());
-
-            // If it's a regular GCM message, do some work.
-            } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
+            
+            if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 
                 // Extract message data
                 String stockName= extras.getString("stock_name");
@@ -75,11 +64,24 @@ public class GcmIntentService extends IntentService {
                 String time= extras.getString("time");
 
                 String message= "Stock " + stockName + " is " + lastPrice + " at " + time;
+                
+                int itemNum = 0;
+                String item = extras.getString("item");
+                if (item != null) {
+                    item = item.substring(4);
+                    try {
+                        itemNum = Integer.valueOf(item);
+                    } catch(NumberFormatException nfe) {
+                        //not what I expected
+                    }
+                }
+                
+                extras.putInt("itemNum", itemNum);
 
                 Log.i(TAG, "Received message: " + message);
 
                 // Post notification of received message.
-                sendNotification(message);
+                sendNotification(message,extras);
             }
         }
 
@@ -90,13 +92,15 @@ public class GcmIntentService extends IntentService {
     // Put the message into a notification and post it.
     // This is just one simple example of what you might choose to do with
     // a GCM message.
-    private void sendNotification(String msg) {
+    private void sendNotification(String msg, Bundle extras) {
         mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, StockListDemo.class), 0);
-
+        Intent intent = new Intent(this, StockListDemo.class);
+        intent.putExtras(extras);
+        
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
         .setSmallIcon(R.drawable.ic_stat_gcm)
