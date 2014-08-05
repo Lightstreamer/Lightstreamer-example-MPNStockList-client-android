@@ -53,9 +53,13 @@ public class DetailsFragment extends Fragment {
     ToggleButton toggle;
     
     public static final String ARG_ITEM = "item";
+    public static final String TOGGLE_VISIBLE = "toggle";
+    
     int currentItem = -1;
 
     private ItemSubscription currentSubscription = null;
+
+    private View toggleContainer;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,12 +71,15 @@ public class DetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
+        
+        boolean showToggle = false;
 
         // If activity recreated (such as from screen rotate), restore
         // the previous article selection set by onSaveInstanceState().
         // This is primarily necessary when in the two-pane layout.
         if (savedInstanceState != null) {
-        	currentItem = savedInstanceState.getInt(ARG_ITEM);
+            currentItem = savedInstanceState.getInt(ARG_ITEM);
+            showToggle = savedInstanceState.getBoolean(TOGGLE_VISIBLE);
         }
         
 
@@ -80,6 +87,9 @@ public class DetailsFragment extends Fragment {
         View view = inflater.inflate(R.layout.details_view, container, false);
         
         toggle = (ToggleButton)view.findViewById(R.id.pn_switch);
+        toggleContainer = view.findViewById(R.id.toggle_container);
+        
+        this.showToggle(showToggle);
 
         holder.put("stock_name",(TextView)view.findViewById(R.id.d_stock_name));
         holder.put("last_price",(TextView)view.findViewById(R.id.d_last_price));
@@ -102,7 +112,8 @@ public class DetailsFragment extends Fragment {
 
         Bundle args = getArguments();
         if (args != null) {
-        	updateStocksView(args.getInt(ARG_ITEM));
+            updateStocksView(args.getInt(ARG_ITEM));
+            showToggle(args.getBoolean(TOGGLE_VISIBLE));
         } else if (currentItem != -1) {
             updateStocksView(currentItem);
         }
@@ -142,7 +153,7 @@ public class DetailsFragment extends Fragment {
     }
     
     public void togglePN(ToggleButton toggle) {
-        //TODO toggle status can be overridden by the onMpnStatusChanged: find a user friendly to handle the case
+        //TODO toggle status can be overridden by the onMpnStatusChanged: find a user friendly way to handle the case
         boolean on = toggle.isChecked();
         if (currentItem != -1) {
             if (on) {
@@ -156,11 +167,28 @@ public class DetailsFragment extends Fragment {
         }
     }
     
+
+    public void showToggle(final boolean show) {
+        if (toggleContainer == null) {
+            //onCreateView will set it
+            return;
+        }
+        
+        handler.post(new Runnable() {
+            public void run() {
+                toggleContainer.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
+        
+        
+    }
+    
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putInt(ARG_ITEM, currentItem);
+        outState.putBoolean(TOGGLE_VISIBLE, toggleContainer.getVisibility() == View.VISIBLE);
     }
     
     private class ItemSubscription implements Subscription {

@@ -132,7 +132,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         lsClient.enablePM(enabled);
         DetailsFragment detailsFrag = getDetailsFragment();
         if (detailsFrag != null) {
-            //detailsFrag.showToggle(enabled);
+            detailsFrag.showToggle(enabled);
         }
     }
     
@@ -266,7 +266,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
             DetailsFragment newFragment = new DetailsFragment();
             Bundle args = new Bundle();
             args.putInt(DetailsFragment.ARG_ITEM, item);
-            //args.putBoolean(DetailsFragment.TOGGLE_VISIBLE, pnEnabled);
+            args.putBoolean(DetailsFragment.TOGGLE_VISIBLE, pnEnabled);
             newFragment.setArguments(args);
             
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
