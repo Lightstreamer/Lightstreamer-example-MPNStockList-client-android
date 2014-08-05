@@ -50,6 +50,8 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     private static final String TAG = "StockListDemo";
     private static final String SENDER_ID= "";
     
+    private boolean pnEnabled = false;
+    
     private Handler handler;
 
     @Override
@@ -66,20 +68,20 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                 @Override
                 public void registrationFailed(Exception arg0) {
                     Log.e(TAG,"Can't register MPN ID, push notifications are disabled");
-                    lsClient.enablePM(false);
+                    enablePN(false);
                 }
 
                 @Override
                 public void registrationIdChangeFailed(Exception arg0) {
                     Log.e(TAG,"Can't change MPN ID, push notifications are disabled");
-                    lsClient.enablePM(false);
+                    enablePN(false);
                 }
 
                 @Override
                 public void registrationIdChangeSucceeded(
                         MpnRegistrationIdChangeInfo arg0) {
                     Log.v(TAG,"MPN ID changed");
-                    lsClient.enablePM(true);
+                    enablePN(true);
                     
                 }
 
@@ -87,13 +89,13 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                 public void registrationSucceeded(String arg0,
                         MpnRegistrationIdStatus arg1) {
                     Log.d(TAG,"MPN ID registered");
-                    lsClient.enablePM(true);
+                    enablePN(true);
                 }
                 
             });
         } catch (MpnRegistrationException e) {
             Log.e(TAG, "Can't register MPN, push notifications are disabled",e);
-            lsClient.enablePM(false);
+            enablePN(false);
         } 
         
         
@@ -123,6 +125,15 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
                     .add(R.id.fragment_container, firstFragment).commit();
         } 
         
+    }
+    
+    private void enablePN(boolean enabled) {
+        pnEnabled = enabled;
+        lsClient.enablePM(enabled);
+        DetailsFragment detailsFrag = getDetailsFragment();
+        if (detailsFrag != null) {
+            //detailsFrag.showToggle(enabled);
+        }
     }
     
     private int getIntentItem() {
@@ -228,33 +239,40 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         }
     }
     
-    @Override
-    public void onStockSelected(int item) {
-
+    private DetailsFragment getDetailsFragment() {
         DetailsFragment detailsFrag = (DetailsFragment)
                 getSupportFragmentManager().findFragmentById(R.id.details_fragment);
+        
+        
+        if (detailsFrag == null) {
+            //phones
+            detailsFrag = (DetailsFragment)getSupportFragmentManager().findFragmentByTag("DETAILS_FRAGMENT");
+        } // else tablets
+        
+        return detailsFrag;
+    }
+    
+    @Override
+    public void onStockSelected(int item) {
+        Log.v(TAG,"Stock detail selected");
 
+        DetailsFragment detailsFrag = getDetailsFragment();
+        
         if (detailsFrag != null) {
             //tablets
             detailsFrag.updateStocksView(item);
 
         } else {
-          //phones
-            detailsFrag = (DetailsFragment)getSupportFragmentManager().findFragmentByTag("DETAILS_FRAGMENT");
-            if (detailsFrag != null && detailsFrag.isVisible()) {
-                detailsFrag.updateStocksView(item);
-                
-            } else {
-                DetailsFragment newFragment = new DetailsFragment();
-                Bundle args = new Bundle();
-                args.putInt(DetailsFragment.ARG_ITEM, item);
-                newFragment.setArguments(args);
-                
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragment_container, newFragment,"DETAILS_FRAGMENT");
-                transaction.addToBackStack(null);
-                transaction.commit();
-            }
+            DetailsFragment newFragment = new DetailsFragment();
+            Bundle args = new Bundle();
+            args.putInt(DetailsFragment.ARG_ITEM, item);
+            //args.putBoolean(DetailsFragment.TOGGLE_VISIBLE, pnEnabled);
+            newFragment.setArguments(args);
+            
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, newFragment,"DETAILS_FRAGMENT");
+            transaction.addToBackStack(null);
+            transaction.commit();
         }
     }
      
@@ -262,23 +280,11 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     public void onTogglePNClicked(View view) {
         Log.v(TAG,"Toggle PN clicked");
         
-        DetailsFragment detailsFrag = (DetailsFragment)
-                getSupportFragmentManager().findFragmentById(R.id.details_fragment);
+        DetailsFragment detailsFrag = getDetailsFragment();
         
-        if (detailsFrag == null) {
-            //phones
-            
-            detailsFrag = (DetailsFragment)getSupportFragmentManager().findFragmentByTag("DETAILS_FRAGMENT");
-            if (!detailsFrag.isVisible()) {
-                //not visible, can't be as AFAIK you can't click something that is not there :) 
-                return;
-            }
-            
-        } // else is tablet
-        
-        
-        detailsFrag.togglePN((ToggleButton) view);
-        
+        if (detailsFrag != null) {
+            detailsFrag.togglePN((ToggleButton) view);
+        } 
         
     }
      
