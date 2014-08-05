@@ -482,7 +482,11 @@ public class LightstreamerClient {
         } catch (PushServerException e) {
             Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
         } catch (PushUserException e) {
-            Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+            if (e.getErrorCode() == 45) {
+                mpnStatusRetrieved = true;
+            } else {
+                Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+            }
         } catch (PushConnException e) {
             Log.d(TAG,"Connection problems: " + e.getMessage());
         }
