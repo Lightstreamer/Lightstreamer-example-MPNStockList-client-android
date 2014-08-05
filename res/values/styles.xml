@@ -22,6 +22,7 @@
     <color name="higher_highlight">#FF99CC00</color>
     <color name="lower_highlight">#FFFF4444</color>
     <color name="transparent">#00FFFFFF</color>
+    <color name="separator">#FF33B5E5</color>
     
 
     <style name="AppBaseTheme" parent="@style/Theme.AppCompat">

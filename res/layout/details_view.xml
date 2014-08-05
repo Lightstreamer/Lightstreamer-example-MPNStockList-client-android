@@ -338,16 +338,20 @@
          android:baselineAligned="false"
          android:gravity="center_horizontal"
          android:orientation="vertical" >
+        
+         <View
+             android:layout_width="fill_parent"
+             android:layout_height="1dp"
+             android:background="@color/separator" />
 
-         
-         <TextView 
-            android:text="@string/push_notifications"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:textColor="@color/white"
-            android:textStyle="bold"    
-            />
+         <TextView
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:paddingTop="6dp"
+             android:text="@string/push_notifications"
+             android:textColor="@color/white"
+             android:textSize="18sp"
+             android:textStyle="bold" />
          
          <ToggleButton
              android:id="@+id/pn_switch"
