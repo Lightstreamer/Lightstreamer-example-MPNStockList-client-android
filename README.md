@@ -7,6 +7,7 @@ This project contains a full example of an Android application that employs the 
 ## Live Demo
 
 ![screenshot](screen_android_large.png)<br>
+![tablet screenshot](screen_android_tablet.png)<br>
 
 ## Details
 
