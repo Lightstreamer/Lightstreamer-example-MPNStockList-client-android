@@ -14,7 +14,7 @@ This project contains a full example of an Android application that employs the 
 This is a Java-for-Android version of the [Lightstreamer - Basic Stock-List Demo - HTML client](https://github.com/Weswit/Lightstreamer-example-StockList-client-javascript#basic-stock-list-demo---html-client).<br>
 This app uses the <b>Android Client API for Lightstreamer</b> to handle the communications with Lightstreamer Server. A simple user interface is implemented to display the real-time data received from Lightstreamer Server.<br>
 
-Touch a row opens a new panel with the detailed info,  pdated in real time, of the stock.
+Touch a row opens a new panel with the detailed info, updated in real time, of the stock.
 
 The demo is ready to receive Mobile Push Notification through [Google Cloud Messaging for Android](https://developer.android.com/google/gcm/index.html).
 
@@ -30,27 +30,44 @@ To build your own version of the demo please consider that this example is compr
 * `/src` Contains the sources to build the Java-for-Android application.
 * `/res` Contains the images and other resourced needed to the demo. 
 * `/lib` Drop here the `ls-android-client.jar` from the Lighstreamer SDK for Android Clients, to be used for the build process.
+
+The demo has also references to the [Google Play Services lib](https://developer.android.com/google/play-services/setup.html) 
+and to the [v7 Support Library](https://developer.android.com/tools/support-library/setup.html).
   
 ### Getting Started
 
-To directly import the project as is you need the Eclipse IDE with the Android SDK and Android ADT plugin installed: Go to [http://www.eclipse.org/](http://www.eclipse.org/) and download the latest Eclipse distribution in its "classic" package.<br>
-Go to http://developer.android.com/sdk/ and follow the instructions to install the Android SDK and ADT plugin in Eclipse.
-You may want to read more detailed information regarding the required ADT Eclipse plugin, including choosing the best version for your IDE, at: [http://developer.android.com/sdk/eclipse-adt.html](http://developer.android.com/sdk/eclipse-adt.html).<br>
-<i>NOTE: You may also use the sources of the demo with another IDE or without any IDE but such approach is not covered in this readme. In any case you need at least the Android SDK.</i>
-<br>
+You can import the sources on a new project on [Eclipse](http://www.eclipse.org/) (provided you installed the necessary
+[ADT plugin](http://developer.android.com/sdk/eclipse-adt.html)) or on [Android Studio](https://developer.android.com/sdk/installing/studio.html).
+In the former case you'll need to separately download the [Android SDK](http://developer.android.com/sdk/).
 
-In the eclipse project of this demo you have to add two dependencies to external projects of the Android SDK: `android-support-v7-appcompat` and `google-play-services_lib`.
+Once the project has been imported a couple of dependencies have to be satisfied: `android-support-v7-appcompat` and `google-play-services_lib`.
+Please follow the related guides: [Google Play Services lib](https://developer.android.com/google/play-services/setup.html) and 
+[v7 Support Library](https://developer.android.com/tools/support-library/setup.html).
+
+### Push Notifications
+
+* Before running the application for the first time you might want to fill the `SENDER_ID` constant in the `StockListDemo.java` file 
+with your own [GCM sender ID](http://developer.android.com/google/gcm/gs.html).
+* It is also required that the Lightstreamer Server pointed by the demo application is properly configured to handle Push Notification
+Subscriptions. See the server documentation for further details.
+ 
+You can skip these steps: in this case push notifications will be disabled. 
 
 ### Compile and Run
 
-From Eclipse, to compile and run the application right-click on the project in the Package Explorer and click Run As -> Android Application. If this is the first time an Android application is run, an extra window will appear asking to create a new Android Emulator Device "Android SDK and AVD Manager".
-In this case, click on the "New..." button on the right and fill the form entering a name for your Android emulated device, a target platform of your choice and a SD card size. If you are unsure, select Android 1.1 as target platform and 128Mb as SD card size. Once done, click the "Create AVD" button and close the "Android SDK and AVD Manager window" clicking on the "X" title-bar button. At this point, your Android demo is compiled and executed inside the newly created Android emulator device.
+To run the demo a suitable emulated or real device is required. To run the demo you'll need at least android 2.1. 
+To receive push notification you'll need a Google account configured on the system. In case the emulator is used a "Google APIs" 
+OS image has to be used.
+
+* On eclipse right-click on the project in the Package Explorer and click Run As -> Android Application, then follow the instructions.
+* On Android Studio select Run from the menu and choose "Run", then follow the instructions
 
 ### Deploy
   
 You may run the demo against your local server or using our online server at http://push.lightstreamer.com:80. The server to which the demo will connect to is configured in the `res/values/strings.xml` file.
 In the former case, the example requires that the [QUOTE_ADAPTER](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java) and [LiteralBasedProvider](https://github.com/Weswit/Lightstreamer-example-ReusableMetadata-adapter-java) have to be deployed in your local Lightstreamer server instance. 
-The factory configuration of Lightstreamer server already provides this adapter deployed.<br>
+The factory configuration of Lightstreamer server already provides this adapter deployed. Extra configuration on the server to enable
+Push Notification might be needed.<br>
 
 ## See Also
 
