@@ -143,9 +143,6 @@ public class LightstreamerClient {
         }
         
         this.connected = connected;
-        if (!this.connected) {
-            this.mpnStatusRetrieved = false;
-        }
         this.setStatus(status);
         
         
@@ -184,6 +181,7 @@ public class LightstreamerClient {
                 
                 if (!connected) {
                     setStatus(CONNECTING);
+                    mpnStatusRetrieved = false;
                     try {
                         currentListener = new ClientListener();
                         client.openConnection(cInfo, currentListener);
