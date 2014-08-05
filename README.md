@@ -18,6 +18,20 @@ Touch a row opens a new panel with the detailed info, updated in real time, of t
 
 The demo is ready to receive Mobile Push Notification through [Google Cloud Messaging for Android](https://developer.android.com/google/gcm/index.html).
 
+### Dig the code
+
+* `StockListDemo.java` is the entry point and only `Activity` of the application. It contains two `Fragment`s, the status of
+the application and acts as a proxy to the LightstreamerClient instance. The two `Fragment` are both visible if the application
+runs on tablet; on the contrary only one `Fragment` is visible and are exchanged based on the user interaction
+* `LightstreamerClient.java` handles the connection to the Lightstreamer server and the Subscription/Unsubscription requests
+issued by the various part of the application.
+* `SubscriptionFragment.java` represents a `Fragment` containing a subscription that is started/stopped based on the lifecycle of 
+the `Fragment`. Please note that this class do not actually extend `Fragment`.
+* `StocksFragment.java` and `DetailsFragment.java` are the classes representing the two fragments of the application. 
+* `GcmIntentService.java` is the class dedicated to receive the Push Notifications, to create the notification for the system and 
+to attaching to it a Intent capable of launching the Demo application focused on the notified item.
+
+
 Check out the sources for further explanations.
   
 <i>NOTE: not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html) as a reference. If in trouble check out the [specific Lightstreamer forum](http://forums.lightstreamer.com/forumdisplay.php?33-Android-Client-API).</i>
