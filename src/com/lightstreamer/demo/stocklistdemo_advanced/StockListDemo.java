@@ -221,22 +221,21 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-       
-        switch (item.getItemId()) {
-            case R.id.stop:
-                Log.i(TAG,"Stop");
-                userDisconnect = true;
-                supportInvalidateOptionsMenu();
-                this.stop();
-                return true;
-            case R.id.start:
-                Log.i(TAG,"Start");
-                userDisconnect = false;
-                supportInvalidateOptionsMenu();
-                this.start();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int itemId = item.getItemId();
+        if (itemId == R.id.stop) {
+            Log.i(TAG,"Stop");
+            userDisconnect = true;
+            supportInvalidateOptionsMenu();
+            this.stop();
+            return true;
+        } else if (itemId == R.id.start) {
+            Log.i(TAG,"Start");
+            userDisconnect = false;
+            supportInvalidateOptionsMenu();
+            this.start();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
     
