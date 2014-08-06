@@ -11,10 +11,10 @@ import com.lightstreamer.ls_client.UpdateInfo;
 
 public class StockForList {
     
-    private String stockName;
-    private String lastPrice;
+    private String stockName = "N/A";
+    private String lastPrice = "N/A";
     private double lastPriceNum;
-    private String time;
+    private String time = "N/A";
     
     private int stockNameColor = R.color.background;
     private int lastPriceColor = R.color.background;
