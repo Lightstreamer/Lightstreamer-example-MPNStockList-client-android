@@ -60,7 +60,7 @@ Please follow the related guides: [Google Play Services lib](https://developer.a
 
 ### Push Notifications
 
-* Before running the application for the first time you might want to fill the `SENDER_ID` constant in the `StockListDemo.java` file 
+* Before running the application for the first time you might want to fill the `senderId` constant in the `res/values/strings.xml` file 
 with your own [GCM sender ID](http://developer.android.com/google/gcm/gs.html).
 * It is also required that the Lightstreamer Server pointed by the demo application is properly configured to handle Push Notification
 Subscriptions. See the server documentation for further details.

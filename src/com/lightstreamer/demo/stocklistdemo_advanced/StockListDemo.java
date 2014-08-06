@@ -48,8 +48,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     public static LightstreamerClient lsClient = null; 
     
     private static final String TAG = "StockListDemo";
-    private static final String SENDER_ID= "";
-    
+   
     private boolean pnEnabled = false;
     
     private Handler handler;
@@ -62,8 +61,10 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         
         checkPlayServices();
         
+        String senderId = getResources().getString(R.string.sender_id);
+        
         try {
-            LSClient.registerForMpn(getApplicationContext(), SENDER_ID, new MpnRegistrationListener(){
+            LSClient.registerForMpn(getApplicationContext(), senderId, new MpnRegistrationListener(){
 
                 @Override
                 public void registrationFailed(Exception arg0) {
