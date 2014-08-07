@@ -5,3 +5,4 @@ gen/
 .classpath
 .settings/
 libs/*.jar
+project.protperties
