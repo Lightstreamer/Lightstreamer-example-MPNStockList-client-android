@@ -12,7 +12,7 @@ This project contains a full example of an Android application that employs the 
 
 ![QR](qrcode.png)
 
-###[![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android)
+###[![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.stocklistdemo_advanced)
 (To install the app from the Google Play Store you can also use the above QR code)
 
 
