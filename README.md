@@ -6,8 +6,15 @@ This project contains a full example of an Android application that employs the 
 
 ## Live Demo
 
-![screenshot](screen_android_large.png)<br>
-![tablet screenshot](screen_android_tablet.png)<br>
+[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.stocklistdemo_advanced)
+ 
+[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.stocklistdemo_advanced)
+
+![QR](qr_android.png)
+
+###[![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android)
+(To install the app from the Google Play Store you can also use the above QR code)
+
 
 ## Details
 
@@ -37,6 +44,29 @@ Check out the sources for further explanations.
 <i>NOTE: not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html) as a reference. If in trouble check out the [specific Lightstreamer forum](http://forums.lightstreamer.com/forumdisplay.php?33-Android-Client-API).</i>
 
 <!-- END DESCRIPTION lightstreamer-example-mpnstocklist-client-android -->
+
+## Install
+
+If you want to install a version of this demo pointing to your local Lightstreamer Server and running into 
+an [Adroid Virtual Device](http://developer.android.com/tools/devices/emulator.html), follow these steps:
+
+* Note that, as prerequisite, the [Lightstreamer - Stock- List Demo - Java Adapter](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java) 
+has to be deployed on your local Lightstreamer Server instance. Please check out that project and follow the installation 
+instructions provided with it. 
+* Launch Lightstreamer Server.
+* Download the `deploy.zip` file that you can find in the [deploy release](https://github.com/Weswit/Lightstreamer-example-StockList-client-android/releases) 
+of this project and extract the `Android_StockListDemo_Basic.apk` file.
+* Locate or install the [Android SDK](http://developer.android.com/sdk/index.html)
+* Install the `Android_StockListDemo_Basic.apk` in your emulator:
+  * Execute the emulator (Android SDK/SDK Manager->Tools->Manage AVDs...->New then Start)
+  * Open the console and move to the platform-tools folder of SDK directory.
+  * Then type the following command:
+    ```
+    adb install [.apk path]
+    ```
+* Look up the demo in your virtual device and launch it.
+
+<i>Note that the demo targets the Lightstreamer server @ http://10.0.2.2:8080 since 10.0.2.2 is the special alias to your host loopback interface.</i>
 
 ## Build
 
