@@ -57,7 +57,10 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        lsClient = new LightstreamerClient(getResources().getString(R.string.host));
+        if (lsClient == null) {
+            //lsClient is static, we initialize it here to have a handy getResources call
+            lsClient = new LightstreamerClient(getResources().getString(R.string.host));
+        }
         
         checkPlayServices();
         
