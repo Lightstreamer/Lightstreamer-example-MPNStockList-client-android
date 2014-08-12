@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.androidplot.util.PixelUtils;
+import com.androidplot.xy.XYPlot;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.MpnStatusListener;
 import com.lightstreamer.ls_client.ExtendedTableInfo;
 import com.lightstreamer.ls_client.HandyTableListener;
@@ -50,6 +52,7 @@ public class DetailsFragment extends Fragment {
     private final SubscriptionFragment subscriptionHandling = new SubscriptionFragment();
     private Handler handler;
     HashMap<String, TextView> holder =  new HashMap<String, TextView>();
+    Chart chart = new Chart();
     ToggleButton toggle;
     
     public static final String ARG_ITEM = "item";
@@ -103,6 +106,9 @@ public class DetailsFragment extends Fragment {
         holder.put("max",(TextView)view.findViewById(R.id.d_max));
         holder.put("open_price",(TextView)view.findViewById(R.id.d_open_price));
         
+        XYPlot plot = (XYPlot) view.findViewById(R.id.mySimpleXYPlot);
+        chart.setPlot(plot);
+        
         return view;
     }
     
@@ -128,6 +134,7 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        chart.onResume(this.getActivity());
         this.subscriptionHandling.onResume();
     }
     
@@ -202,6 +209,7 @@ public class DetailsFragment extends Fragment {
         public ItemSubscription(String item) {
             this.stock = new Stock(item,numericFields,otherFields);
             stock.setHolder(holder);
+            stock.setChart(chart);
            
             this.listener = new StockListener(stock);
             
