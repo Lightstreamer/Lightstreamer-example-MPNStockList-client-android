@@ -53,7 +53,7 @@ class MainSubscription implements Subscription, HandyTableListener {
     }
     
     public void changeContext(Handler handler, ListView listView) {
-        this.context .handler = handler;
+        this.context.handler = handler;
         this.context.listView = listView;
     }
     

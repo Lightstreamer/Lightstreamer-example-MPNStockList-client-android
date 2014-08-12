@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.androidplot.util.PixelUtils;
 import com.androidplot.xy.XYPlot;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.MpnStatusListener;
 import com.lightstreamer.ls_client.ExtendedTableInfo;
@@ -63,6 +62,7 @@ public class DetailsFragment extends Fragment {
     private ItemSubscription currentSubscription = null;
 
     private View toggleContainer;
+    private boolean showToggle;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
         
-        boolean showToggle = false;
+        showToggle = false;
 
         // If activity recreated (such as from screen rotate), restore
         // the previous article selection set by onSaveInstanceState().
@@ -146,8 +146,10 @@ public class DetailsFragment extends Fragment {
     
     
     public void updateStocksView(int item) {
-        if (item != currentItem) {
-            toggle.setChecked(false);
+        if (item != currentItem || this.currentSubscription == null) {
+            if (toggle != null) {
+                toggle.setChecked(false);
+            }
             
             if (this.currentSubscription != null) {
                 this.currentSubscription.disable();
@@ -176,13 +178,18 @@ public class DetailsFragment extends Fragment {
     
 
     public void showToggle(final boolean show) {
+        this.showToggle = show;
+        
         if (toggleContainer == null) {
-            //onCreateView will set it
+            //onCreateView will set it (or the layout does not contain it)
             return;
         }
         
         handler.post(new Runnable() {
             public void run() {
+                if (toggleContainer == null) {
+                    return;
+                }
                 toggleContainer.setVisibility(show ? View.VISIBLE : View.GONE);
             }
         });
@@ -195,8 +202,9 @@ public class DetailsFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putInt(ARG_ITEM, currentItem);
-        outState.putBoolean(TOGGLE_VISIBLE, toggleContainer.getVisibility() == View.VISIBLE);
+        outState.putBoolean(TOGGLE_VISIBLE, this.showToggle);
     }
+    
     
     private class ItemSubscription implements Subscription {
     
@@ -328,7 +336,9 @@ public class DetailsFragment extends Fragment {
                     if (disabled.get()) {
                         return;
                     }
-                    toggle.setChecked(activated);
+                    if (toggle != null) {
+                        toggle.setChecked(activated);
+                    }
                 }
             });
             
