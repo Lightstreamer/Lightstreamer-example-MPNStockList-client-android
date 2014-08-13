@@ -404,7 +404,8 @@ public class LightstreamerClient {
                 if (listener != null)  {
                     String key = sub.getTableInfo().getGroup();
                     mpnListeners.put(key,listener);
-                    listener.onMpnStatusChanged(mpns.containsKey(key));
+                    
+                    notifyMpnStatus(key);
                 }
                 
             }
@@ -525,10 +526,30 @@ public class LightstreamerClient {
         handlePendingMpnOps();
     }
     
+    public static final String TRIGGER_HEAD = "Double.parseDouble(${last_price})";
+    public static final String TRIGGER_LT = "<=";
+    public static final String TRIGGER_GT = ">=";
+    
     private void notifyMpnStatus(String key) {
         MpnStatusListener listener = mpnListeners.get(key);
         if (listener != null) {
-            listener.onMpnStatusChanged(mpns.containsKey(key));
+            if (!mpns.containsKey(key)) {
+                listener.onMpnStatusChanged(false,-1);
+            } else {
+                MpnInfo current = mpns.get(key);
+                
+                double triggerValue = -1;
+                String trigger = current.getTriggerExpression();
+                if (trigger != null) {
+                    try {
+                        triggerValue = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length()+TRIGGER_GT.length()));
+                    } catch(NumberFormatException e) {
+                        Log.wtf(TAG, "Unexpected trigger set: " + trigger);
+                    }
+                }
+                         
+                listener.onMpnStatusChanged(true,triggerValue);
+            }
         }
     }
     
@@ -602,8 +623,7 @@ public class LightstreamerClient {
                 if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
                     //not active anymore
                     mpns.remove(key);
-                    MpnStatusListener listener = mpnListeners.get(key);
-                    listener.onMpnStatusChanged(false);
+                    notifyMpnStatus(key);
                 } else {
                     throw e;
                 }
@@ -691,7 +711,7 @@ public class LightstreamerClient {
     
     
     public interface MpnStatusListener {
-        public void onMpnStatusChanged(boolean activated);
+        public void onMpnStatusChanged(boolean activated, double trigger);
     }
 
     public interface LightstreamerClientProxy {

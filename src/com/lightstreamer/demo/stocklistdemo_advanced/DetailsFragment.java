@@ -351,12 +351,12 @@ public class DetailsFragment extends Fragment {
         }
 
         @Override
-        public void onMpnStatusChanged(final boolean activated) {
+        public void onMpnStatusChanged(final boolean activated, double trigger) {
             if (disabled.get()) {
                 return;
             }
             Log.v(TAG,"Mpn status changed");
-            this.stock.updateMpnStatus(activated, -1, handler);
+            this.stock.updateMpnStatus(activated, trigger, handler);
         }
         
     }
