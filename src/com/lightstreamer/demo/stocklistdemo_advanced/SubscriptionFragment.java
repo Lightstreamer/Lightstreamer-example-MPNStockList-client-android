@@ -39,6 +39,7 @@ public class SubscriptionFragment /*extends Fragment*/ {
         
         if (running) {
             this.lsClient.addSubscription(this.subscription);
+            this.lsClient.retrieveMpnStatus(this.subscription);
         }
     }
     
@@ -55,6 +56,7 @@ public class SubscriptionFragment /*extends Fragment*/ {
         if (this.lsClient != null && this.subscription != null) {
             this.lsClient.addSubscription(this.subscription);
             subscribed = true;
+            this.lsClient.retrieveMpnStatus(this.subscription);
         }
         running = true;
     }

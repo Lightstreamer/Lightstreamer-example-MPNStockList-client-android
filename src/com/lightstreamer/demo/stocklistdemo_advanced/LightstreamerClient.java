@@ -611,6 +611,20 @@ public class LightstreamerClient {
         eventsThread.execute(new MpnSubscriptionThread(info,false));
     }
     
+    public synchronized void retrieveMpnStatus(final Subscription info) {
+        eventsThread.execute(new Runnable() {
+            public void run() {
+                try {
+                    retrieveCurrentMpnStatus(info);
+                } catch (PushConnException e) {
+                } catch (SubscrException e) {
+                } catch (PushServerException e) {
+                } catch (PushUserException e) {
+                }
+            }
+        });
+    }
+
     void retrieveCurrentMpnStatus(Subscription sub) 
             throws PushConnException, SubscrException, PushServerException, PushUserException {
         String key = sub.getTableInfo().getGroup();
@@ -635,6 +649,11 @@ public class LightstreamerClient {
                 //deactivate useless subscription before handling the pending op
                 client.deactivateMpn(mpnKey);
                 mpns.remove(key);
+                notifyMpnStatus(key);
+            } else {
+                //otherwise refresh the mpninfo we have
+                MpnInfo info = client.inquireMpn(mpnKey);
+                mpns.put(key, info);
                 notifyMpnStatus(key);
             }
             
@@ -732,7 +751,7 @@ public class LightstreamerClient {
         
         public void activateMPN(Subscription info);
         public void deactivateMPN(Subscription info); 
-
+        public void retrieveMpnStatus(Subscription info);
         
    }
     
