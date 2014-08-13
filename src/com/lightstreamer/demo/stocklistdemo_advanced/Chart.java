@@ -35,17 +35,20 @@ import com.lightstreamer.ls_client.UpdateInfo;
 
 public class Chart {
     
+    private FixedYSeries fixedLine;
     private Series series;
     private XYPlot dynamicPlot;
-    private LineAndPointFormatter formatter;
     
     DecimalFormat df = new DecimalFormat("00");
     
     float maxY = 0; 
     float minY = 0;
-   
+    
+    private final static int MAX_SERIES_SIZE = 40;
+    
     public Chart() {
         this.series = new Series();
+        this.fixedLine = new FixedYSeries();
     }
     
     private void adjustYBoundaries() {
@@ -53,7 +56,7 @@ public class Chart {
         dynamicPlot.setRangeBoundaries(minY, maxY, BoundaryMode.FIXED);
     }
     
-    public void setPlot(XYPlot dynamicPlot) {
+    public void setPlot(final XYPlot dynamicPlot) {
         if (this.dynamicPlot != dynamicPlot) {
             this.dynamicPlot = dynamicPlot;
             dynamicPlot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
@@ -69,41 +72,24 @@ public class Chart {
 
             this.adjustYBoundaries();
             
-            dynamicPlot.setDomainValueFormat(new Format() {
-
-                @Override
-                public StringBuffer format(Object object, StringBuffer buffer,
-                        FieldPosition field) {
-                    Number num = (Number) object;
-                    
-                    int val = num.intValue();
-                    
-                    buffer.append(df.format((long) TimeUnit.SECONDS.toHours(val)));
-                    buffer.append(':');
-                    buffer.append(df.format((long) TimeUnit.SECONDS.toMinutes(val) % 60));
-                    buffer.append(':');
-                    buffer.append(df.format(val%60));
-                    
-                    
-                    return buffer;
-                }
-
-                @Override
-                public Object parseObject(String string, ParsePosition position) {
-                    // TODO Auto-generated method stub
-                    return null;
-                }
-                
-            });
+            dynamicPlot.setDomainValueFormat(new FormatDateLabel());
         }
+    }
+    
+    public void setTriggerLine(double trigger) {
+        fixedLine.fix(trigger);
     }
     
     public void onResume(Context context) {
         PixelUtils.init(context);
         
         int line = context.getResources().getColor(R.color.chart_line);
-        this.formatter = new LineAndPointFormatter(line, null, null, null);
+        LineAndPointFormatter formatter = new LineAndPointFormatter(line, null, null, null);
         this.dynamicPlot.addSeries(series, formatter);
+        
+        LineAndPointFormatter fixedLineFormatter = new LineAndPointFormatter(Color.RED, null, null, null);
+        this.dynamicPlot.addSeries(fixedLine, fixedLineFormatter);
+        
     }
     
     public void addPoint(String time,String lastPrice) {
@@ -162,6 +148,51 @@ public class Chart {
         this.adjustYBoundaries();
     }
     
+    private class FixedYSeries implements XYSeries {
+        
+        private boolean alive = false;
+        
+        private double fixedY = 0;
+        
+        public void fix(double fixed) {
+            this.fixedY = fixed;
+            this.alive = true;
+        }
+        
+        public void deactivate() {
+            this.alive = false;
+        }
+        
+        @Override
+        public String getTitle() {
+            return "";
+        }
+
+        @Override
+        public Number getX(int index) {
+            if (index == 0) {
+                return dynamicPlot.getCalculatedMinX();
+            } else {
+                return dynamicPlot.getCalculatedMaxX();
+            }
+        }
+
+        @Override
+        public Number getY(int index) {
+            return this.fixedY;
+        }
+
+        @Override
+        public int size() {
+            if (!alive) {
+                return 0;
+            }
+            
+            return 2;
+        }
+        
+        
+    }
     
     private class Series implements XYSeries {
 
@@ -175,7 +206,7 @@ public class Chart {
         }
 
         public void add(String time, String lastPrice) {
-            if (prices.size() >= 40) {
+            if (prices.size() >= MAX_SERIES_SIZE) {
                 prices.remove(0);
                 times.remove(0);
             }
@@ -219,5 +250,31 @@ public class Chart {
         }
         
     }
+
+    @SuppressWarnings("serial")
+    private class FormatDateLabel extends Format {
+        @Override
+        public StringBuffer format(Object object, StringBuffer buffer,
+                FieldPosition field) {
+            Number num = (Number) object;
+            
+            int val = num.intValue();
+            
+            buffer.append(df.format((long) TimeUnit.SECONDS.toHours(val)));
+            buffer.append(':');
+            buffer.append(df.format((long) TimeUnit.SECONDS.toMinutes(val) % 60));
+            buffer.append(':');
+            buffer.append(df.format(val%60));
+            
+            
+            return buffer;
+        }
+
+        @Override
+        public Object parseObject(String string, ParsePosition position) {
+            return null;
+        }
+    }
+    
     
 }
