@@ -304,12 +304,13 @@ public class DetailsFragment extends Fragment {
                 this.mpnInfo.setDelayWhileIdle("false");
                 this.mpnInfo.setTimeToLive("300");
                 
-                String trigger = stock.getTrigger();
-                if (trigger != null) {
-                    this.mpnInfo.setTriggerExpression(trigger);
-                }
+                this.mpnInfo.setTriggerExpression(stock.getTrigger());
                 
             }
+            
+            //everything is fixed except the trigger
+            this.mpnInfo.setTriggerExpression(stock.getTrigger());
+            
             return this.mpnInfo;
         }
 

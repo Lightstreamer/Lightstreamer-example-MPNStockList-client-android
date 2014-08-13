@@ -400,8 +400,6 @@ public class LightstreamerClient {
                 if (listener != null)  {
                     String key = sub.getTableInfo().getGroup();
                     mpnListeners.put(key,listener);
-                    
-                    notifyMpnStatus(key);
                 }
                 
             }
@@ -508,27 +506,49 @@ public class LightstreamerClient {
             } catch (PushConnException e) {
             }
             
-            notifyMpnStatus(key); //in any case notify status
         }
     }
     
     private void handlePendingMpnOp(PendingMpnOp op) 
         throws SubscrException, PushServerException, PushUserException, PushConnException { //called from the eventsThread
         
-        retrieveCurrentMpnStatus(op.sub);
-        
-        MpnInfo info = op.sub.getMpnInfo();
         String key = op.sub.getTableInfo().getGroup();
         
+        retrieveCurrentMpnStatus(key);
+        
+        MpnInfo info = op.sub.getMpnInfo();
+       
+        
         if (mpns.containsKey(key) == op.add) {
-            //already in the desired state, remove pending op and exit
-            pendingMpns.remove(key);
+           
+            
             if (op.add) {
-                Log.d(TAG,"Can't add mpn subscription: mpn subscription already in: " + op.sub);
+                //check that the owned trigger is equal to the requested one
+                
+                MpnInfo currentInfo = mpns.get(key);
+                
+                if (op.sub.getMpnInfo().getTriggerExpression().equals(currentInfo.getTriggerExpression())) {
+                    //already in the desired state, remove pending op and exit
+                    pendingMpns.remove(key);
+                    Log.d(TAG,"Can't add mpn subscription: mpn subscription already in: " + op.sub);
+                    return;
+                    
+                } else {
+                    //remove the current subscription
+                    MpnKey currentKey = currentInfo.getMpnKey();
+                    client.deactivateMpn(currentKey);
+                    mpns.remove(key);                    
+                    
+                    //then proceed
+                }
+                
             } else {
+                //already in the desired state, remove pending op and exit
+                pendingMpns.remove(key);
                 Log.d(TAG,"Can't remove mpn subscription: mpn subscription not in: " + op.sub);
+                return;
             }
-            return;
+            
         }
 
         if (op.add) {
@@ -543,6 +563,8 @@ public class LightstreamerClient {
         
         //remove from pending op and fire listener
         pendingMpns.remove(key);
+        
+        notifyMpnStatus(key);//refresh status
      
     }
     
@@ -556,11 +578,13 @@ public class LightstreamerClient {
         eventsThread.execute(new MpnSubscriptionThread(info,false));
     }
     
-    public synchronized void retrieveMpnStatus(final Subscription info) {
+    public synchronized void retrieveMpnStatus(final Subscription sub) {
         eventsThread.execute(new Runnable() {
             public void run() {
                 try {
-                    retrieveCurrentMpnStatus(info);
+                    String key = sub.getTableInfo().getGroup();
+                    retrieveCurrentMpnStatus(key);
+                    notifyMpnStatus(key);
                 } catch (PushConnException e) {
                 } catch (SubscrException e) {
                 } catch (PushServerException e) {
@@ -570,9 +594,8 @@ public class LightstreamerClient {
         });
     }
 
-    void retrieveCurrentMpnStatus(Subscription sub) 
+    void retrieveCurrentMpnStatus(String key) 
             throws PushConnException, SubscrException, PushServerException, PushUserException {
-        String key = sub.getTableInfo().getGroup();
         
         if (mpns.containsKey(key)) {
             MpnKey mpnKey = mpns.get(key).getMpnKey();
@@ -583,7 +606,7 @@ public class LightstreamerClient {
                 if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
                     //not active anymore
                     mpns.remove(key);
-                    notifyMpnStatus(key);
+                   
                     return;
                 } else {
                     throw e;
@@ -594,12 +617,10 @@ public class LightstreamerClient {
                 //deactivate useless subscription before handling the pending op
                 client.deactivateMpn(mpnKey);
                 mpns.remove(key);
-                notifyMpnStatus(key);
             } else {
                 //otherwise refresh the mpninfo we have
                 MpnInfo info = client.inquireMpn(mpnKey);
                 mpns.put(key, info);
-                notifyMpnStatus(key);
             }
             
         }
@@ -658,8 +679,6 @@ public class LightstreamerClient {
             } catch (PushServerException e) {
             } catch (PushUserException e) {
             }
-            
-            notifyMpnStatus(sub.getTableInfo().getGroup()); 
             
             //if an exception was thrown we fail and wait for the pending operations to be 
             //handled again later
