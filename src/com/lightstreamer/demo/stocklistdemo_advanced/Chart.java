@@ -77,7 +77,11 @@ public class Chart {
     }
     
     public void setTriggerLine(double trigger) {
-        fixedLine.fix(trigger);
+        if (trigger < 0) {
+            fixedLine.deactivate();
+        } else {
+            fixedLine.fix(trigger);
+        }
     }
     
     public void onResume(Context context) {
