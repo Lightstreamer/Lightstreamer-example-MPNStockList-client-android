@@ -41,8 +41,8 @@ public class Chart {
     
     DecimalFormat df = new DecimalFormat("00");
     
-    float maxY = 0; 
-    float minY = 0;
+    double maxY = 0; 
+    double minY = 0;
     
     private final static int MAX_SERIES_SIZE = 40;
     
@@ -53,7 +53,19 @@ public class Chart {
     
     private void adjustYBoundaries() {
         //default positioning puts the origin on the bottom, we want it on the center
-        dynamicPlot.setRangeBoundaries(minY, maxY, BoundaryMode.FIXED);
+        double min = minY;
+        double max = maxY;
+        
+        if (fixedLine.size() > 0) {
+            double fixed = fixedLine.getFixed(); 
+            if (fixed > maxY) {
+                maxY = fixed+0.1;
+            } else if (fixedLine.getFixed() < minY) {
+                minY = fixed-0.1;
+            }
+        }
+        
+        dynamicPlot.setRangeBoundaries(min, max, BoundaryMode.FIXED);
     }
     
     public void setPlot(final XYPlot dynamicPlot) {
@@ -121,11 +133,11 @@ public class Chart {
         }
     }
     
-    private void onYOverflow(float last) {
+    private void onYOverflow(double last) {
         //TODO currently never shrinks
-        float shift = 1;
+        int shift = 1;
         if (last > maxY) {
-          float newMax = maxY + shift;
+            double newMax = maxY + shift;
           if (last > newMax) {
             newMax = last;
           }
@@ -133,7 +145,7 @@ public class Chart {
           this.maxY = newMax;
 
         } else if (last < minY) {
-          float newMin = minY - shift;
+            double newMin = minY - shift;
           if (last < newMin) {
             newMin = last;
           }
@@ -143,7 +155,7 @@ public class Chart {
         this.adjustYBoundaries();
     }
     
-    private void onFirstPoint(float newPrice) {
+    private void onFirstPoint(double newPrice) {
         minY = newPrice-1;
         if (minY < 0) {
             minY = 0;
@@ -183,6 +195,10 @@ public class Chart {
 
         @Override
         public Number getY(int index) {
+            return this.getFixed();
+        }
+        
+        public double getFixed() {
             return this.fixedY;
         }
 
@@ -215,7 +231,7 @@ public class Chart {
                 times.remove(0);
             }
             
-            float newPrice = Float.parseFloat(lastPrice);
+            double newPrice = Double.parseDouble(lastPrice);
             
             if (prices.size() == 0) {
                 onFirstPoint(newPrice);
