@@ -37,6 +37,7 @@ import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
 import com.lightstreamer.ls_client.mpn.MpnKey;
+import com.lightstreamer.ls_client.mpn.MpnStatus;
 
 
 public class LightstreamerClient {
@@ -616,18 +617,27 @@ public class LightstreamerClient {
         
         if (mpns.containsKey(key)) {
             MpnKey mpnKey = mpns.get(key).getMpnKey();
-            
+            MpnStatus status;
             try {
-                client.inquireMpn(mpnKey);
+                status = client.inquireMpnStatus(mpnKey);
             } catch (PushUserException e) {
                 if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
                     //not active anymore
                     mpns.remove(key);
                     notifyMpnStatus(key);
+                    return;
                 } else {
                     throw e;
                 }
             }
+            
+            if (status == MpnStatus.Suspended || status == MpnStatus.Triggered) {
+                //deactivate useless subscription before handling the pending op
+                client.deactivateMpn(mpnKey);
+                mpns.remove(key);
+                notifyMpnStatus(key);
+            }
+            
         }
     }
     
