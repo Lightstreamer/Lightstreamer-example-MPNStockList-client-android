@@ -18,7 +18,6 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,7 +94,6 @@ public class LightstreamerClient {
     private AtomicBoolean pmEnabled = new AtomicBoolean(false);
     
     private boolean connected = false; // do not get/set this outside the eventsThread
-    private boolean mpnStatusRetrieved = false; // do not get/set this outside the eventsThread
     
     final private ExecutorService eventsThread = Executors.newSingleThreadExecutor();
     
@@ -197,7 +195,6 @@ public class LightstreamerClient {
                 
                 if (!connected) {
                     setStatus(CONNECTING);
-                    mpnStatusRetrieved = false;
                     try {
                         currentListener = new ClientListener();
                         client.openConnection(cInfo, currentListener);
@@ -205,9 +202,7 @@ public class LightstreamerClient {
                         connected = true;
                         
                         resubscribeAll();
-                        retrieveMPNStatus();
-                        
-                        
+                        handlePendingMpnOps();
                         
                     } catch (PushConnException e) {
                         Log.v(TAG, e.getMessage());
@@ -471,60 +466,11 @@ public class LightstreamerClient {
         }
     }
     
-    
 //Mpn handling    
     
 
     public void enablePM(boolean enabled) {
         this.pmEnabled.set(enabled);
-        if (enabled) {
-            eventsThread.execute(new Runnable() {
-                public void run() {
-                    retrieveMPNStatus();
-                }
-            });
-        } 
-    }
-    
-    private void retrieveMPNStatus() { //called from the eventsThread
-        if (!connected || mpnStatusRetrieved || !pmEnabled.get()) {
-            return;
-        }
-        List<MpnInfo>mpnList = null;
-        try {
-            mpnList = this.client.inquireAllMpn();
-            mpnStatusRetrieved = true;
-        } catch (SubscrException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
-        } catch (PushServerException e) {
-            Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
-        } catch (PushUserException e) {
-            if (e.getErrorCode() == 45) {
-                mpnStatusRetrieved = true;
-            } else {
-                Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
-            }
-        } catch (PushConnException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
-        }
-    
-        mpns.clear();
-        if (mpnList != null) {
-            for (Iterator<MpnInfo> i = mpnList.iterator(); i.hasNext(); ) {
-                MpnInfo info = i.next();
-                String key = info.getTableInfo().getGroup(); //currently handling one trigger per subscription
-                mpns.put(key, info);
-            }
-        }
-        
-        //notify all the listeners of their current status
-        
-        for (Iterator<String> i = mpnListeners.keySet().iterator(); i.hasNext(); ) {
-            String listenerKey = i.next();
-            notifyMpnStatus(listenerKey);
-        }
-        
-        handlePendingMpnOps();
     }
     
     public static final String TRIGGER_HEAD = "Double.parseDouble(${last_price})";
@@ -572,6 +518,9 @@ public class LightstreamerClient {
     
     private void handlePendingMpnOp(PendingMpnOp op) 
         throws SubscrException, PushServerException, PushUserException, PushConnException { //called from the eventsThread
+        
+        retrieveCurrentMpnStatus(op.sub);
+        
         MpnInfo info = op.sub.getMpnInfo();
         String key = op.sub.getTableInfo().getGroup();
         
@@ -700,14 +649,13 @@ public class LightstreamerClient {
             //save the pending operation in case we're not able to handle it now
             PendingMpnOp op = this.updatePendingStatus();
             
-            if (!connected || !pmEnabled.get() || !mpnStatusRetrieved) {
+            if (!connected || !pmEnabled.get()) {
                 //can't handle it now, pending subscriptions will be fired once re-connected
                 return;
             }
             
             //status may have changed on the server, refresh it
             try {
-                retrieveCurrentMpnStatus(sub);
                 handlePendingMpnOp(op);
             } catch (PushConnException e) {
             } catch (SubscrException e) {
