@@ -473,10 +473,6 @@ public class LightstreamerClient {
         this.pmEnabled.set(enabled);
     }
     
-    public static final String TRIGGER_HEAD = "Double.parseDouble(${last_price})";
-    public static final String TRIGGER_LT = "<=";
-    public static final String TRIGGER_GT = ">=";
-    
     private void notifyMpnStatus(String key) {
         MpnStatusListener listener = mpnListeners.get(key);
         if (listener != null) {
@@ -489,7 +485,7 @@ public class LightstreamerClient {
                 String trigger = current.getTriggerExpression();
                 if (trigger != null) {
                     try {
-                        triggerValue = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length()+TRIGGER_GT.length()));
+                        triggerValue = Double.parseDouble(trigger.substring(Stock.TRIGGER_HEAD.length()+Stock.TRIGGER_GT.length()));
                     } catch(NumberFormatException e) {
                         Log.wtf(TAG, "Unexpected trigger set: " + trigger);
                     }
