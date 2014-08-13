@@ -34,6 +34,14 @@ public class Stock {
     private String[] otherFields;
     private Chart chart;
     
+    private String trigger;
+    private double lastPrice; //might improve by saving all the field values
+    
+    
+    public static final String TRIGGER_HEAD = "Double.parseDouble(${last_price})";
+    public static final String TRIGGER_LT = "<=";
+    public static final String TRIGGER_GT = ">=";
+    
     private ToggleButton mpnStatus;
     
 
@@ -85,14 +93,47 @@ public class Stock {
             }
         });
         
-        if (trigger > 0) {
-            chart.setTriggerLine(trigger);
+        setTrigger(trigger);
+    }
+    
+    public void setTrigger(Double yVal) {
+        if (yVal == this.lastPrice) {
+            //invalid!
+            yVal = -1.0;
         }
+        chart.setTriggerLine(yVal);
+        
+        if (yVal < 0) {
+            this.trigger = null;
+        } else {
+            this.trigger = TRIGGER_HEAD;
+            if (yVal < this.lastPrice) {
+                this.trigger += TRIGGER_LT; 
+            } else {
+                this.trigger += TRIGGER_GT;
+            }
+            
+            this.trigger += Double.toString(yVal);
+        }
+    }
+    
+    public String getTrigger() {
+        return this.trigger;
     }
     
     public void update(UpdateInfo newData, Handler handler) {
         this.updateView(newData, handler, numericFields, true);
         this.updateView(newData, handler, otherFields, false);
+        
+        //save lastPrice
+        String value = newData.getNewValue("last_price");
+        try {
+            this.lastPrice = Double.parseDouble(value);
+        } catch (NumberFormatException nfe) {
+            //unexpected o_O
+        }
+        
+        
         chart.addPoint(newData);
     }
     
@@ -176,8 +217,6 @@ public class Stock {
             this.valid = false;
         }
     }
-
-    
     
     
 }
