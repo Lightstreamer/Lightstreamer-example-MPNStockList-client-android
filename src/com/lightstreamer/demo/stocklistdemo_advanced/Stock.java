@@ -19,6 +19,7 @@ import java.util.HashMap;
 
 import android.os.Handler;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.lightstreamer.ls_client.UpdateInfo;
 
@@ -26,12 +27,15 @@ public class Stock {
 
     //var fieldsList = ["last_price", "time", "pct_change", "bid_quantity", "bid", "ask", "ask_quantity", "min", "max", "ref_price", "open_price", "stock_name", 
     
-    HashMap<String,TextView> holder = null;
+    private HashMap<String,TextView> holder = null;
     private HashMap<String,UpdateRunnable> turnOffRunnables = new HashMap<String,UpdateRunnable>();
 
     private String[] numericFields;
     private String[] otherFields;
     private Chart chart;
+    
+    private ToggleButton mpnStatus;
+    
 
     
     public Stock(String item, String[] numericFields, String[] otherFields) {
@@ -39,7 +43,7 @@ public class Stock {
         this.otherFields = otherFields;
     }
     
-    public void setHolder(HashMap<String,TextView> holder) {
+    public void setHolder(HashMap<String,TextView> holder) { //UI thread
         this.holder = holder;
         
         this.resetHolder(holder, numericFields);
@@ -47,7 +51,7 @@ public class Stock {
 
     }
     
-    private void resetHolder(HashMap<String,TextView> holder, String[] fields) {
+    private void resetHolder(HashMap<String,TextView> holder, String[] fields) {  //UI thread
         for (int i=0; i<fields.length; i++) {
             
             TextView field = holder.get(fields[i]);
@@ -58,12 +62,33 @@ public class Stock {
         }
     }
     
-    public void setChart(Chart chart) {
+    public void setChart(Chart chart) { //UI thread
         this.chart = chart;
         this.chart.clean();
     }
     
+    public void setToggle(ToggleButton mpnStatus) { //UI thread
+        this.mpnStatus = mpnStatus;
+        changeToggleStatus(false);
+    }
     
+    private void changeToggleStatus(boolean active) { //UI thread
+        if (this.mpnStatus != null) {
+            mpnStatus.setChecked(active);
+        }
+    }
+    
+    public void updateMpnStatus(final boolean active, double trigger, Handler handler) {
+        handler.post(new Runnable() {
+            public void run() {
+                changeToggleStatus(active);
+            }
+        });
+        
+        if (trigger > 0) {
+            chart.setTriggerLine(trigger);
+        }
+    }
     
     public void update(UpdateInfo newData, Handler handler) {
         this.updateView(newData, handler, numericFields, true);

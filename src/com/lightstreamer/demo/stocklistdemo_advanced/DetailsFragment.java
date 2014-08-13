@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.MpnStatusListener;
 import com.lightstreamer.ls_client.ExtendedTableInfo;
@@ -29,13 +30,16 @@ import com.lightstreamer.ls_client.UpdateInfo;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
 
 import android.app.Activity;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnTouchListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -106,8 +110,31 @@ public class DetailsFragment extends Fragment {
         holder.put("max",(TextView)view.findViewById(R.id.d_max));
         holder.put("open_price",(TextView)view.findViewById(R.id.d_open_price));
         
-        XYPlot plot = (XYPlot) view.findViewById(R.id.mySimpleXYPlot);
+        final XYPlot plot = (XYPlot) view.findViewById(R.id.mySimpleXYPlot);
         chart.setPlot(plot);
+        
+        plot.setOnTouchListener(new OnTouchListener(){
+            
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                v.performClick();
+                
+                float touchY = event.getY();
+                float touchX = event.getX();
+                
+                float targetValY=0;
+                
+                XYGraphWidget widget = plot.getGraphWidget();
+                RectF gridRect = widget.getGridRect();
+                if(gridRect.contains(touchX, touchY)){
+                    Log.d(TAG,"chart touched");
+                    chart.setTriggerLine(widget.getYVal(touchY));
+                    //TODO call to activate mpn
+                }
+                
+                return false;
+            }
+        });
         
         return view;
     }
@@ -147,10 +174,6 @@ public class DetailsFragment extends Fragment {
     
     public void updateStocksView(int item) {
         if (item != currentItem || this.currentSubscription == null) {
-            if (toggle != null) {
-                toggle.setChecked(false);
-            }
-            
             if (this.currentSubscription != null) {
                 this.currentSubscription.disable();
             }
@@ -218,6 +241,8 @@ public class DetailsFragment extends Fragment {
             this.stock = new Stock(item,numericFields,otherFields);
             stock.setHolder(holder);
             stock.setChart(chart);
+            stock.setToggle(toggle);
+            
            
             this.listener = new StockListener(stock);
             
@@ -331,17 +356,7 @@ public class DetailsFragment extends Fragment {
                 return;
             }
             Log.v(TAG,"Mpn status changed");
-            handler.post(new Runnable() {
-                public void run() {
-                    if (disabled.get()) {
-                        return;
-                    }
-                    if (toggle != null) {
-                        toggle.setChecked(activated);
-                    }
-                }
-            });
-            
+            this.stock.updateMpnStatus(activated, -1, handler);
         }
         
     }
