@@ -122,14 +122,16 @@ public class DetailsFragment extends Fragment {
                 float touchY = event.getY();
                 float touchX = event.getX();
                 
-                float targetValY=0;
-                
                 XYGraphWidget widget = plot.getGraphWidget();
                 RectF gridRect = widget.getGridRect();
                 if(gridRect.contains(touchX, touchY)){
                     Log.d(TAG,"chart touched");
-                    chart.setTriggerLine(widget.getYVal(touchY));
-                    //TODO call to activate mpn
+                    if (currentSubscription != null) {
+                        currentSubscription.setTrigger(widget.getYVal(touchY));
+                        subscriptionHandling.activateMPN();
+                    } else {
+                        Log.v(TAG,"touch ignored");
+                    }
                 }
                 
                 return false;
@@ -254,6 +256,10 @@ public class DetailsFragment extends Fragment {
             }
         }
 
+        public void setTrigger(Double yVal) {
+            stock.setTrigger(yVal);
+        }
+
         public void disable() {
             this.listener.disable();
         }
@@ -297,6 +303,11 @@ public class DetailsFragment extends Fragment {
                 this.mpnInfo = new MpnInfo(clone,"Stock update",data);
                 this.mpnInfo.setDelayWhileIdle("false");
                 this.mpnInfo.setTimeToLive("300");
+                
+                String trigger = stock.getTrigger();
+                if (trigger != null) {
+                    this.mpnInfo.setTriggerExpression(trigger);
+                }
                 
             }
             return this.mpnInfo;
