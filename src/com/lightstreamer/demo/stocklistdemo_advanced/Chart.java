@@ -122,13 +122,15 @@ public class Chart {
         PixelUtils.init(context);
         
         int line = context.getResources().getColor(R.color.chart_line);
-        LineAndPointFormatter formatter = new LineAndPointFormatter(line, null, null, null);
+        LineAndPointFormatter formatter = new LineAndPointFormatter(line, line, null, null);
         this.dynamicPlot.addSeries(series, formatter);
         
-        LineAndPointFormatter fixedLineFormatter = new LineAndPointFormatter(Color.RED, null, null, null);
+        int red = context.getResources().getColor(R.color.lower_highlight);
+        LineAndPointFormatter fixedLineFormatter = new LineAndPointFormatter(red, null, null, null);
         this.dynamicPlot.addSeries(fixedLine, fixedLineFormatter);
         
-        fixedLineFormatter = new LineAndPointFormatter(Color.GREEN, null, null, null);
+        int green = context.getResources().getColor(R.color.higher_highlight);
+        fixedLineFormatter = new LineAndPointFormatter(green, null, null, null);
         this.dynamicPlot.addSeries(tempFixedLine, fixedLineFormatter);
         
         this.clean();
