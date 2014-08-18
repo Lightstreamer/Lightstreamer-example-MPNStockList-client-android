@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content">
+	<LinearLayout
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical" >
+	    
+	    <ImageView
+	        android:src="@drawable/logo"
+	        android:layout_width="match_parent"
+	        android:layout_height="64dp"
+	        android:scaleType="center"
+	        android:contentDescription="@string/app_name" />
+	
+	    <TextView
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="5dp"
+	        android:text="This is a demo showing the usage of the Lightstreamer Android client library in order to receive real-time updates and push notifications" />
+	   
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="5dp"
+	        android:text="Use the start/pause button on the menu to open/close the connection to the Lightstreamer server." />
+	    
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="5dp"
+	        android:text="Touch one of the stocks in the list to see its details." />
+	    
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="5dp"
+	        android:text="From the details page you can activate push notifications on the selected stock by enabling the toggle on the bottom." />
+	
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="5dp"
+	        android:text="You can also set a threshold by touching the stock chart: if the price passes the threshold, the device will receive a push notification." />
+	    
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:autoLink="web"
+	        android:layout_margin="5dp"
+	        android:text="Navigate the sources of the demo application on github github.com/Weswit/Lightstreamer-example-MPNStockList-client-android
+	and check out our website www.lightstreamer.com" />    
+	        
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:autoLink="web"
+	        android:layout_margin="5dp"
+	        android:text="Live charts are plotted using androidplot androidplot.com" />
+	    
+	</LinearLayout>
+</ScrollView>	

@@ -9,4 +9,9 @@
           android:title="@string/start"
           android:visible="false"
           lssld:showAsAction="ifRoom" />
+    <item android:id="@+id/about"
+          android:icon="@drawable/ic_action_about"
+          android:title="@string/about"
+          android:visible="true"
+          lssld:showAsAction="ifRoom" />
 </menu>
