@@ -305,7 +305,7 @@ public class LightstreamerClient {
 
         @Override
         public void onNewBytes(long num) {
-            Log.v(TAG,randomId + " onNewBytes " + num);
+            //Log.v(TAG,randomId + " onNewBytes " + num);
         }
 
         @Override
@@ -475,6 +475,8 @@ public class LightstreamerClient {
         MpnStatusListener listener = mpnListeners.get(key);
         if (listener != null) {
             if (!mpns.containsKey(key)) {
+                Log.v(TAG,"Notify no mpn subscription active for " + key);
+                
                 listener.onMpnStatusChanged(false,-1);
             } else {
                 MpnInfo current = mpns.get(key);
@@ -482,11 +484,15 @@ public class LightstreamerClient {
                 double triggerValue = -1;
                 String trigger = current.getTriggerExpression();
                 if (trigger != null) {
+                    Log.v(TAG,"Notify mpn subscription active for " + key + "("+trigger+")");
+                    
                     try {
                         triggerValue = Double.parseDouble(trigger.substring(Stock.TRIGGER_HEAD.length()+Stock.TRIGGER_GT.length()));
                     } catch(NumberFormatException e) {
                         Log.wtf(TAG, "Unexpected trigger set: " + trigger);
                     }
+                } else {
+                    Log.v(TAG,"Notify mpn subscription active for " + key);
                 }
                          
                 listener.onMpnStatusChanged(true,triggerValue);
@@ -526,8 +532,9 @@ public class LightstreamerClient {
                 //check that the owned trigger is equal to the requested one
                 
                 MpnInfo currentInfo = mpns.get(key);
+                String currentTrigger = currentInfo.getTriggerExpression();
                 
-                if (op.sub.getMpnInfo().getTriggerExpression().equals(currentInfo.getTriggerExpression())) {
+                if (op.sub.getMpnInfo().getTriggerExpression().equals(currentTrigger)) {
                     //already in the desired state, remove pending op and exit
                     pendingMpns.remove(key);
                     Log.d(TAG,"Can't add mpn subscription: mpn subscription already in: " + op.sub);
@@ -535,6 +542,9 @@ public class LightstreamerClient {
                     
                 } else {
                     //remove the current subscription
+                    
+                    Log.v(TAG,"Trigger change request for " + key+ ". Disabling trigger " + currentTrigger);
+                    
                     MpnKey currentKey = currentInfo.getMpnKey();
                     client.deactivateMpn(currentKey);
                     mpns.remove(key);                    
@@ -552,13 +562,22 @@ public class LightstreamerClient {
         }
 
         if (op.add) {
+            Log.v(TAG,"Activating new mpn subscription for " + key+ ". (trigger " + info.getTriggerExpression() + ")");
+            
             client.activateMpn(info); //in case of failure we leave the pending op (we might want to change this behavior)
             mpns.put(key, info);
             
+            Log.v(TAG,"Activated");
+            
         } else {
             info = mpns.get(key); //get the info from the collection as we are sure that that one contains the mpnKey
+            
+            Log.v(TAG,"Deactivating mpn subscription for " + key+ ". (trigger " + info.getTriggerExpression() + ")");
+            
             client.deactivateMpn(info.getMpnKey()); //in case of failure we leave the pending op (we might want to change this behavior)
             mpns.remove(key);
+            
+            Log.v(TAG,"Deactivated");
         }
         
         //remove from pending op and fire listener
