@@ -94,6 +94,7 @@ public class Chart {
         } else {
             fixedLine.fix(trigger);
         }
+        this.redraw();
     }
     
     public void onResume(Context context) {
@@ -186,11 +187,17 @@ public class Chart {
 
         @Override
         public Number getX(int index) {
+            Number min = dynamicPlot.getCalculatedMinX();
             if (index == 0) {
-                return dynamicPlot.getCalculatedMinX();
+                return min;
             } else {
-                return dynamicPlot.getCalculatedMaxX();
+                Number res = dynamicPlot.getCalculatedMaxX();
+                if (res == min) {
+                    res = res.intValue()+1;
+                }
+                return res;
             }
+            
         }
 
         @Override
