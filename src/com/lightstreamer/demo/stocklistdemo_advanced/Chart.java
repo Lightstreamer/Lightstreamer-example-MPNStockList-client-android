@@ -148,12 +148,12 @@ public class Chart {
         this.series.reset();
         maxY = 0;
         minY = 0;
-        this.adjustYBoundaries();
         this.redraw();
     }
     
     private void redraw() {
         if (this.dynamicPlot != null) {
+            this.adjustYBoundaries();
             this.dynamicPlot.redraw();
         }
     }
@@ -177,7 +177,6 @@ public class Chart {
           
           this.minY = newMin;
         }
-        this.adjustYBoundaries();
     }
     
     private void onFirstPoint(double newPrice) {
@@ -186,7 +185,6 @@ public class Chart {
             minY = 0;
         }
         maxY = newPrice+1;
-        this.adjustYBoundaries();
     }
     
     private class FixedYSeries implements XYSeries {
