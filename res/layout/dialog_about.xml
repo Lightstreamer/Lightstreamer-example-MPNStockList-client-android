@@ -42,7 +42,7 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_margin="5dp"
-	        android:text="You can also set a threshold by touching the stock chart: if the price passes the threshold, the device will receive a push notification." />
+	        android:text="You can also set a threshold by touching the stock chart: if the price passes the threshold, the device will receive a push notification. A green line indicates that the threshold is being set while the red line represent the currently set threshold." />
 	    
 	    <TextView
 	        android:layout_width="wrap_content"
