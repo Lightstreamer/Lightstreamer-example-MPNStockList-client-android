@@ -131,6 +131,8 @@ public class Chart {
         fixedLineFormatter = new LineAndPointFormatter(Color.GREEN, null, null, null);
         this.dynamicPlot.addSeries(tempFixedLine, fixedLineFormatter);
         
+        this.clean();
+        
     }
     
     public void addPoint(String time,String lastPrice) {
