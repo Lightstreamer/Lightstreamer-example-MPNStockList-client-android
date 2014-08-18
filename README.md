@@ -23,6 +23,8 @@ This app uses the <b>Android Client API for Lightstreamer</b> to handle the comm
 
 Touch a row opens a new panel with the detailed info, updated in real time, of the stock.
 
+Touch the chart to setup a new trigger for push notifications
+
 The demo is ready to receive Mobile Push Notification through [Google Cloud Messaging for Android](https://developer.android.com/google/gcm/index.html).
 
 ### Dig the code
@@ -37,6 +39,7 @@ the `Fragment`. Please note that this class do not actually extend `Fragment`.
 * `StocksFragment.java` and `DetailsFragment.java` are the classes representing the two fragments of the application. 
 * `GcmIntentService.java` is the class dedicated to receive the Push Notifications, to create the notification for the system and 
 to attaching to it a Intent capable of launching the Demo application focused on the notified item.
+* `Chart.java` wraps the AndroidPlot APIs to plot the real-time chart on the details fragment.
 
 
 Check out the sources for further explanations.
