@@ -59,14 +59,14 @@ public class DetailsFragment extends Fragment {
     ToggleButton toggle;
     
     public static final String ARG_ITEM = "item";
-    public static final String TOGGLE_VISIBLE = "toggle";
+    public static final String ARG_PN_CONTROLS = "pn_controls";
     
     int currentItem = -1;
 
     private ItemSubscription currentSubscription = null;
 
     private View toggleContainer;
-    private boolean showToggle;
+    private boolean pnEnabled;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,14 +79,14 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
         
-        showToggle = false;
+        pnEnabled = false;
 
         // If activity recreated (such as from screen rotate), restore
         // the previous article selection set by onSaveInstanceState().
         // This is primarily necessary when in the two-pane layout.
         if (savedInstanceState != null) {
             currentItem = savedInstanceState.getInt(ARG_ITEM);
-            showToggle = savedInstanceState.getBoolean(TOGGLE_VISIBLE);
+            pnEnabled = savedInstanceState.getBoolean(ARG_PN_CONTROLS);
         }
         
 
@@ -96,7 +96,7 @@ public class DetailsFragment extends Fragment {
         toggle = (ToggleButton)view.findViewById(R.id.pn_switch);
         toggleContainer = view.findViewById(R.id.toggle_container);
         
-        this.showToggle(showToggle);
+        this.enablePN(pnEnabled);
 
         holder.put("stock_name",(TextView)view.findViewById(R.id.d_stock_name));
         holder.put("last_price",(TextView)view.findViewById(R.id.d_last_price));
@@ -117,6 +117,11 @@ public class DetailsFragment extends Fragment {
             
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                if (!pnEnabled) {
+                    //push notifications not enabled, ignore the touch
+                    return false;
+                }
+                
                 v.performClick();
                 
                 float touchY = event.getY();
@@ -134,7 +139,7 @@ public class DetailsFragment extends Fragment {
                     }
                 }
                 
-                return false;
+                return true;
             }
         });
         
@@ -148,7 +153,7 @@ public class DetailsFragment extends Fragment {
         Bundle args = getArguments();
         if (args != null) {
             updateStocksView(args.getInt(ARG_ITEM));
-            showToggle(args.getBoolean(TOGGLE_VISIBLE));
+            enablePN(args.getBoolean(ARG_PN_CONTROLS));
         } else if (currentItem != -1) {
             updateStocksView(currentItem);
         }
@@ -201,9 +206,12 @@ public class DetailsFragment extends Fragment {
         }
     }
     
+    public void enablePN(boolean enabled) {
+        this.pnEnabled = enabled;
+        this.showToggle(enabled);
+    }
 
-    public void showToggle(final boolean show) {
-        this.showToggle = show;
+    private void showToggle(final boolean show) {
         
         if (toggleContainer == null) {
             //onCreateView will set it (or the layout does not contain it)
@@ -227,7 +235,7 @@ public class DetailsFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putInt(ARG_ITEM, currentItem);
-        outState.putBoolean(TOGGLE_VISIBLE, this.showToggle);
+        outState.putBoolean(ARG_PN_CONTROLS, this.pnEnabled);
     }
     
     

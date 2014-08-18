@@ -467,7 +467,7 @@ public class LightstreamerClient {
 //Mpn handling    
     
 
-    public void enablePM(boolean enabled) {
+    public void enablePN(boolean enabled) {
         this.pmEnabled.set(enabled);
     }
     
