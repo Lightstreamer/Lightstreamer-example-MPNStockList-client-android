@@ -36,6 +36,8 @@ import com.lightstreamer.ls_client.UpdateInfo;
 public class Chart {
     
     private FixedYSeries fixedLine;
+    private FixedYSeries tempFixedLine;
+    
     private Series series;
     private XYPlot dynamicPlot;
     
@@ -49,13 +51,10 @@ public class Chart {
     public Chart() {
         this.series = new Series();
         this.fixedLine = new FixedYSeries();
+        this.tempFixedLine = new FixedYSeries();
     }
     
-    private void adjustYBoundaries() {
-        //default positioning puts the origin on the bottom, we want it on the center
-        double min = minY;
-        double max = maxY;
-        
+    private void adjustToFixedLine(FixedYSeries fixedLine) {
         if (fixedLine.size() > 0) {
             double fixed = fixedLine.getFixed(); 
             if (fixed > maxY) {
@@ -64,6 +63,15 @@ public class Chart {
                 minY = fixed-0.1;
             }
         }
+    }
+    
+    private void adjustYBoundaries() {
+        //default positioning puts the origin on the bottom, we want it on the center
+        double min = minY;
+        double max = maxY;
+        
+        adjustToFixedLine(fixedLine);
+        adjustToFixedLine(tempFixedLine);
         
         dynamicPlot.setRangeBoundaries(min, max, BoundaryMode.FIXED);
     }
@@ -94,6 +102,19 @@ public class Chart {
         } else {
             fixedLine.fix(trigger);
         }
+        if (tempFixedLine.getY(0).doubleValue() == trigger) {
+            tempFixedLine.deactivate();
+        }
+        
+        this.redraw();
+    }
+    
+    public void setTempTriggerLine(double trigger) {
+        if (trigger < 0) {
+            tempFixedLine.deactivate();
+        } else {
+            tempFixedLine.fix(trigger);
+        }
         this.redraw();
     }
     
@@ -106,6 +127,9 @@ public class Chart {
         
         LineAndPointFormatter fixedLineFormatter = new LineAndPointFormatter(Color.RED, null, null, null);
         this.dynamicPlot.addSeries(fixedLine, fixedLineFormatter);
+        
+        fixedLineFormatter = new LineAndPointFormatter(Color.GREEN, null, null, null);
+        this.dynamicPlot.addSeries(tempFixedLine, fixedLineFormatter);
         
     }
     

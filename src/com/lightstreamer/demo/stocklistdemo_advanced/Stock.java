@@ -38,7 +38,7 @@ public class Stock {
     private double lastPrice; //might improve by saving all the field values
     
     
-    public static final String TRIGGER_HEAD = "Double.parseDouble(${last_price})";
+    public static final String TRIGGER_HEAD = "Double.parseDouble($[2])";
     public static final String TRIGGER_LT = "<=";
     public static final String TRIGGER_GT = ">=";
     
@@ -92,8 +92,9 @@ public class Stock {
                 changeToggleStatus(active);
             }
         });
-        
-        setTrigger(trigger);
+
+        chart.setTriggerLine(trigger);
+
     }
     
     public void setTrigger(Double yVal) {
@@ -101,8 +102,7 @@ public class Stock {
             //invalid!
             yVal = -1.0;
         }
-        chart.setTriggerLine(yVal);
-        
+       
         if (yVal < 0) {
             this.trigger = null;
         } else {
@@ -113,8 +113,11 @@ public class Stock {
                 this.trigger += TRIGGER_GT;
             }
             
-            this.trigger += Double.toString(yVal);
+            yVal =  Math.round(yVal*100.0)/100.0;
+            this.trigger += yVal;
         }
+        
+        chart.setTempTriggerLine(yVal);
     }
     
     public String getTrigger() {
