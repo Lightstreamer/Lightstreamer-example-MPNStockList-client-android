@@ -18,6 +18,7 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,6 +95,7 @@ public class LightstreamerClient {
     private AtomicBoolean pmEnabled = new AtomicBoolean(false);
     
     private boolean connected = false; // do not get/set this outside the eventsThread
+    private boolean mpnStatusRetrieved = false; // do not get/set this outside the eventsThread
     
     final private ExecutorService eventsThread = Executors.newSingleThreadExecutor();
     
@@ -195,6 +197,7 @@ public class LightstreamerClient {
                 
                 if (!connected) {
                     setStatus(CONNECTING);
+                    mpnStatusRetrieved = false;
                     try {
                         currentListener = new ClientListener();
                         client.openConnection(cInfo, currentListener);
@@ -202,6 +205,7 @@ public class LightstreamerClient {
                         connected = true;
                         
                         resubscribeAll();
+                        retrieveAllCurrentMpns();
                         handlePendingMpnOps();
                         
                     } catch (PushConnException e) {
@@ -469,6 +473,14 @@ public class LightstreamerClient {
 
     public void enablePN(boolean enabled) {
         this.pmEnabled.set(enabled);
+        if (enabled) {
+            eventsThread.execute(new Runnable() {
+                public void run() {
+                    retrieveAllCurrentMpns();
+                    handlePendingMpnOps();
+                }
+            });
+        } 
     }
     
     private void notifyMpnStatus(String key) {
@@ -597,20 +609,60 @@ public class LightstreamerClient {
         eventsThread.execute(new MpnSubscriptionThread(info,false));
     }
     
+    private void retrieveAllCurrentMpns() { //called from eventsThread
+        if (!connected || mpnStatusRetrieved || !pmEnabled.get()) {
+            return;
+        }
+        List<MpnInfo>mpnList = null;
+        try {
+            mpnList = this.client.inquireAllMpn();
+            mpnStatusRetrieved = true;
+        } catch (SubscrException e) {
+            Log.d(TAG,"Connection problems: " + e.getMessage());
+        } catch (PushServerException e) {
+            Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+        } catch (PushUserException e) {
+             if (e.getErrorCode() == 45) {
+                 mpnStatusRetrieved = true;
+             } else {
+                 Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+             }
+        } catch (PushConnException e) {
+            Log.d(TAG,"Connection problems: " + e.getMessage());
+        }
+            
+        mpns.clear();
+        if (mpnList != null) {
+             for (Iterator<MpnInfo> i = mpnList.iterator(); i.hasNext(); ) {
+                 MpnInfo info = i.next();
+                 String key = info.getTableInfo().getGroup(); //currently handling one trigger per subscription
+                 mpns.put(key, info);
+                 retrieveMpnStatus(key);
+             }
+        }
+    }
+    
     public synchronized void retrieveMpnStatus(final Subscription sub) {
         eventsThread.execute(new Runnable() {
             public void run() {
-                try {
-                    String key = sub.getTableInfo().getGroup();
-                    retrieveCurrentMpnStatus(key);
-                    notifyMpnStatus(key);
-                } catch (PushConnException e) {
-                } catch (SubscrException e) {
-                } catch (PushServerException e) {
-                } catch (PushUserException e) {
-                }
+                retrieveMpnStatus(sub.getTableInfo().getGroup());
             }
         });
+    }
+    
+    private void retrieveMpnStatus(String key) { //called from eventsThread
+        try {
+            retrieveCurrentMpnStatus(key);
+            notifyMpnStatus(key);
+        } catch (PushConnException e) {
+            Log.d(TAG,"Connection problems: " + e.getMessage());
+        } catch (SubscrException e) {
+            Log.d(TAG,"Connection problems: " + e.getMessage());
+        } catch (PushServerException e) {
+            Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+        } catch (PushUserException e) {
+            Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+        }
     }
 
     void retrieveCurrentMpnStatus(String key) 
@@ -644,6 +696,8 @@ public class LightstreamerClient {
             
         }
     }
+    
+    
     
     
     private class MpnSubscriptionThread implements Runnable {
