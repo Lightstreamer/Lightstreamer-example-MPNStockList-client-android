@@ -208,12 +208,12 @@ public class LightstreamerClient {
                         retrieveAllCurrentMpns();
                         handlePendingMpnOps();
                         
-                    } catch (PushConnException e) {
-                        Log.v(TAG, e.getMessage());
                     } catch (PushServerException e) {
-                        Log.v(TAG, e.getMessage());
+                        Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
                     } catch (PushUserException e) {
-                        Log.v(TAG, e.getMessage());
+                        Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
+                    } catch (PushConnException e) {
+                        Log.d(TAG,"Connection problems: " + e.getMessage());
                     }
                     
                     if (!connected) {
@@ -519,9 +519,13 @@ public class LightstreamerClient {
             try {
                 handlePendingMpnOp(pendingMpns.get(key));
             } catch (SubscrException e) {
+                Log.d(TAG,"Connection was closed: " + e.getMessage());
             } catch (PushServerException e) {
+                Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
             } catch (PushUserException e) {
+                Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
             } catch (PushConnException e) {
+                Log.d(TAG,"Connection problems: " + e.getMessage());
             }
             
         }
@@ -739,7 +743,7 @@ public class LightstreamerClient {
             //save the pending operation in case we're not able to handle it now
             PendingMpnOp op = this.updatePendingStatus();
             
-            if (!connected || !pmEnabled.get()) {
+            if (!connected || !pmEnabled.get() || !mpnStatusRetrieved ) {
                 //can't handle it now, pending subscriptions will be fired once re-connected
                 return;
             }
@@ -747,10 +751,14 @@ public class LightstreamerClient {
             //status may have changed on the server, refresh it
             try {
                 handlePendingMpnOp(op);
-            } catch (PushConnException e) {
             } catch (SubscrException e) {
+                Log.d(TAG,"Connection was closed: " + e.getMessage());
             } catch (PushServerException e) {
+                Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
             } catch (PushUserException e) {
+                Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
+            } catch (PushConnException e) {
+                Log.d(TAG,"Connection problems: " + e.getMessage());
             }
             
             //if an exception was thrown we fail and wait for the pending operations to be 
