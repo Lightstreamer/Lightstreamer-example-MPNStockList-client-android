@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.util.Log;
 
@@ -107,15 +108,24 @@ public class LightstreamerClient {
     private StatusChangeListener statusListener;
 
     private int status;
+
+    private final AtomicInteger connId = new AtomicInteger(0);
     
     public int getStatus() {
         return status;
     }
 
-    void setStatus(int status) {
+    private void setStatus(int status, int connId) {
+        if (connId != this.connId.get()) {
+            //this means that this event is from an old connection
+            return;
+        }
+        
         this.status = status;
-        Log.i(TAG,statusToString(this.status)); 
-        notifyStatusChanged();
+        Log.i(TAG,connId + ": " + statusToString(this.status)); 
+        if (this.statusListener != null) {
+            this.statusListener.onStatusChange(this.status);
+        }
     }
 
     public LightstreamerClient(String pushServerUrl) {
@@ -153,23 +163,16 @@ public class LightstreamerClient {
     }
     
     //ClientListener calls it through eventsThread
-    private void changeStatus(ClientListener caller, boolean connected, int status) {
-        if (caller != this.currentListener) {
+    private void changeStatus(int connId, boolean connected, int status) {
+        if (connId != this.connId.get()) {
+            //this means that this event is from an old connection
             return;
         }
         
         this.connected = connected;
-        this.setStatus(status);
-        
         
         if (connected != expectingConnected.get()) {
             this.startConnectionThread(false);
-        }
-    }
-    
-    private void notifyStatusChanged() {
-        if (this.statusListener != null) {
-            this.statusListener.onStatusChange(this.status);
         }
     }
     
@@ -196,10 +199,11 @@ public class LightstreamerClient {
             while(connected != expectingConnected.get()) { 
                 
                 if (!connected) {
-                    setStatus(CONNECTING);
+                    connId.incrementAndGet(); //this is the only increment
+                    setStatus(CONNECTING,connId.get());
                     mpnStatusRetrieved = false;
                     try {
-                        currentListener = new ClientListener();
+                        currentListener = new ClientListener(connId.get());
                         client.openConnection(cInfo, currentListener);
                         Log.d(TAG,"Connecting success");
                         connected = true;
@@ -218,7 +222,7 @@ public class LightstreamerClient {
                     
                     if (!connected) {
                         try {
-                            setStatus(WAITING);
+                            setStatus(WAITING,connId.get());
                             Thread.sleep(5000);
                         } catch (InterruptedException e) {
                         }
@@ -227,7 +231,7 @@ public class LightstreamerClient {
                 } else {
                     Log.v(TAG,"Disconnecting");
                     client.closeConnection();
-                    setStatus(DISCONNECTED);
+                    setStatus(DISCONNECTED,connId.get());
                     currentListener = null;
                     connected = false;
                 }
@@ -238,19 +242,19 @@ public class LightstreamerClient {
     
     private class ConnectionEvent implements Runnable {
 
-        private final ClientListener caller;
+        private final int connId;
         private final boolean connected;
         private final int status;
 
-        public ConnectionEvent(ClientListener caller, boolean connected, int status) {
-            this.caller = caller;
+        public ConnectionEvent(int connId, boolean connected, int status) {
+            this.connId = connId;
             this.connected = connected;
             this.status = status;
         }
         
         @Override
         public void run() {
-            changeStatus(this.caller, this.connected, this.status);
+            changeStatus(this.connId, this.connected, this.status);
         }
         
     }
@@ -258,69 +262,74 @@ public class LightstreamerClient {
     
     private class ClientListener implements ConnectionListener {
 
-        private final long randomId;
+        private final int connId;
         private int lastConnectionStatus;
 
-        public ClientListener() {
-            randomId = Math.round(Math.random()*1000);
+        public ClientListener(int connId) {
+            this.connId = connId;
         }
         
         @Override
         public void onActivityWarning(boolean warn) {
-            Log.d(TAG,randomId + " onActivityWarning " + warn);
+            Log.d(TAG,connId + " onActivityWarning " + warn);
             if (warn) {
-                eventsThread.execute(new ConnectionEvent(this,true,STALLED));
+                setStatus(STALLED,this.connId);
+                eventsThread.execute(new ConnectionEvent(this.connId,true,STALLED));
             } else {
-                eventsThread.execute(new ConnectionEvent(this,true,this.lastConnectionStatus));
+                setStatus(this.lastConnectionStatus,this.connId);
+                eventsThread.execute(new ConnectionEvent(this.connId,true,this.lastConnectionStatus));
             }
             
         }
 
         @Override
         public void onClose() {
-            Log.d(TAG,randomId + " onClose");
-            eventsThread.execute(new ConnectionEvent(this,false,DISCONNECTED));
+            Log.d(TAG,connId + " onClose");
+            setStatus(DISCONNECTED,this.connId);
+            eventsThread.execute(new ConnectionEvent(this.connId,false,DISCONNECTED));
         }
 
         @Override
         public void onConnectionEstablished() {
-            Log.d(TAG,randomId + " onConnectionEstablished");
+            Log.d(TAG,connId + " onConnectionEstablished");
         }
 
         @Override
         public void onDataError(PushServerException pse) {
-            Log.d(TAG,randomId + " onDataError: " + pse.getErrorCode() + " -> " + pse.getMessage());
+            Log.d(TAG,connId + " onDataError: " + pse.getErrorCode() + " -> " + pse.getMessage());
         }
 
         @Override
         public void onEnd(int cause) {
-            Log.d(TAG,randomId + " onEnd " + cause);
+            Log.d(TAG,connId + " onEnd " + cause);
         }
 
         @Override
         public void onFailure(PushServerException pse) {
-            Log.d(TAG,randomId + " onFailure: " + pse.getErrorCode() + " -> " + pse.getMessage());
+            Log.d(TAG,connId + " onFailure: " + pse.getErrorCode() + " -> " + pse.getMessage());
         }
 
         @Override
         public void onFailure(PushConnException pce) {
-            Log.d(TAG,randomId + " onFailure: " + pce.getMessage());
+            Log.d(TAG,connId + " onFailure: " + pce.getMessage());
         }
 
         @Override
         public void onNewBytes(long num) {
-            //Log.v(TAG,randomId + " onNewBytes " + num);
+            //Log.v(TAG,connId + " onNewBytes " + num);
         }
 
         @Override
         public void onSessionStarted(boolean isPolling) {
-            Log.d(TAG,randomId + " onSessionStarted; isPolling: " + isPolling);
+            Log.d(TAG,connId + " onSessionStarted; isPolling: " + isPolling);
             if (isPolling) {
                 this.lastConnectionStatus = POLLING;
             } else {
                 this.lastConnectionStatus = STREAMING;
             }
-            eventsThread.execute(new ConnectionEvent(this,true,this.lastConnectionStatus));
+            setStatus(this.lastConnectionStatus,this.connId);
+            eventsThread.execute(new ConnectionEvent(this.connId,true,this.lastConnectionStatus));
+            
             
         }
         
