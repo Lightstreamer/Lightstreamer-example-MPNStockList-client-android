@@ -20,6 +20,7 @@
     <string name="no_data">N/A</string>
     <string name="stop">Pause Lightstreamer Connection</string>
     <string name="start">Restart Lightstreamer Connection</string>
+    <string name="about">About this demo</string>
     <string name="status_disconnected">Disconnected</string>
     <string name="status_streaming">Streaming</string>
     <string name="status_polling">Polling</string>
