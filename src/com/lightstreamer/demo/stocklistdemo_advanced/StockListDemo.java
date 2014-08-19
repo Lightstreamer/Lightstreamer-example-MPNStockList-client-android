@@ -368,7 +368,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            builder.setView(inflater.inflate(R.layout.dialog_about, null));
+            builder.setView(inflater.inflate(R.layout.dialog_about, null)).setPositiveButton("OK", null);
             return builder.create();
         }
         
