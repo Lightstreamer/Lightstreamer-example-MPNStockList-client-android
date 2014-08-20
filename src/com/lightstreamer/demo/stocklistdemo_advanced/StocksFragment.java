@@ -17,6 +17,8 @@ package com.lightstreamer.demo.stocklistdemo_advanced;
 
 import java.util.ArrayList;
 
+import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,9 +46,10 @@ public class StocksFragment extends ListFragment {
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time"};
     
     private Handler handler;
+    LightstreamerClientProxy lsClient;
     
     private static ArrayList<StockForList> list;
-    private final static MainSubscription mainSubscription;
+    private static MainSubscription mainSubscription;
     
     static {
         list = new ArrayList<StockForList>(items.length);
@@ -55,10 +58,7 @@ public class StocksFragment extends ListFragment {
         }
         
         mainSubscription = new MainSubscription(list);
-        StockListDemo.lsClient.addSubscription(mainSubscription);
     }
-    
-    
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -75,7 +75,6 @@ public class StocksFragment extends ListFragment {
         
         setListAdapter(new StocksAdapter(getActivity(), R.layout.row_layout, list));
     }
-    
     
     @Override
     public void onStart() {
@@ -96,6 +95,13 @@ public class StocksFragment extends ListFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         
+        try {
+             lsClient = (LightstreamerClientProxy) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement LightstreamerClientProxy");
+        }
+        lsClient.addSubscription(mainSubscription);
       
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception.
@@ -105,6 +111,12 @@ public class StocksFragment extends ListFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnHeadlineSelectedListener");
         }
+    }
+    
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        lsClient.removeSubscription(mainSubscription);
     }
 
     @Override
