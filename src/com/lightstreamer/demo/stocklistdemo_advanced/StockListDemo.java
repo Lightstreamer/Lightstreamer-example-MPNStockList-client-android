@@ -190,13 +190,19 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         }
     }
     
+    private static boolean doNotStressUser = false;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private void checkPlayServices() {
+        if (doNotStressUser) {
+            return;
+        }
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                doNotStressUser = true;
+                
 
             }         
         }
