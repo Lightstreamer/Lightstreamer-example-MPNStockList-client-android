@@ -61,7 +61,7 @@ public class DetailsFragment extends Fragment {
     public static final String ARG_ITEM = "item";
     public static final String ARG_PN_CONTROLS = "pn_controls";
     
-    int currentItem = -1;
+    int currentItem = 0;
 
     private ItemSubscription currentSubscription = null;
 
@@ -154,7 +154,7 @@ public class DetailsFragment extends Fragment {
         if (args != null) {
             updateStocksView(args.getInt(ARG_ITEM));
             enablePN(args.getBoolean(ARG_PN_CONTROLS));
-        } else if (currentItem != -1) {
+        } else if (currentItem != 0) {
             updateStocksView(currentItem);
         }
     }
@@ -191,10 +191,15 @@ public class DetailsFragment extends Fragment {
         }
     }
     
+    
+    public int getCurrentStock() {
+        return this.currentItem;
+    }
+    
     public void togglePN(ToggleButton toggle) {
         //TODO toggle status can be overridden by the onMpnStatusChanged: find a user friendly way to handle the case
         boolean on = toggle.isChecked();
-        if (currentItem != -1) {
+        if (currentItem != 0) {
             if (on) {
                 Log.v(TAG,"PN enabled for item" + currentItem);
                 this.subscriptionHandling.activateMPN();
@@ -380,5 +385,7 @@ public class DetailsFragment extends Fragment {
         }
         
     }
+
+    
 
 }

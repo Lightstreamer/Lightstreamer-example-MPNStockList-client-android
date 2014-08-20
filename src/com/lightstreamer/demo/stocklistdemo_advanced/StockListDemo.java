@@ -179,10 +179,18 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         if (!userDisconnect) {
             this.start();
         }
+        
         int openItem = getIntentItem();
         if (openItem == 0 && findViewById(R.id.fragment_container) == null) {
             //tablet, always start with an open stock
-            openItem = 1;
+            DetailsFragment df = getDetailsFragment();
+            if (df != null) {
+                openItem = df.getCurrentStock();
+            }
+            
+            if (openItem == 0) {
+                openItem = 2;
+            }
         }
         
         if (openItem != 0) {
