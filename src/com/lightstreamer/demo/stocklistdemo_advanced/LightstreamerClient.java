@@ -128,9 +128,12 @@ public class LightstreamerClient {
         }
     }
 
-    public LightstreamerClient(String pushServerUrl) {
-         this.cInfo.pushServerUrl = pushServerUrl;
+    public LightstreamerClient() {
          this.cInfo.adapter = "DEMO";
+    }
+    
+    public void setServer(String pushServerUrl) {
+        this.cInfo.pushServerUrl = pushServerUrl;
     }
     
     public void setListener(StatusChangeListener statusListener) {

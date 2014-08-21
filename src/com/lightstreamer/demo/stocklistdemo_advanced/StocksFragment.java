@@ -49,16 +49,15 @@ public class StocksFragment extends ListFragment {
     LightstreamerClientProxy lsClient;
     
     private static ArrayList<StockForList> list;
-    private static MainSubscription mainSubscription;
     
     static {
         list = new ArrayList<StockForList>(items.length);
         for (int i = 0; i < items.length; i++) {
             list.add(new StockForList(items[i],i));
         }
-        
-        mainSubscription = new MainSubscription(list);
     }
+    
+    private MainSubscription mainSubscription = new MainSubscription(list);
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 

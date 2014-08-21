@@ -48,11 +48,10 @@ import android.widget.ToggleButton;
 
 public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
 
-    private static boolean userDisconnect = false;
-    public static LightstreamerClient lsClient = null; 
-    
     private static final String TAG = "StockListDemo";
-   
+    
+    private boolean userDisconnect = false;
+    private LightstreamerClient lsClient = new LightstreamerClient();
     private boolean pnEnabled = false;
     
     
@@ -62,10 +61,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        if (lsClient == null) {
-            //lsClient is static, we initialize it here to have a handy getResources call
-            lsClient = new LightstreamerClient(getResources().getString(R.string.host));
-        }
+        lsClient.setServer(getResources().getString(R.string.host));
         
         checkPlayServices();
         
