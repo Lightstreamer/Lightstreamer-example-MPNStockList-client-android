@@ -372,7 +372,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         
     }
     
-    public class AboutDialog extends DialogFragment {
+    public static class AboutDialog extends DialogFragment {
         
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
