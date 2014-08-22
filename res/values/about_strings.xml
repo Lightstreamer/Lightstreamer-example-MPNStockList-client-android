@@ -1,0 +1,36 @@
+<!-- 
+     Copyright 2014 Weswit Srl
+    
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+    
+     http://www.apache.org/licenses/LICENSE-2.0
+    
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="about_intro">This is a demo showing the usage of the Lightstreamer Android client library in order 
+        to receive real-time updates and push notifications.</string>
+    <string name="about_start_stop">Use the start/pause button on the menu to open/close the connection to the 
+        Lightstreamer server.</string>
+    <string name="about_open_details">Touch one of the stocks in the list to see its details.</string>
+    <string name="about_notifications_all">From the details page you can activate push notifications, to be received on 
+        price changes, by enabling the toggle on the bottom.</string>
+    <string name="about_notifications_trigger">You can also set a threshold by touching the stock chart: if the 
+        price passes the threshold, the device will receive a push notification. A green line indicates that the 
+        threshold is being set while the red line represent the currently set threshold.</string>
+    <string name="about_notifications_off">There can only be one threshold set at a time, setting a new threshold will 
+        disable the previous one; also if a threshold is set you can\'t receive push notifications on all the prices and 
+        viceversa (note that this limit is posed by the demo not by the Lightstreamer library). The toggle on the bottom 
+        will disable whatever kind of push notification subscription is currently active.</string>
+    <string name="about_sources">Navigate the sources of the demo application on github 
+        github.com/Weswit/Lightstreamer-example-MPNStockList-client-android and check out our website 
+        www.lightstreamer.com</string>
+    <string name="about_plot">Live charts are plotted using androidplot androidplot.com</string>
+    
+</resources>
