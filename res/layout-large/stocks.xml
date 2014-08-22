@@ -14,32 +14,52 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:baselineAligned="false"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
+
+    <TextView
+        android:id="@+id/text_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="@string/details"
+        android:textSize="25sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:visibility="gone"
+        />
     
-    <ImageView 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-        android:id="@+id/status_image"
-        android:src="@drawable/status_disconnected"
-        android:contentDescription="@string/status_disconnected"
-    />
-
-    <fragment android:name="com.lightstreamer.demo.stocklistdemo_advanced.StocksFragment"
-              android:id="@+id/stocks_fragment"
-              android:layout_weight="1"
-              android:layout_width="0dp"
-              android:layout_height="match_parent" />
-
-    <fragment android:name="com.lightstreamer.demo.stocklistdemo_advanced.DetailsFragment"
-              android:id="@+id/details_fragment"
-              android:layout_weight="2"
-              android:layout_width="0dp"
-              android:layout_height="match_parent" />
-
-</LinearLayout>
+    <LinearLayout
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background">
+        
+        <ImageView 
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content" 
+            android:id="@+id/status_image"
+            android:src="@drawable/status_disconnected"
+            android:contentDescription="@string/status_disconnected"
+        />
+    
+        <fragment android:name="com.lightstreamer.demo.stocklistdemo_advanced.StocksFragment"
+                  android:id="@+id/stocks_fragment"
+                  android:layout_weight="1"
+                  android:layout_width="0dp"
+                  android:layout_height="match_parent" />
+    
+        <fragment android:name="com.lightstreamer.demo.stocklistdemo_advanced.DetailsFragment"
+                  android:id="@+id/details_fragment"
+                  android:layout_weight="2"
+                  android:layout_width="0dp"
+                  android:layout_height="match_parent" />
+    
+    </LinearLayout>
+</LinearLayout>    

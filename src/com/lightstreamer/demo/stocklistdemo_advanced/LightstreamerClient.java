@@ -140,17 +140,17 @@ public class LightstreamerClient {
         this.statusListener = statusListener;
     }
     
-    public void start() {
+    public synchronized void start() {
         Log.d(TAG,"Connection enabled");
         if (expectingConnected.compareAndSet(false,true)) {
             this.startConnectionThread(false);
         }
     }
     
-    public void stop() {
+    public synchronized void stop(boolean applyPause) {
         Log.d(TAG,"Connection disabled");
         if (expectingConnected.compareAndSet(true,false)) {
-            this.startConnectionThread(true);
+            this.startConnectionThread(applyPause);
         }
     }    
     
@@ -801,7 +801,7 @@ public class LightstreamerClient {
 
     public interface LightstreamerClientProxy {
         public void start();
-        public void stop();
+        public void stop(boolean applyPause);
         public void addSubscription(Subscription sub);
         public void removeSubscription(Subscription sub);
         

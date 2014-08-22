@@ -35,24 +35,33 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 
-public class StockListDemo extends ActionBarActivity implements StocksFragment.onStockSelectedListener, StatusChangeListener, LightstreamerClientProxy {
+public class StockListDemo extends ActionBarActivity implements 
+    StocksFragment.onStockSelectedListener, 
+    StatusChangeListener, 
+    LightstreamerClientProxy {
 
     private static final String TAG = "StockListDemo";
     
     private boolean userDisconnect = false;
     private LightstreamerClient lsClient = new LightstreamerClient();
     private boolean pnEnabled = false;
+    
+    private GestureDetectorCompat mDetector; 
     
     
     private Handler handler;
@@ -104,6 +113,9 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         } 
         
         
+        GestureControls gs = new GestureControls();
+        mDetector = new GestureDetectorCompat(this,gs);
+        mDetector.setOnDoubleTapListener(gs);
         
         
         this.handler = new Handler();
@@ -129,6 +141,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, firstFragment).commit();
         } 
+
         
         
     }
@@ -163,7 +176,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     @Override
     public void onPause() {
         super.onPause();
-        this.stop();
+        this.stop(true);
     }
     
     @Override 
@@ -245,7 +258,7 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
             Log.i(TAG,"Stop");
             userDisconnect = true;
             supportInvalidateOptionsMenu();
-            this.stop();
+            this.stop(false);
             return true;
         } else if (itemId == R.id.start) {
             Log.i(TAG,"Start");
@@ -328,41 +341,47 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
         public StatusChange(int status) {
             this.status = status;
         }
+        
+        private void applyStatus(int statusId, int textId) {
+            ImageView statusIcon = (ImageView) findViewById(R.id.status_image);
+            TextView textStatus = (TextView) findViewById(R.id.text_status);
+            
+            
+            statusIcon.setContentDescription(getResources().getString(textId));
+            statusIcon.setImageResource(statusId);
+            textStatus.setText(getResources().getString(textId));
+            
+            
+        }
 
         @Override
         public void run() {
-            ImageView statusIcon = (ImageView) findViewById(R.id.status_image);
+            
             
             switch(status) {
             
                 case LightstreamerClient.STALLED: {
-                    statusIcon.setContentDescription(getResources().getString(R.string.status_stalled));
-                    statusIcon.setImageResource(R.drawable.status_stalled);
+                    applyStatus(R.drawable.status_stalled,R.string.status_stalled);
                     break;
                 }
                 case LightstreamerClient.STREAMING: {
-                    statusIcon.setContentDescription(getResources().getString(R.string.status_streaming));
-                    statusIcon.setImageResource(R.drawable.status_connected_streaming);
+                    applyStatus(R.drawable.status_connected_streaming,R.string.status_streaming);
                     break;
                 }
                 case LightstreamerClient.POLLING: {
-                    statusIcon.setContentDescription(getResources().getString(R.string.status_polling));
-                    statusIcon.setImageResource(R.drawable.status_connected_polling);
+                    applyStatus(R.drawable.status_connected_polling,R.string.status_polling);
                     break;
                 }
                 case LightstreamerClient.DISCONNECTED: {
-                    statusIcon.setContentDescription(getResources().getString(R.string.status_disconnected));
-                    statusIcon.setImageResource(R.drawable.status_disconnected);
+                    applyStatus(R.drawable.status_disconnected,R.string.status_disconnected);
                     break;
                 }
                 case LightstreamerClient.CONNECTING: {
-                    statusIcon.setContentDescription(getResources().getString(R.string.status_connecting));
-                    statusIcon.setImageResource(R.drawable.status_disconnected);
+                    applyStatus(R.drawable.status_disconnected,R.string.status_connecting);
                     break;
                 }
                 case LightstreamerClient.WAITING: {
-                    statusIcon.setContentDescription(getResources().getString(R.string.status_waiting));
-                    statusIcon.setImageResource(R.drawable.status_disconnected);
+                    applyStatus(R.drawable.status_disconnected,R.string.status_waiting);
                     break;
                 }
                 default: {
@@ -372,6 +391,13 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
             }
         }
         
+    }
+    
+    @Override 
+    public boolean onTouchEvent(MotionEvent event){ 
+        this.mDetector.onTouchEvent(event);
+        // Be sure to call the superclass implementation
+        return super.onTouchEvent(event);
     }
     
     public static class AboutDialog extends DialogFragment {
@@ -394,8 +420,8 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     }
 
     @Override
-    public void stop() {
-        lsClient.stop();
+    public void stop(boolean applyPause) {
+        lsClient.stop(applyPause);
     }
 
     @Override
@@ -421,6 +447,34 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
     @Override
     public void retrieveMpnStatus(Subscription info) {
         lsClient.retrieveMpnStatus(info);
+    }
+
+    
+    
+    
+    
+    //we simply use this class to listen for double taps in which case we reveal/hide 
+    //a textual version of the connection status
+    private class GestureControls extends 
+        GestureDetector.SimpleOnGestureListener implements  
+        GestureDetector.OnDoubleTapListener  {
+            
+        @Override
+        public boolean onDown(MotionEvent event) { 
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            
+            //toggleContainer.setVisibility(show ? View.VISIBLE : View.GONE);
+            TextView textStatus = (TextView) findViewById(R.id.text_status);
+            textStatus.setVisibility(textStatus.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            
+            return true;
+        }
+    
+      
     }
     
 }
