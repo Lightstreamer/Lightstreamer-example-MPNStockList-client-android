@@ -28,6 +28,7 @@
     <string name="status_connecting">Connecting</string>
     <string name="status_waiting">Disconnected, waiting to connect again</string>
     <string name="details">Details</string>
+    <string name="open_detail_page">see details</string>
     <string name="last_price">Last Price</string>
     <string name="time">Time</string>
     <string name="pct_change">Change</string>

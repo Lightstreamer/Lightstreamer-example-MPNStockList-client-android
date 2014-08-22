@@ -14,17 +14,18 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/row_selector"
+    android:padding="10dp"
     android:orientation="horizontal"
-    android:paddingTop="10dp" 
-    android:paddingBottom="10dp" >
+    android:background="@drawable/row_selector"
+ >
 
     <TextView android:id="@+id/stock_name"
         android:layout_gravity="center"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@color/white"
         android:layout_width="0dp"
@@ -34,7 +35,7 @@
 
     <TextView android:id="@+id/time"
         android:layout_gravity="center"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:layout_width="0dp"
@@ -45,7 +46,7 @@
     <TextView android:id="@+id/last_price"
         android:gravity="end"
         android:layout_gravity="center"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:layout_width="0dp"
@@ -53,14 +54,4 @@
         android:layout_height="wrap_content"
         android:text="@string/no_data"/>
     
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:contentDescription="@string/open_detail_page"
-        android:layout_gravity="center"
-        android:gravity="right"
-        android:scaleType="center"
-        android:src="@drawable/ic_action_next_item"
-        />
-
 </LinearLayout>
