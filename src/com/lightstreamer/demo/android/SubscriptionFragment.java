@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.stocklistdemo_advanced;
+package com.lightstreamer.demo.android;
 
-import com.lightstreamer.demo.stocklistdemo_advanced.LightstreamerClient.LightstreamerClientProxy;
+import com.lightstreamer.demo.android.LightstreamerClient.LightstreamerClientProxy;
 
 import android.app.Activity;
 import android.util.Log;

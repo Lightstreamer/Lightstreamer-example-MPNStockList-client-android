@@ -6,13 +6,13 @@ This project contains a full example of an Android application that employs the 
 
 ## Live Demo
 
-[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.stocklistdemo_advanced)
+[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android)
  
-[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.stocklistdemo_advanced)
+[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android)
 
 ![QR](qrcode.png)
 
-###[![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.stocklistdemo_advanced)
+###[![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android)
 (To install the app from the Google Play Store you can also use the above QR code)
 
 

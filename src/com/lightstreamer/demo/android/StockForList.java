@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.stocklistdemo_advanced;
+package com.lightstreamer.demo.android;
 
 import java.text.DecimalFormat;
 
 import android.view.View;
 import android.widget.ListView;
 
-import com.lightstreamer.demo.stocklistdemo_advanced.MainSubscription.Context;
-import com.lightstreamer.demo.stocklistdemo_advanced.StocksAdapter.RowHolder;
+import com.lightstreamer.demo.android.MainSubscription.Context;
+import com.lightstreamer.demo.android.StocksAdapter.RowHolder;
 import com.lightstreamer.ls_client.UpdateInfo;
 
 public class StockForList {
