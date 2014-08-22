@@ -293,6 +293,8 @@ public class StockListDemo extends ActionBarActivity implements StocksFragment.o
             newFragment.setArguments(args);
             
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit);
+
             transaction.replace(R.id.fragment_container, newFragment,"DETAILS_FRAGMENT");
             transaction.addToBackStack(null);
             transaction.commit();
