@@ -99,6 +99,7 @@ public class LightstreamerClient {
     private boolean mpnStatusRetrieved = false; // do not get/set this outside the eventsThread
     
     final private ExecutorService eventsThread = Executors.newSingleThreadExecutor();
+        //SubscriptionThread ConnectionThread ConnectionEvent retrieveMpnStatus MpnSubscriptionThread enablePN
     
     final private ConnectionInfo cInfo = new ConnectionInfo();
     final private LSClient client = new LSClient();
@@ -178,7 +179,6 @@ public class LightstreamerClient {
             this.startConnectionThread(false);
         }
     }
-    
     
     private class ConnectionThread implements Runnable { 
         
@@ -421,7 +421,7 @@ public class LightstreamerClient {
             }
             
             
-            if (connected) {
+            if (connected && expectingConnected.get()) {
                 if (this.add) {
                     doSubscription(sub);
                 } else {
@@ -488,8 +488,10 @@ public class LightstreamerClient {
         if (enabled) {
             eventsThread.execute(new Runnable() {
                 public void run() {
-                    retrieveAllCurrentMpns();
-                    handlePendingMpnOps();
+                    if (connected && expectingConnected.get()) {
+                        retrieveAllCurrentMpns();
+                        handlePendingMpnOps();
+                    }
                 }
             });
         } 
@@ -661,7 +663,9 @@ public class LightstreamerClient {
     public synchronized void retrieveMpnStatus(final Subscription sub) {
         eventsThread.execute(new Runnable() {
             public void run() {
-                retrieveMpnStatus(sub.getTableInfo().getGroup());
+                if (connected && expectingConnected.get()) {
+                    retrieveMpnStatus(sub.getTableInfo().getGroup());
+                }
             }
         });
     }
@@ -755,7 +759,7 @@ public class LightstreamerClient {
             //save the pending operation in case we're not able to handle it now
             PendingMpnOp op = this.updatePendingStatus();
             
-            if (!connected || !pmEnabled.get() || !mpnStatusRetrieved ) {
+            if (!connected || !pmEnabled.get() || !mpnStatusRetrieved || !expectingConnected.get()) {
                 //can't handle it now, pending subscriptions will be fired once re-connected
                 return;
             }
