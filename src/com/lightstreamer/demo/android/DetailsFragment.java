@@ -122,7 +122,10 @@ public class DetailsFragment extends Fragment {
                     return false;
                 }
                 
+                
                 v.performClick();
+                
+                int action = event.getActionMasked();
                 
                 float touchY = event.getY();
                 float touchX = event.getX();
@@ -133,7 +136,10 @@ public class DetailsFragment extends Fragment {
                     Log.d(TAG,"chart touched");
                     if (currentSubscription != null) {
                         currentSubscription.setTrigger(widget.getYVal(touchY));
-                        subscriptionHandling.activateMPN();
+                        if (action == MotionEvent.ACTION_UP) {
+                            //go on the network only after the touch has been released
+                            subscriptionHandling.activateMPN();
+                        }
                     } else {
                         Log.v(TAG,"touch ignored");
                     }
