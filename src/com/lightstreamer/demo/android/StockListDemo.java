@@ -80,14 +80,14 @@ public class StockListDemo extends ActionBarActivity implements
             LSClient.registerForMpn(getApplicationContext(), senderId, new MpnRegistrationListener(){
 
                 @Override
-                public void registrationFailed(Exception arg0) {
-                    Log.e(TAG,"Can't register MPN ID, push notifications are disabled");
+                public void registrationFailed(Exception e) {
+                    Log.e(TAG,"Can't register MPN ID, push notifications are disabled",e);
                     enablePN(false);
                 }
 
                 @Override
-                public void registrationIdChangeFailed(Exception arg0) {
-                    Log.e(TAG,"Can't change MPN ID, push notifications are disabled");
+                public void registrationIdChangeFailed(Exception e) {
+                    Log.e(TAG,"Can't change MPN ID, push notifications are disabled",e);
                     enablePN(false);
                 }
 
