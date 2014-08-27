@@ -53,7 +53,7 @@ Check out the sources for further explanations.
 ## Install
 
 If you want to install a version of this demo pointing to your local Lightstreamer Server and running into 
-an [Adroid Virtual Device](http://developer.android.com/tools/devices/emulator.html), follow these steps:
+an [Android Virtual Device](http://developer.android.com/tools/devices/emulator.html), follow these steps:
 
 * Note that, as prerequisite, the [Lightstreamer - Stock- List Demo - Java Adapter](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java) 
 has to be deployed on your local Lightstreamer Server instance. Please check out that project and follow the installation 
@@ -72,6 +72,7 @@ of this project and extract the `Android_StockListDemo_Basic.apk` file.
 * Look up the demo in your virtual device and launch it.
 
 <i>Note that the demo targets the Lightstreamer server @ http://10.0.2.2:8080 since 10.0.2.2 is the special alias to your host loopback interface.</i>
+<i>Note that pre-built apk does not contain a GCM sender ID and thus Push Notifications are disabled (see the Push Notifications section for further details.</i>
 
 ## Build
 
