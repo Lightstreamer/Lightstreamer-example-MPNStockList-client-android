@@ -3,7 +3,7 @@
 <!-- START DESCRIPTION lightstreamer-example-stocklist-client-android -->
 
 This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html)
-to subscribe to real-time updates and push notifications.
+to subscribe to real-time updates and GCM push notifications.
 
 
 ## Live Demo
