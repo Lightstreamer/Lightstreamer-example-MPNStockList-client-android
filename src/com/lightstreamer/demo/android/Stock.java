@@ -19,7 +19,6 @@ import java.util.HashMap;
 
 import android.os.Handler;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.lightstreamer.ls_client.UpdateInfo;
 
@@ -34,16 +33,7 @@ public class Stock {
     private String[] otherFields;
     private Chart chart;
     
-    private String trigger;
     private double lastPrice; //might improve by saving all the field values
-    
-    
-    public static final String TRIGGER_HEAD = "Double.parseDouble($[2])";
-    public static final String TRIGGER_LT = "<=";
-    public static final String TRIGGER_GT = ">=";
-    
-    private ToggleButton mpnStatus;
-    
 
     
     public Stock(String item, String[] numericFields, String[] otherFields) {
@@ -75,53 +65,8 @@ public class Stock {
         this.chart.clean();
     }
     
-    public void setToggle(ToggleButton mpnStatus) { //UI thread
-        this.mpnStatus = mpnStatus;
-        changeToggleStatus(false);
-    }
-    
-    private void changeToggleStatus(boolean active) { //UI thread
-        if (this.mpnStatus != null) {
-            mpnStatus.setChecked(active);
-        }
-    }
-    
-    public void updateMpnStatus(final boolean active, double trigger, Handler handler) {
-        handler.post(new Runnable() {
-            public void run() {
-                changeToggleStatus(active);
-            }
-        });
-
-        chart.setTriggerLine(trigger);
-
-    }
-    
-    public void setTrigger(Double yVal) {
-        if (yVal == this.lastPrice) {
-            //invalid!
-            yVal = -1.0;
-        }
-       
-        if (yVal < 0) {
-            this.trigger = null;
-        } else {
-            this.trigger = TRIGGER_HEAD;
-            if (yVal < this.lastPrice) {
-                this.trigger += TRIGGER_LT; 
-            } else {
-                this.trigger += TRIGGER_GT;
-            }
-            
-            yVal =  Math.round(yVal*100.0)/100.0;
-            this.trigger += yVal;
-        }
-        
-        chart.setTempTriggerLine(yVal);
-    }
-    
-    public String getTrigger() {
-        return this.trigger;
+    public double getLastPrice() {
+        return this.lastPrice;
     }
     
     public void update(UpdateInfo newData, Handler handler) {
@@ -220,6 +165,10 @@ public class Stock {
             this.valid = false;
         }
     }
+
+
+
+    
     
     
 }

@@ -20,6 +20,9 @@ import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
@@ -35,8 +38,11 @@ import com.lightstreamer.ls_client.UpdateInfo;
 
 public class Chart {
     
-    private FixedYSeries fixedLine;
-    private FixedYSeries tempFixedLine;
+    private Map<Double,FixedYSeries> fixedLines = new HashMap<Double,FixedYSeries>();
+    private Map<Double,FixedYSeries> tempFixedLines = new HashMap<Double,FixedYSeries>();
+    
+    LineAndPointFormatter fixedRedLineFormatter;
+    LineAndPointFormatter fixedGreenLineFormatter;
     
     private Series series;
     private XYPlot dynamicPlot;
@@ -50,17 +56,20 @@ public class Chart {
     
     public Chart() {
         this.series = new Series();
-        this.fixedLine = new FixedYSeries();
-        this.tempFixedLine = new FixedYSeries();
     }
     
-    private void adjustToFixedLine(FixedYSeries fixedLine) {
-        if (fixedLine.size() > 0) {
-            double fixed = fixedLine.getFixed(); 
-            if (fixed > maxY) {
-                maxY = fixed+0.1;
-            } else if (fixedLine.getFixed() < minY) {
-                minY = fixed-0.1;
+    private void adjustToFixedLine(Map<Double,FixedYSeries> fixedLines) {
+        synchronized(this.fixedLines) {
+            for(Map.Entry<Double,FixedYSeries> entry : fixedLines.entrySet()) {
+                FixedYSeries fixedLine = entry.getValue();
+                if (fixedLine.size() > 0) {
+                    double fixed = fixedLine.getFixed(); 
+                    if (fixed > maxY) {
+                        maxY = fixed+0.1;
+                    } else if (fixedLine.getFixed() < minY) {
+                        minY = fixed-0.1;
+                    }
+                }
             }
         }
     }
@@ -70,8 +79,8 @@ public class Chart {
         double min = minY;
         double max = maxY;
         
-        adjustToFixedLine(fixedLine);
-        adjustToFixedLine(tempFixedLine);
+        adjustToFixedLine(fixedLines);
+        adjustToFixedLine(tempFixedLines);
         
         dynamicPlot.setRangeBoundaries(min, max, BoundaryMode.FIXED);
     }
@@ -96,27 +105,66 @@ public class Chart {
         }
     }
     
-    public void setTriggerLine(double trigger) {
-        if (trigger < 0) {
-            fixedLine.deactivate();
-        } else {
-            fixedLine.fix(trigger);
+    private FixedYSeries moving;
+    
+    public void setMovingTriggerLine(double trigger) {
+        if (moving == null) {
+            moving = new FixedYSeries();
         }
-        if (tempFixedLine.getY(0).doubleValue() == trigger) {
-            tempFixedLine.deactivate();
+        moving.fix(trigger);
+        this.dynamicPlot.addSeries(moving, fixedGreenLineFormatter);
+    }
+    
+    public void endMovingTriggerLine(double trigger) {
+        synchronized(this.fixedLines) {
+            this.dynamicPlot.removeSeries(moving);
+            moving = null;
+            FixedYSeries fixedLine = fixedLines.get(trigger);
+            if (fixedLine != null) {
+                return;
+            }
+            addFixedLine(tempFixedLines,trigger,fixedGreenLineFormatter);
         }
-        
         this.redraw();
     }
     
-    public void setTempTriggerLine(double trigger) {
-        if (trigger < 0) {
-            tempFixedLine.deactivate();
-        } else {
-            tempFixedLine.fix(trigger);
+    public void setTriggerLine(double trigger) {
+        synchronized(this.fixedLines) {
+            removeFixedLine(tempFixedLines,trigger);
+            addFixedLine(fixedLines,trigger,fixedRedLineFormatter);
         }
         this.redraw();
     }
+    
+    public void removeTriggerLine(double trigger) {
+        synchronized(this.fixedLines) {
+            removeFixedLine(tempFixedLines,trigger);
+            removeFixedLine(fixedLines,trigger);
+        }
+        this.redraw();
+    }
+    
+    private void addFixedLine(Map<Double, FixedYSeries> fixedLines,
+            double trigger, LineAndPointFormatter formatter) {
+        
+        FixedYSeries fixedLine = fixedLines.get(trigger);
+        if (fixedLine == null) {
+            fixedLine = new FixedYSeries();
+            fixedLine.fix(trigger);
+            fixedLines.put(trigger, fixedLine);
+            this.dynamicPlot.addSeries(fixedLine, formatter);
+        } 
+    }
+
+    private void removeFixedLine(Map<Double, FixedYSeries> fixedLines,
+            double trigger) {
+        FixedYSeries fixedLine = fixedLines.remove(trigger);
+        if (fixedLine != null) {
+            this.dynamicPlot.removeSeries(fixedLine);
+        }
+    }
+
+    
     
     public void onResume(Context context) {
         PixelUtils.init(context);
@@ -126,15 +174,19 @@ public class Chart {
         this.dynamicPlot.addSeries(series, formatter);
         
         int red = context.getResources().getColor(R.color.lower_highlight);
-        LineAndPointFormatter fixedLineFormatter = new LineAndPointFormatter(red, null, null, null);
-        this.dynamicPlot.addSeries(fixedLine, fixedLineFormatter);
+        fixedRedLineFormatter = new LineAndPointFormatter(red, null, null, null);
+        
         
         int green = context.getResources().getColor(R.color.higher_highlight);
-        fixedLineFormatter = new LineAndPointFormatter(green, null, null, null);
-        this.dynamicPlot.addSeries(tempFixedLine, fixedLineFormatter);
+        fixedGreenLineFormatter = new LineAndPointFormatter(green, null, null, null);
         
+       
         this.clean();
         
+    }
+    
+    public void onPause() {
+        this.dynamicPlot.removeSeries(series);
     }
     
     public void addPoint(String time,String lastPrice) {
@@ -150,6 +202,21 @@ public class Chart {
     
     public void clean() {
         this.series.reset();
+        
+        synchronized(this.fixedLines) {
+            Iterator<Map.Entry<Double,FixedYSeries>> cleanIterator = fixedLines.entrySet().iterator();
+            while(cleanIterator.hasNext()) {
+                this.dynamicPlot.removeSeries(cleanIterator.next().getValue());
+                cleanIterator.remove();
+            }
+            cleanIterator = tempFixedLines.entrySet().iterator();
+            while(cleanIterator.hasNext()) {
+                this.dynamicPlot.removeSeries(cleanIterator.next().getValue());
+                cleanIterator.remove();
+            }
+        }
+        
+        
         maxY = 0;
         minY = 0;
         this.redraw();
@@ -193,17 +260,10 @@ public class Chart {
     
     private class FixedYSeries implements XYSeries {
         
-        private boolean alive = false;
-        
         private double fixedY = 0;
         
         public void fix(double fixed) {
             this.fixedY = fixed;
-            this.alive = true;
-        }
-        
-        public void deactivate() {
-            this.alive = false;
         }
         
         @Override
@@ -237,10 +297,6 @@ public class Chart {
 
         @Override
         public int size() {
-            if (!alive) {
-                return 0;
-            }
-            
             return 2;
         }
         

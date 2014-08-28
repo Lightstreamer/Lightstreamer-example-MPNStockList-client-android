@@ -133,12 +133,18 @@ public class DetailsFragment extends Fragment {
                 XYGraphWidget widget = plot.getGraphWidget();
                 RectF gridRect = widget.getGridRect();
                 if(gridRect.contains(touchX, touchY)){
-                    Log.d(TAG,"chart touched");
+                    
                     if (currentSubscription != null) {
-                        currentSubscription.setTrigger(widget.getYVal(touchY));
+                        double triggerVal = widget.getYVal(touchY);
+                        triggerVal =  Math.round(triggerVal*100.0)/100.0;
+                        
+                        chart.setMovingTriggerLine(triggerVal);
                         if (action == MotionEvent.ACTION_UP) {
+                            chart.endMovingTriggerLine(triggerVal);
+                            
+                            Log.d(TAG,"Touch released @ " + triggerVal);
                             //go on the network only after the touch has been released
-                            subscriptionHandling.activateMPN();
+                            subscriptionHandling.activateMPN(getMpnInfo(triggerVal));
                         }
                     } else {
                         Log.v(TAG,"touch ignored");
@@ -168,6 +174,7 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        chart.onPause();
         this.subscriptionHandling.onPause();
     }
     
@@ -208,10 +215,10 @@ public class DetailsFragment extends Fragment {
         if (currentItem != 0) {
             if (on) {
                 Log.v(TAG,"PN enabled for item" + currentItem);
-                this.subscriptionHandling.activateMPN();
+                this.subscriptionHandling.activateMPN(getMpnInfo(-1));
             } else {
                 Log.v(TAG,"PN disabled for item" +currentItem);
-                this.subscriptionHandling.deactivateMPN();
+                this.subscriptionHandling.deactivateMPN(getMpnInfo(-1));
             }
             
         }
@@ -221,6 +228,57 @@ public class DetailsFragment extends Fragment {
         this.pnEnabled = enabled;
         this.showToggle(enabled);
     }
+    
+    private MpnInfo getMpnInfo(double trigger) {
+        
+        ExtendedTableInfo tableInfo = this.currentSubscription.getTableInfo();
+        
+        Map<String, String> data= new HashMap<String, String>();
+        data.put("stock_name", "${stock_name}");
+        data.put("last_price", "${last_price}");
+        data.put("time", "${time}");
+        data.put("item", tableInfo.getItems()[0]);
+        
+        ExtendedTableInfo clone = null;
+        try {
+            clone = new ExtendedTableInfo(tableInfo.getItems(), "MERGE", mpnSubscriptionFields , false);
+        } catch (SubscrException e) {
+            Log.wtf(TAG, "can't happen");
+        }
+        clone.setDataAdapter("QUOTE_ADAPTER");
+        
+        MpnInfo info = new MpnInfo(clone,"Stock update",data);
+        info.setDelayWhileIdle("false");
+        info.setTimeToLive("300");
+        
+        //this.getLastPrice()
+        
+        info.setTriggerExpression(triggetToString(trigger,this.currentSubscription.getLastPrice()));
+        
+        
+        return info;
+    }
+    
+    public static final String TRIGGER_HEAD = "Double.parseDouble($[2])";
+    public static final String TRIGGER_LT = "<=";
+    public static final String TRIGGER_GT = ">=";
+    
+    public String triggetToString(double triggerVal, double current) {
+        String trigger = null;
+        if (triggerVal >= 0) {
+            trigger = TRIGGER_HEAD;
+            if (triggerVal < current) {
+                trigger += TRIGGER_LT; 
+            } else {
+                trigger += TRIGGER_GT;
+            }
+            
+            trigger += triggerVal;
+        }
+        
+        return trigger; 
+    }
+   
 
     private void showToggle(final boolean show) {
         
@@ -256,15 +314,12 @@ public class DetailsFragment extends Fragment {
         private ExtendedTableInfo tableInfo;
         private SubscribedTableKey key;
         private StockListener listener;
-        private MpnInfo mpnInfo;
         
         public ItemSubscription(String item) {
             this.stock = new Stock(item,numericFields,otherFields);
             stock.setHolder(holder);
             stock.setChart(chart);
-            stock.setToggle(toggle);
-            
-           
+                     
             this.listener = new StockListener(stock);
             
             try {
@@ -273,10 +328,6 @@ public class DetailsFragment extends Fragment {
             } catch (SubscrException e) {
                 Log.wtf(TAG, "I'm pretty sure MERGE is compatible with the snapshot request!");
             }
-        }
-
-        public void setTrigger(Double yVal) {
-            stock.setTrigger(yVal);
         }
 
         public void disable() {
@@ -304,38 +355,13 @@ public class DetailsFragment extends Fragment {
         }
 
         @Override
-        public MpnInfo getMpnInfo() {
-            if (this.mpnInfo == null) {
-                Map<String, String> data= new HashMap<String, String>();
-                data.put("stock_name", "${stock_name}");
-                data.put("last_price", "${last_price}");
-                data.put("time", "${time}");
-                data.put("item", tableInfo.getItems()[0]);
-                
-                ExtendedTableInfo clone = null;
-                try {
-                    clone = new ExtendedTableInfo(tableInfo.getItems(), "MERGE", mpnSubscriptionFields , false);
-                } catch (SubscrException e) {
-                    Log.wtf(TAG, "can't happen");
-                }
-                clone.setDataAdapter("QUOTE_ADAPTER");
-                this.mpnInfo = new MpnInfo(clone,"Stock update",data);
-                this.mpnInfo.setDelayWhileIdle("false");
-                this.mpnInfo.setTimeToLive("300");
-                
-                this.mpnInfo.setTriggerExpression(stock.getTrigger());
-                
-            }
-            
-            //everything is fixed except the trigger
-            this.mpnInfo.setTriggerExpression(stock.getTrigger());
-            
-            return this.mpnInfo;
-        }
-
-        @Override
         public MpnStatusListener getMpnStatusListener() {
             return this.listener;
+        }
+        
+
+        public double getLastPrice() {
+            return this.stock.getLastPrice(); 
         }
     }
     
@@ -382,13 +408,33 @@ public class DetailsFragment extends Fragment {
         }
 
         @Override
-        public void onMpnStatusChanged(final boolean activated, double trigger) {
+        public void onMpnStatusChanged(final boolean activated, String trigger) {
             if (disabled.get()) {
                 return;
             }
-            Log.v(TAG,"Mpn status changed");
-            this.stock.updateMpnStatus(activated, trigger, handler);
+            
+            double triggerDouble = -1;
+            if (trigger != null) {
+                try {
+                    triggerDouble = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length()+TRIGGER_GT.length()));
+                } catch(NumberFormatException e) {
+                    Log.wtf(TAG, "Unexpected trigger set: " + trigger);
+                }
+                if (activated) {
+                    chart.setTriggerLine(triggerDouble);
+                } else {
+                    chart.removeTriggerLine(triggerDouble);
+                }
+            } else {
+                handler.post(new Runnable() {
+                    public void run() {
+                        toggle.setChecked(activated);
+                    }
+                });
+            }
+            
         }
+        
         
     }
 

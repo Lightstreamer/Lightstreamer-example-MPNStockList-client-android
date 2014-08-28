@@ -16,6 +16,7 @@
 package com.lightstreamer.demo.android;
 
 import com.lightstreamer.demo.android.LightstreamerClient.LightstreamerClientProxy;
+import com.lightstreamer.ls_client.mpn.MpnInfo;
 
 import android.app.Activity;
 import android.util.Log;
@@ -39,16 +40,16 @@ public class SubscriptionFragment /*extends Fragment*/ {
         
         if (running) {
             this.lsClient.addSubscription(this.subscription);
-            this.lsClient.retrieveMpnStatus(this.subscription);
+            this.lsClient.retrieveMpnStatus(this.subscription.getTableInfo().getGroup());
         }
     }
     
-    protected synchronized void activateMPN() {
-        this.lsClient.activateMPN(this.subscription);
+    protected synchronized void activateMPN(MpnInfo info) {
+        this.lsClient.activateMPN(info);
     }
     
-    protected synchronized void deactivateMPN() {
-        this.lsClient.deactivateMPN(this.subscription);
+    protected synchronized void deactivateMPN(MpnInfo info) {
+        this.lsClient.deactivateMPN(info);
     }
     
     public synchronized void onResume() {
@@ -56,7 +57,7 @@ public class SubscriptionFragment /*extends Fragment*/ {
         if (this.lsClient != null && this.subscription != null) {
             this.lsClient.addSubscription(this.subscription);
             subscribed = true;
-            this.lsClient.retrieveMpnStatus(this.subscription);
+            this.lsClient.retrieveMpnStatus(this.subscription.getTableInfo().getGroup());
         }
         running = true;
     }

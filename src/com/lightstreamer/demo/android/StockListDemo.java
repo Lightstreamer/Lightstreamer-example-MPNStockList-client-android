@@ -21,6 +21,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.lightstreamer.demo.android.LightstreamerClient.LightstreamerClientProxy;
 import com.lightstreamer.demo.android.LightstreamerClient.StatusChangeListener;
 import com.lightstreamer.ls_client.LSClient;
+import com.lightstreamer.ls_client.mpn.MpnInfo;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationException;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationIdChangeInfo;
 import com.lightstreamer.ls_client.mpn.MpnRegistrationIdStatus;
@@ -435,18 +436,18 @@ public class StockListDemo extends ActionBarActivity implements
     }
 
     @Override
-    public void activateMPN(Subscription info) {
+    public void activateMPN(MpnInfo info) {
         lsClient.activateMPN(info);
     }
 
     @Override
-    public void deactivateMPN(Subscription info) {
+    public void deactivateMPN(MpnInfo info) {
         lsClient.deactivateMPN(info);
     }
     
     @Override
-    public void retrieveMpnStatus(Subscription info) {
-        lsClient.retrieveMpnStatus(info);
+    public void retrieveMpnStatus(String key) {
+        lsClient.retrieveMpnStatus(key);
     }
 
     

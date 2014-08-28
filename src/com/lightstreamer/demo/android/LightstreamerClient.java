@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,6 @@ import com.lightstreamer.ls_client.PushUserException;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
-import com.lightstreamer.ls_client.mpn.MpnKey;
 import com.lightstreamer.ls_client.mpn.MpnStatus;
 
 
@@ -47,7 +47,9 @@ public class LightstreamerClient {
         public void onStatusChange(int status);
     }
     
-    private static final String TAG = "LSConnection";
+    private static final String TAG = "LS_CONN";
+    private static final String TAG_MPN = "LS_MPN";
+    private static final String TAG_SUB = "LS_SUB";
     
     public static final int STALLED = 4;
     public static final int STREAMING = 2;
@@ -86,9 +88,8 @@ public class LightstreamerClient {
     
     private LinkedList<Subscription> subscriptions = new LinkedList<Subscription>();
     
-    Map<String,MpnInfo> mpns = new HashMap<String,MpnInfo>();
-    Map<String,PendingMpnOp> pendingMpns = new HashMap<String,PendingMpnOp>();
-    
+    Map<String,Map<String,MpnInfo>> mpnCache = new HashMap<String,Map<String,MpnInfo>>();
+    Map<String,Map<String,PendingOp>> mpnPendingCache = new HashMap<String,Map<String,PendingOp>>();
     Map<String,MpnStatusListener> mpnListeners = new HashMap<String,MpnStatusListener>();
     
     
@@ -216,9 +217,9 @@ public class LightstreamerClient {
                         handlePendingMpnOps();
                         
                     } catch (PushServerException e) {
-                        Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
+                        Log.d(TAG,"Connection failed: " + e.getErrorCode() + ": " + e.getMessage());
                     } catch (PushUserException e) {
-                        Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
+                        Log.d(TAG,"Connection refused: " + e.getErrorCode() + ": " + e.getMessage());
                     } catch (PushConnException e) {
                         Log.d(TAG,"Connection problems: " + e.getMessage());
                     }
@@ -348,7 +349,7 @@ public class LightstreamerClient {
             return;
         }
         
-        Log.i(TAG,"Resubscribing " + subscriptions.size() + " subscriptions");
+        Log.i(TAG_SUB,"Resubscribing " + subscriptions.size() + " subscriptions");
         
         ExecutorService tmpExecutor = Executors.newFixedThreadPool(subscriptions.size());
         
@@ -361,10 +362,10 @@ public class LightstreamerClient {
             return;
         }
         
-        Iterator<Subscription> subscriptionsIterator = subscriptions.iterator();
-        while(subscriptionsIterator.hasNext()) {
-            tmpExecutor.execute(new BatchSubscriptionThread(subscriptionsIterator.next()));
+        for (Subscription sub : subscriptions) {
+            tmpExecutor.execute(new BatchSubscriptionThread(sub));
         }
+        
         
         //close batch
         client.closeBatch(); //should be useless
@@ -394,11 +395,11 @@ public class LightstreamerClient {
             if (subscriptions.contains(sub)) {
                 if (this.add) {
                     //already contained, exit now
-                    Log.d(TAG,"Can't add subscription: Subscription already in: " + sub);
+                    Log.d(TAG_SUB,"Can't add subscription: Subscription already in: " + sub);
                     return;
                 }
                 
-                Log.i(TAG,"Removing subscription " + sub);
+                Log.i(TAG_SUB,"Removing subscription " + sub);
                 subscriptions.remove(sub);
                 String key = sub.getTableInfo().getGroup();
                 mpnListeners.remove(key);
@@ -406,10 +407,10 @@ public class LightstreamerClient {
             } else {
                 if (!this.add) {
                     //already removed, exit now
-                    Log.d(TAG,"Can't remove subscription: Subscription not in: " + sub);
+                    Log.d(TAG_SUB,"Can't remove subscription: Subscription not in: " + sub);
                     return;
                 }
-                Log.i(TAG,"Adding subscription " + sub);
+                Log.i(TAG_SUB,"Adding subscription " + sub);
                 subscriptions.add(sub);
                 
                 MpnStatusListener listener = sub.getMpnStatusListener();
@@ -450,33 +451,33 @@ public class LightstreamerClient {
     
     private void doSubscription(Subscription sub) {
         
-        Log.d(TAG,"Subscribing " + sub);
+        Log.d(TAG_SUB,"Subscribing " + sub);
         
         try {
             SubscribedTableKey key = client.subscribeTable(sub.getTableInfo(), sub.getTableListener(), false);
             sub.setTableKey(key);
         } catch (SubscrException e) {
-            Log.d(TAG,"Connection was closed: " + e.getMessage());
+            Log.d(TAG_SUB,"Connection was closed: " + e.getMessage());
         } catch (PushServerException e) {
-            Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
+            Log.d(TAG_SUB,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
         } catch (PushUserException e) {
-            Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
+            Log.d(TAG_SUB,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
         } catch (PushConnException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
+            Log.d(TAG_SUB,"Connection problems: " + e.getMessage());
         }
     }
     private void doUnsubscription(Subscription sub) {
         
-        Log.d(TAG,"Unsubscribing " + sub);
+        Log.d(TAG_SUB,"Unsubscribing " + sub);
         
         try {
             client.unsubscribeTable(sub.getTableKey());
         } catch (SubscrException e) {
-            Log.d(TAG,"Connection was closed: " + e.getMessage());
+            Log.d(TAG_SUB,"Connection was closed: " + e.getMessage());
         } catch (PushServerException e) {
-            Log.wtf(TAG,"Unsubscription failed: " + e.getErrorCode() + ": " + e.getMessage());
+            Log.wtf(TAG_SUB,"Unsubscription failed: " + e.getErrorCode() + ": " + e.getMessage());
         } catch (PushConnException e) {
-            Log.d(TAG,"Unubscription failed: " + e.getMessage());
+            Log.d(TAG_SUB,"Unubscription failed: " + e.getMessage());
         }
     }
     
@@ -486,6 +487,7 @@ public class LightstreamerClient {
     public void enablePN(boolean enabled) {
         this.pmEnabled.set(enabled);
         if (enabled) {
+            Log.i(TAG_MPN,"Enabling Mpn");
             eventsThread.execute(new Runnable() {
                 public void run() {
                     if (connected && expectingConnected.get()) {
@@ -497,310 +499,377 @@ public class LightstreamerClient {
         } 
     }
     
-    private void notifyMpnStatus(String key) {
-        MpnStatusListener listener = mpnListeners.get(key);
-        if (listener != null) {
-            if (!mpns.containsKey(key)) {
-                Log.v(TAG,"Notify no mpn subscription active for " + key);
-                
-                listener.onMpnStatusChanged(false,-1);
-            } else {
-                MpnInfo current = mpns.get(key);
-                
-                double triggerValue = -1;
-                String trigger = current.getTriggerExpression();
-                if (trigger != null) {
-                    Log.v(TAG,"Notify mpn subscription active for " + key + "("+trigger+")");
-                    
-                    try {
-                        triggerValue = Double.parseDouble(trigger.substring(Stock.TRIGGER_HEAD.length()+Stock.TRIGGER_GT.length()));
-                    } catch(NumberFormatException e) {
-                        Log.wtf(TAG, "Unexpected trigger set: " + trigger);
-                    }
-                } else {
-                    Log.v(TAG,"Notify mpn subscription active for " + key);
-                }
-                         
-                listener.onMpnStatusChanged(true,triggerValue);
-            }
-        }
+    public synchronized void retrieveMpnStatus(String key) {
+        RetrieveMpnSubscriptionStatusThread statusThread = new RetrieveMpnSubscriptionStatusThread(key);
+        eventsThread.execute(statusThread);
     }
     
-    private void handlePendingMpnOps() { //called from the eventsThread
-        for (Iterator<String> i = pendingMpns.keySet().iterator(); i.hasNext();) {
-            String key = i.next();
-            
-            try {
-                handlePendingMpnOp(pendingMpns.get(key));
-            } catch (SubscrException e) {
-                Log.d(TAG,"Connection was closed: " + e.getMessage());
-            } catch (PushServerException e) {
-                Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
-            } catch (PushUserException e) {
-                Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
-            } catch (PushConnException e) {
-                Log.d(TAG,"Connection problems: " + e.getMessage());
-            }
-            
-        }
-    }
-    
-    private void handlePendingMpnOp(PendingMpnOp op) 
-        throws SubscrException, PushServerException, PushUserException, PushConnException { //called from the eventsThread
-        
-        String key = op.sub.getTableInfo().getGroup();
-        
-        retrieveCurrentMpnStatus(key);
-        
-        MpnInfo info = op.sub.getMpnInfo();
-       
-        
-        if (mpns.containsKey(key) == op.add) {
-           
-            
-            if (op.add) {
-                //check that the owned trigger is equal to the requested one
-                
-                MpnInfo currentInfo = mpns.get(key);
-                String currentTrigger = currentInfo.getTriggerExpression();
-                
-                if (op.sub.getMpnInfo().getTriggerExpression().equals(currentTrigger)) {
-                    //already in the desired state, remove pending op and exit
-                    pendingMpns.remove(key);
-                    Log.d(TAG,"Can't add mpn subscription: mpn subscription already in: " + op.sub);
-                    return;
-                    
-                } else {
-                    //remove the current subscription
-                    
-                    Log.v(TAG,"Trigger change request for " + key+ ". Disabling trigger " + currentTrigger);
-                    
-                    MpnKey currentKey = currentInfo.getMpnKey();
-                    client.deactivateMpn(currentKey);
-                    mpns.remove(key);                    
-                    
-                    //then proceed
-                }
-                
-            } else {
-                //already in the desired state, remove pending op and exit
-                pendingMpns.remove(key);
-                Log.d(TAG,"Can't remove mpn subscription: mpn subscription not in: " + op.sub);
-                return;
-            }
-            
-        }
-
-        if (op.add) {
-            Log.v(TAG,"Activating new mpn subscription for " + key+ ". (trigger " + info.getTriggerExpression() + ")");
-            
-            client.activateMpn(info); //in case of failure we leave the pending op (we might want to change this behavior)
-            mpns.put(key, info);
-            
-            Log.v(TAG,"Activated");
-            
-        } else {
-            info = mpns.get(key); //get the info from the collection as we are sure that that one contains the mpnKey
-            
-            Log.v(TAG,"Deactivating mpn subscription for " + key+ ". (trigger " + info.getTriggerExpression() + ")");
-            
-            client.deactivateMpn(info.getMpnKey()); //in case of failure we leave the pending op (we might want to change this behavior)
-            mpns.remove(key);
-            
-            Log.v(TAG,"Deactivated");
-        }
-        
-        //remove from pending op and fire listener
-        pendingMpns.remove(key);
-        
-        notifyMpnStatus(key);//refresh status
-     
-    }
-    
-    //note that the TableInfo group will be used to uniquely identify its MpnInfo
-    public synchronized void activateMPN(Subscription info) {
+  //note that the TableInfo group will be used to uniquely identify its MpnInfo
+    public synchronized void activateMPN(MpnInfo info) {
         eventsThread.execute(new MpnSubscriptionThread(info,true));
     }
 
     //note that the TableInfo group will be used to uniquely identify its MpnInfo
-    public synchronized void deactivateMPN(Subscription info) {
+    public synchronized void deactivateMPN(MpnInfo info) {
         eventsThread.execute(new MpnSubscriptionThread(info,false));
     }
     
-    private void retrieveAllCurrentMpns() { //called from eventsThread
-        if (!connected || mpnStatusRetrieved || !pmEnabled.get()) {
+    /*
+     * called on session start or when push notifications are enabled on the app:
+     * flushes triggered and suspended mpn subscriptions and retrieves the list
+     * of active ones. Notifies listeners if any
+     */
+    private void retrieveAllCurrentMpns() { //from eventsThread 
+        if (mpnStatusRetrieved || !pmEnabled.get()) {
             return;
         }
+        
+        
+        
+        //deactivate triggered subscriptions
+        Log.d(TAG_MPN,"Deactivate triggered mpn subscriptions");
+        try {
+            this.client.deactivateMpn(MpnStatus.Triggered);
+        } catch (SubscrException e) {
+            Log.d(TAG_MPN,"Connection problems: " + e.getMessage());
+        } catch (PushServerException e) {
+            Log.d(TAG_MPN,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+        } catch (PushUserException e) {
+             Log.d(TAG_MPN,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+        } catch (PushConnException e) {
+            Log.d(TAG_MPN,"Connection problems: " + e.getMessage());
+        }
+        
+        //get remaining subscriptions (since I've just cleared Triggered subscriptions I assume these are all Active)
+        Log.d(TAG_MPN,"Retrieving MPN subscription statuses");
         List<MpnInfo>mpnList = null;
         try {
             mpnList = this.client.inquireAllMpn();
             mpnStatusRetrieved = true;
         } catch (SubscrException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
+            Log.d(TAG_MPN,"Connection problems: " + e.getMessage());
         } catch (PushServerException e) {
-            Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+            Log.d(TAG_MPN,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
         } catch (PushUserException e) {
              if (e.getErrorCode() == 45) {
                  mpnStatusRetrieved = true;
              } else {
-                 Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+                 Log.d(TAG_MPN,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
              }
         } catch (PushConnException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
+            Log.d(TAG_MPN,"Connection problems: " + e.getMessage());
         }
             
-        mpns.clear();
+        //populate active subscriptions cache
+        mpnCache.clear();
         if (mpnList != null) {
-             for (Iterator<MpnInfo> i = mpnList.iterator(); i.hasNext(); ) {
-                 MpnInfo info = i.next();
-                 String key = info.getTableInfo().getGroup(); //currently handling one trigger per subscription
-                 mpns.put(key, info);
-                 retrieveMpnStatus(key);
+             for (MpnInfo info : mpnList) {
+                 String key = info.getTableInfo().getGroup();
+                 String trigger = info.getTriggerExpression();
+                 if (trigger == null) {
+                     trigger = "";
+                 }
+                 
+                 addToMpnCache(info);
+                 
+                 MpnStatusListener listener = mpnListeners.get(key);
+                 if (listener != null) {
+                     notifyMpnStatusListener(true,trigger,listener);
+                 }
              }
         }
     }
     
-    public synchronized void retrieveMpnStatus(final Subscription sub) {
-        eventsThread.execute(new Runnable() {
-            public void run() {
-                if (connected && expectingConnected.get()) {
-                    retrieveMpnStatus(sub.getTableInfo().getGroup());
-                }
-            }
-        });
-    }
-    
-    private void retrieveMpnStatus(String key) { //called from eventsThread
-        try {
-            retrieveCurrentMpnStatus(key);
-            notifyMpnStatus(key);
-        } catch (PushConnException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
-        } catch (SubscrException e) {
-            Log.d(TAG,"Connection problems: " + e.getMessage());
-        } catch (PushServerException e) {
-            Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
-        } catch (PushUserException e) {
-            Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
-        }
-    }
-
-    void retrieveCurrentMpnStatus(String key) 
-            throws PushConnException, SubscrException, PushServerException, PushUserException {
+    private void addToMpnCache(MpnInfo info) {
+        String key = info.getTableInfo().getGroup();
+        String trigger = info.getTriggerExpression();
         
-        if (mpns.containsKey(key)) {
-            MpnKey mpnKey = mpns.get(key).getMpnKey();
-            MpnStatus status;
-            try {
-                status = client.inquireMpnStatus(mpnKey);
-            } catch (PushUserException e) {
-                if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
-                    //not active anymore
-                    mpns.remove(key);
-                   
+        Map<String,MpnInfo> triggerList = mpnCache.get(key);
+        if (triggerList == null) {
+            triggerList = new HashMap<String,MpnInfo>();
+            mpnCache.put(key, triggerList);
+        }
+        triggerList.put(trigger, info);
+    }
+    
+    private void removeFromMpnCache(MpnInfo info) {
+        String key = info.getTableInfo().getGroup();
+        Map<String,MpnInfo> triggerList = mpnCache.get(key);
+        if (triggerList == null) {
+            //not in list
+            return;
+        }
+        
+        String trigger = info.getTriggerExpression();
+        triggerList.remove(trigger);
+        
+        if (triggerList.isEmpty()) {
+            mpnCache.remove(key);
+        }
+    }
+    
+    private MpnInfo getFromMpnCache(MpnInfo info) { //using PendingOp instead of using MpnInfo to exploit the shortcuts
+        Map<String,MpnInfo> keyCache = mpnCache.get(info.getTableInfo().getGroup());
+        if (keyCache == null) {
+            return null;
+        }
+        return keyCache.get(info.getTriggerExpression());
+    }
+    
+    private void handlePendingMpnOps() { //from eventsThread
+        Log.d(TAG_MPN,"Handle pending MPN subscriptions");
+        
+        Iterator<Entry<String, Map<String, PendingOp>>> pendings = mpnPendingCache.entrySet().iterator();
+        while (pendings.hasNext()) {
+            
+            Map<String, PendingOp> entry = pendings.next().getValue();
+            Iterator<Entry<String, PendingOp>> pendingsForKey = entry.entrySet().iterator();
+            while (pendingsForKey.hasNext()) {
+                
+                if (!connected || !expectingConnected.get()) {
+                    //check before each request, just in case
                     return;
-                } else {
-                    throw e;
                 }
+                
+                PendingOp toHandle = pendingsForKey.next().getValue();
+                
+                try {
+                    boolean success = mpnSubscriptionActivation(toHandle);
+                    if (success) {
+                        pendingsForKey.remove();
+                    }
+                    
+                } catch (SubscrException e) {
+                    Log.d(TAG,"Connection problems: " + e.getMessage());
+                } catch (PushServerException e) {
+                    Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+                } catch (PushUserException e) {
+                     Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+                } catch (PushConnException e) {
+                    Log.d(TAG,"Connection problems: " + e.getMessage());
+                }      
+                
             }
             
-            if (status == MpnStatus.Suspended || status == MpnStatus.Triggered) {
-                //deactivate useless subscription before handling the pending op
-                client.deactivateMpn(mpnKey);
-                mpns.remove(key);
-            } else {
-                //otherwise refresh the mpninfo we have
-                MpnInfo info = client.inquireMpn(mpnKey);
-                mpns.put(key, info);
+            if (entry.isEmpty()) {
+                pendings.remove();
             }
+            
             
         }
     }
     
+    private void notifyMpnStatusListener(boolean activated, String trigger, MpnStatusListener listener) { 
+        listener.onMpnStatusChanged(activated, trigger);
+    }
+    
+    /*
+     * checks the cache for key-related mpn subscrioptions then asks the server their status;
+     * suspended/triggered are removed. A notification is sent to the listener
+     */
+    private void retrieveMpnSubscriptionStatus(String key) 
+            throws SubscrException, PushServerException, PushUserException, PushConnException { //from eventsThread 
+        
+        if (!mpnStatusRetrieved || !pmEnabled.get()) {
+            return;
+        }
+        
+        Log.d(TAG_MPN,"Checking MPN subscriptions status for " + key);
+        
+        MpnStatusListener listener = mpnListeners.get(key);
+        //if listener is null this makes no much sense, anyway we run it to eventually clear 
+        //Suspended/Triggered subscriptions from the local cache
+        
+        Map <String,MpnInfo> active = mpnCache.get(key);
+        if (active != null) {
+            Iterator<Map.Entry<String,MpnInfo>> entries = active.entrySet().iterator();
+            while (entries.hasNext()) {
+                
+                Map.Entry<String,MpnInfo> entry = entries.next();
+                
+                MpnInfo toCheck = entry.getValue();
+                boolean alive = isMpnSubscriptionAlive(toCheck);
+                if (!alive) {
+                    entries.remove();
+                    if (listener != null) {
+                        notifyMpnStatusListener(false, toCheck.getTriggerExpression(), listener);
+                    }
+                } else if (listener != null) {
+                    notifyMpnStatusListener(true, toCheck.getTriggerExpression(), listener);
+                }
+            }
+        }
+    }
+    
+    private boolean isMpnSubscriptionAlive(MpnInfo toCheck) 
+            throws SubscrException, PushServerException, PushUserException, PushConnException { //from eventsThread 
+        
+        MpnStatus status = null;
+        try {
+            status = client.inquireMpnStatus(toCheck.getMpnKey());
+        } catch (PushUserException e) {
+             if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
+                 //not active anymore
+                 return false;
+             } else {
+                 throw e;
+             }
+        } 
+        
+        
+        //if the current status is not active we can deactivate this subscription
+        if (status == MpnStatus.Suspended || status == MpnStatus.Triggered) {
+            return false;
+        } else {
+            //otherwise we're good to go
+            return true;
+        }
+        
+    }
+    
+    
+    
+    private boolean mpnSubscriptionActivation(PendingOp op) 
+            throws SubscrException, PushServerException, PushUserException, PushConnException { //from eventsThread {
+        
+        if (!mpnStatusRetrieved || !pmEnabled.get()) {
+            return false;
+        }
+
+        //using this version a call to the server to verify the current status is performed
+        /*if(isMpnSubscriptionAlive(op.info) == op.activate) {
+            if (!op.activate) {
+                //might be in cache, we should remove it
+            }
+        */
+       
+        
+        //check if we're already in the desired status
+        MpnInfo cachedInfo = getFromMpnCache(op.info);
+        if ((cachedInfo!=null) == op.activate) { //this version avoids an extra request to the server
+            Log.d(TAG_MPN,"MPN subscriptions status for " + op.key + "-> " + op.trigger + " already in the desired status");
+           
+        } else {
+ 
+            if (op.activate) {
+                Log.d(TAG_MPN,"Activating MPN subscriptions status for " + op.key + " -> " + op.trigger);
+                client.activateMpn(op.info);
+                addToMpnCache(op.info);
+                Log.d(TAG_MPN,"MPN subscription activation for " + op.key + " --> " + op.trigger + " OK");
+            } else {
+                Log.d(TAG_MPN,"Deactivating MPN subscriptions status for " + op.key + " -> " + op.trigger);
+                client.deactivateMpn(cachedInfo.getMpnKey()); //TODO is it possible 45/46 here?
+                removeFromMpnCache(cachedInfo);
+                Log.d(TAG_MPN,"MPN subscription activation/deactivation for " + op.key + " --> " + op.trigger + " OK");
+            }
+        }
+    
+        MpnStatusListener listener = mpnListeners.get(op.key);
+        if (listener != null) {
+            notifyMpnStatusListener(op.activate, op.trigger, listener);
+        }
+
+        return true;        
+    }
+    
+    
+    
+    private class PendingOp {
+        public final MpnInfo info;
+        public final String key;
+        public final String trigger;
+        public boolean activate;
+
+        public PendingOp(MpnInfo info, boolean activate) {
+            this.info = info;
+            this.key = info.getTableInfo().getGroup();
+            this.trigger = info.getTriggerExpression();
+            this.activate = activate;
+        }
+    }
     
     
     
     private class MpnSubscriptionThread implements Runnable {
 
-        Subscription sub;
-        private boolean add;
-        
-        public MpnSubscriptionThread(Subscription sub, boolean add) {
-            this.sub = sub;
-            this.add = add;
+       
+        private PendingOp pendingOp;
+
+        public MpnSubscriptionThread(MpnInfo info, boolean activate) {
+            this.pendingOp = new PendingOp(info,activate);
         }
-        
-        private PendingMpnOp updatePendingStatus() {
-            String key = sub.getTableInfo().getGroup();
-            PendingMpnOp op;
-            if (pendingMpns.containsKey(key)) {
-                //something pending
-                op = pendingMpns.get(key);
-                //update the pending operation status
-                op.add = this.add;
-            } else {
-                //fill pending
-                op = new PendingMpnOp(sub,this.add);
-                pendingMpns.put(key, op);
-            }
-            return op;
-        }
-        
-        
-        
+
         @Override
         public void run() {
-            
-            if (sub.getMpnInfo() == null) {
-                //nothing to do
-                return;
+            Map<String,PendingOp> pendingForKey = mpnPendingCache.get(pendingOp.key);
+            if (pendingForKey != null) {
+                pendingForKey.remove(pendingOp.trigger);
             }
             
-            //save the pending operation in case we're not able to handle it now
-            PendingMpnOp op = this.updatePendingStatus();
-            
-            if (!connected || !pmEnabled.get() || !mpnStatusRetrieved || !expectingConnected.get()) {
-                //can't handle it now, pending subscriptions will be fired once re-connected
-                return;
+            if (connected && expectingConnected.get()) {
+               try {
+                    boolean success = mpnSubscriptionActivation(pendingOp);
+                    if (success) {
+                        return;
+                    }
+                    
+                } catch (SubscrException e) {
+                    Log.d(TAG,"Connection problems: " + e.getMessage());
+                } catch (PushServerException e) {
+                    Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
+                } catch (PushUserException e) {
+                     Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
+                } catch (PushConnException e) {
+                    Log.d(TAG,"Connection problems: " + e.getMessage());
+                }   
             }
             
-            //status may have changed on the server, refresh it
+            Log.d(TAG_MPN,"Delaying MPN subscription activation/deactivation for " + pendingOp.key+ " --> " + pendingOp.trigger);
+            
+            //in case of exception or premature exit the pending op is cached
+            if (pendingForKey == null) {
+                pendingForKey = new HashMap<String,PendingOp>();
+                mpnPendingCache.put(pendingOp.key,pendingForKey);
+            }
+            pendingForKey.put(pendingOp.trigger, pendingOp);
+            
+            
+        }
+        
+    }
+    
+    private class RetrieveMpnSubscriptionStatusThread implements Runnable {
+
+        private String key;
+
+        public RetrieveMpnSubscriptionStatusThread(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public void run() {
+            if (!connected || !expectingConnected.get()) {
+                return;
+            }
+                        
             try {
-                handlePendingMpnOp(op);
+                retrieveMpnSubscriptionStatus(key);
             } catch (SubscrException e) {
-                Log.d(TAG,"Connection was closed: " + e.getMessage());
+                Log.d(TAG,"Connection problems: " + e.getMessage());
             } catch (PushServerException e) {
-                Log.d(TAG,"Subscription failed: " + e.getErrorCode() + ": " + e.getMessage());
+                Log.d(TAG,"Request error: " + e.getErrorCode() + ": " + e.getMessage());
             } catch (PushUserException e) {
-                Log.d(TAG,"Subscription refused: " + e.getErrorCode() + ": " + e.getMessage());
+                 Log.d(TAG,"Request refused: " + e.getErrorCode() + ": " + e.getMessage());
             } catch (PushConnException e) {
                 Log.d(TAG,"Connection problems: " + e.getMessage());
             }
             
-            //if an exception was thrown we fail and wait for the pending operations to be 
-            //handled again later
-
-            
-            
         }
-        
-    }
-    
-    private class PendingMpnOp {
-        
-        public Subscription sub;
-        public boolean add;
-        
-        public PendingMpnOp(Subscription sub, boolean add) {
-            this.add = add;
-            this.sub = sub;
-        }
-        
     }
     
     
     public interface MpnStatusListener {
-        public void onMpnStatusChanged(boolean activated, double trigger);
+        public void onMpnStatusChanged(boolean activated, String trigger);
     }
 
     public interface LightstreamerClientProxy {
@@ -809,9 +878,9 @@ public class LightstreamerClient {
         public void addSubscription(Subscription sub);
         public void removeSubscription(Subscription sub);
         
-        public void activateMPN(Subscription info);
-        public void deactivateMPN(Subscription info); 
-        public void retrieveMpnStatus(Subscription info);
+        public void activateMPN(MpnInfo info);
+        public void deactivateMPN(MpnInfo info); 
+        public void retrieveMpnStatus(String key);
         
    }
     

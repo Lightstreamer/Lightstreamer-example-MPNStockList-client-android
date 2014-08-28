@@ -19,7 +19,6 @@ import com.lightstreamer.demo.android.LightstreamerClient.MpnStatusListener;
 import com.lightstreamer.ls_client.ExtendedTableInfo;
 import com.lightstreamer.ls_client.HandyTableListener;
 import com.lightstreamer.ls_client.SubscribedTableKey;
-import com.lightstreamer.ls_client.mpn.MpnInfo;
 
 public interface Subscription {
 
@@ -30,8 +29,6 @@ public interface Subscription {
     public ExtendedTableInfo getTableInfo();
 
     public void setTableKey(SubscribedTableKey key);
-    
-    public MpnInfo getMpnInfo();
     
     public MpnStatusListener getMpnStatusListener();
 

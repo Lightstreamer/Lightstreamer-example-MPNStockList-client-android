@@ -27,7 +27,6 @@ import com.lightstreamer.ls_client.HandyTableListener;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.UpdateInfo;
-import com.lightstreamer.ls_client.mpn.MpnInfo;
 
 class MainSubscription implements Subscription, HandyTableListener {
 
@@ -111,12 +110,6 @@ class MainSubscription implements Subscription, HandyTableListener {
     public class Context {
         public Handler handler;
         public ListView listView;
-    }
-
-
-    @Override
-    public MpnInfo getMpnInfo() {
-        return null;
     }
 
     @Override
