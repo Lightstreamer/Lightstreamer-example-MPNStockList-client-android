@@ -110,9 +110,10 @@ public class Chart {
     public void setMovingTriggerLine(double trigger) {
         if (moving == null) {
             moving = new FixedYSeries();
+            this.dynamicPlot.addSeries(moving, fixedGreenLineFormatter);
         }
         moving.fix(trigger);
-        this.dynamicPlot.addSeries(moving, fixedGreenLineFormatter);
+        this.redraw();
     }
     
     public void endMovingTriggerLine(double trigger) {
