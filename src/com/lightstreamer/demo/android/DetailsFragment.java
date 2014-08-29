@@ -136,10 +136,11 @@ public class DetailsFragment extends Fragment {
                     
                     if (currentSubscription != null) {
                         double triggerVal = widget.getYVal(touchY);
-                        triggerVal =  Math.round(triggerVal*100.0)/100.0;
+                       
                         
                         chart.setMovingTriggerLine(triggerVal);
                         if (action == MotionEvent.ACTION_UP) {
+                            triggerVal =  Math.round(triggerVal*100.0)/100.0;
                             chart.endMovingTriggerLine(triggerVal);
                             
                             Log.d(TAG,"Touch released @ " + triggerVal);
