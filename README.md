@@ -1,4 +1,4 @@
-# Lightstreamer - MPN Stock-List Demo - Android Client
+# Lightstreamer - Stock-List Demo - Android Client
 
 <!-- START DESCRIPTION lightstreamer-example-stocklist-client-android -->
 
