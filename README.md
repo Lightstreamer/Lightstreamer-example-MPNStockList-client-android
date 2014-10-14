@@ -1,9 +1,9 @@
-# Lightstreamer - Stock-List Demo - Android Client
-
-<!-- START DESCRIPTION lightstreamer-example-stocklist-client-android -->
+# Lightstreamer - Stock-List Demo with GCM Push Notifications - Android Client
 
 This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html)
 to subscribe to real-time updates and GCM push notifications.
+
+A simpler version, without GCm support is also available: [Stock-List Demo - Android Client](https://github.com/Weswit/Lightstreamer-example-AdvStockList-client-android)
 
 
 ## Live Demo
@@ -46,9 +46,8 @@ to attach to it an Intent capable of launching the Demo application focused on t
 
 Check out the sources for further explanations.
   
-<i>NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html) as a reference. If in trouble, check out the [specific Lightstreamer forum](http://forums.lightstreamer.com/forumdisplay.php?33-Android-Client-API).</i>
+*NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html) as a reference. If in trouble check out the [specific Lightstreamer forum](http://forums.lightstreamer.com/forumdisplay.php?33-Android-Client-API).*
 
-<!-- END DESCRIPTION lightstreamer-example-mpnstocklist-client-android -->
 
 ## Install
 
@@ -60,9 +59,9 @@ has to be deployed on your local Lightstreamer Server instance. Please check out
 instructions provided with it. 
 * Launch Lightstreamer Server.
 * Download the `deploy.zip` file, which you can find in the [deploy release](https://github.com/Weswit/Lightstreamer-example-StockList-client-android/releases) 
-of this project and extract the `Android_StockListDemo_Basic.apk` file.
+of this project and extract the `Android_StockListDemo.apk` file.
 * Locate or install the [Android SDK](http://developer.android.com/sdk/index.html)
-* Install the `Android_StockListDemo_Basic.apk` in your emulator:
+* Install the `Android_StockListDemo.apk` in your emulator:
   * Execute the emulator (Android SDK/SDK Manager->Tools->Manage AVDs...->New then Start)
   * Open the console and move to the platform-tools folder of SDK directory.
   * Then type the following command:
@@ -71,8 +70,8 @@ of this project and extract the `Android_StockListDemo_Basic.apk` file.
     ```
 * Look up the demo in your virtual device and launch it.
 
-<i>Note that the demo targets the Lightstreamer server @ http://10.0.2.2:8080 because 10.0.2.2 is the special alias to your host loopback interface.</i>
-<i>Note that pre-built apk does not contain a GCM sender ID and thus, Push Notifications are disabled (see the Push Notifications section for further details.</i>
+*Note that the demo targets the Lightstreamer server @ http://10.0.2.2:8080 because 10.0.2.2 is the special alias to your host loopback interface.*
+*Note that pre-built apk does not contain a GCM sender ID and thus, Push Notifications are disabled (see the Push Notifications section for further details.*
 
 ## Build
 
@@ -124,12 +123,8 @@ Push Notification might be needed.<br>
 
 ### Lightstreamer Adapters Needed by This Demo Client
 
-<!-- START RELATED_ENTRIES -->
-
 * [Lightstreamer - Stock-List Demo - Java Adapter](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java)
 * [Lightstreamer - Reusable Metadata Adapters - Java Adapter](https://github.com/Weswit/Lightstreamer-example-ReusableMetadata-adapter-java)
-
-<!-- END RELATED_ENTRIES -->
 
 ### Related Projects
 
