@@ -54,7 +54,7 @@ Check out the sources for further explanations.
 If you want to install a version of this demo pointing to your local Lightstreamer Server and running into 
 an [Android Virtual Device](http://developer.android.com/tools/devices/emulator.html), follow these steps:
 
-* Note that, as prerequisite, the [Lightstreamer - Stock- List Demo - Java Adapter](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java) 
+* Note that, as prerequisite, the [Lightstreamer - Stock-List Demo - Java Adapter](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java) 
 has to be deployed on your local Lightstreamer Server instance. Please check out that project and follow the installation 
 instructions provided with it. 
 * Launch Lightstreamer Server.
