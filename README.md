@@ -29,7 +29,7 @@ Touch the chart to setup a new trigger for push notifications.
     
 The demo is ready to receive Mobile Push Notification through [Google Cloud Messaging for Android](https://developer.android.com/google/gcm/index.html).
 
-### Dig the code
+### Dig the Code
 
 * `StockListDemo.java` is the entry point and only `Activity` of the application. It contains two `Fragment`s, the status of
 the application, and acts as a proxy to the LightstreamerClient instance. The two `Fragment` are both visible if the application
@@ -48,30 +48,9 @@ Check out the sources for further explanations.
   
 *NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://www.lightstreamer.com/latest/Lightstreamer_Allegro-Presto-Vivace_6_0_Colosseo/Lightstreamer/DOCS-SDKs/sdk_client_android/doc/API-reference/index.html) as a reference. If in trouble check out the [specific Lightstreamer forum](http://forums.lightstreamer.com/forumdisplay.php?33-Android-Client-API).*
 
-
 ## Install
 
-If you want to install a version of this demo pointing to your local Lightstreamer Server and running into 
-an [Android Virtual Device](http://developer.android.com/tools/devices/emulator.html), follow these steps:
-
-* Note that, as prerequisite, the [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Weswit/Lightstreamer-example-MPNStockListMetadata-adapter-java)
-has to be deployed on your local Lightstreamer Server instance. Please check out that project and follow the installation 
-instructions provided with it. 
-* Launch Lightstreamer Server.
-* Download the `deploy.zip` file, which you can find in the [deploy release](https://github.com/Weswit/Lightstreamer-example-StockList-client-android/releases) 
-of this project and extract the `Android_StockListDemo.apk` file.
-* Locate or install the [Android SDK](http://developer.android.com/sdk/index.html)
-* Install the `Android_StockListDemo.apk` in your emulator:
-  * Execute the emulator (Android SDK/SDK Manager->Tools->Manage AVDs...->New then Start)
-  * Open the console and move to the platform-tools folder of SDK directory.
-  * Then type the following command:
-    ```
-    adb install [.apk path]
-    ```
-* Look up the demo in your virtual device and launch it.
-
-*Note that the demo targets the Lightstreamer server @ http://10.0.2.2:8080 because 10.0.2.2 is the special alias to your host loopback interface.*
-*Note that pre-built apk does not contain a GCM sender ID and thus, Push Notifications are disabled (see the Push Notifications section for further details.*
+Binaries for the application are not provided, but it may be downloaded from the Google Play Store at [this address](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android). The downloaded app will connect to Lightstreamer's online demo server.
 
 ## Build
 
@@ -105,12 +84,10 @@ You can skip these steps: in this case, push notifications will be disabled.
 
 ### Compile and Run
 
-To run the demo, a suitable emulated or real device is required. To run the demo, you'll need at least android 2.1. 
-To receive push notifications, you'll need a Google account configured on the system. In case the emulator is used a "Google APIs" 
-OS image has to be used.
+A full local deploy of this app requires a Lightstreamer Server 6.0 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration. A detailed step by step guide for setting up the server and configuring the client is available in the README of the following project:
 
-* On eclipse, right-click on the project in the Package Explorer and click Run As -> Android Application, then follow the instructions.
-* On Android Studio, select Run from the menu and choose "Run", then follow the instructions
+* [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Weswit/Lightstreamer-example-MPNStockListMetadata-adapter-java)
+
 
 ### Deploy
   
