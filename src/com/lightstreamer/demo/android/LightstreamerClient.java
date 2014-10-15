@@ -38,7 +38,9 @@ import com.lightstreamer.ls_client.PushUserException;
 import com.lightstreamer.ls_client.SubscrException;
 import com.lightstreamer.ls_client.SubscribedTableKey;
 import com.lightstreamer.ls_client.mpn.MpnInfo;
-import com.lightstreamer.ls_client.mpn.MpnStatus;
+import com.lightstreamer.ls_client.mpn.MpnStatusInfo;
+import com.lightstreamer.ls_client.mpn.MpnSubscription;
+import com.lightstreamer.ls_client.mpn.MpnSubscriptionStatus;
 
 
 public class LightstreamerClient {
@@ -88,7 +90,7 @@ public class LightstreamerClient {
     
     private LinkedList<Subscription> subscriptions = new LinkedList<Subscription>();
     
-    Map<String,Map<String,MpnInfo>> mpnCache = new HashMap<String,Map<String,MpnInfo>>();
+    Map<String,Map<String,MpnSubscription>> mpnCache = new HashMap<String,Map<String,MpnSubscription>>();
     Map<String,Map<String,PendingOp>> mpnPendingCache = new HashMap<String,Map<String,PendingOp>>();
     Map<String,MpnStatusListener> mpnListeners = new HashMap<String,MpnStatusListener>();
     
@@ -529,7 +531,7 @@ public class LightstreamerClient {
         //deactivate triggered subscriptions
         Log.d(TAG_MPN,"Deactivate triggered mpn subscriptions");
         try {
-            this.client.deactivateMpn(MpnStatus.Triggered);
+            this.client.deactivateMpn(MpnSubscriptionStatus.Triggered);
         } catch (SubscrException e) {
             Log.d(TAG_MPN,"Connection problems: " + e.getMessage());
         } catch (PushServerException e) {
@@ -542,7 +544,7 @@ public class LightstreamerClient {
         
         //get remaining subscriptions (since I've just cleared Triggered subscriptions I assume these are all Active)
         Log.d(TAG_MPN,"Retrieving MPN subscription statuses");
-        List<MpnInfo>mpnList = null;
+        List<MpnSubscription>mpnList = null;
         try {
             mpnList = this.client.inquireAllMpn();
             mpnStatusRetrieved = true;
@@ -563,14 +565,15 @@ public class LightstreamerClient {
         //populate active subscriptions cache
         mpnCache.clear();
         if (mpnList != null) {
-             for (MpnInfo info : mpnList) {
+             for (MpnSubscription mpnSub : mpnList) {
+            	 MpnInfo info = mpnSub.getMpnInfo();
                  String key = info.getTableInfo().getGroup();
                  String trigger = info.getTriggerExpression();
                  if (trigger == null) {
                      trigger = "";
                  }
                  
-                 addToMpnCache(info);
+                 addToMpnCache(key,trigger,mpnSub);
                  
                  MpnStatusListener listener = mpnListeners.get(key);
                  if (listener != null) {
@@ -580,27 +583,22 @@ public class LightstreamerClient {
         }
     }
     
-    private void addToMpnCache(MpnInfo info) {
-        String key = info.getTableInfo().getGroup();
-        String trigger = info.getTriggerExpression();
-        
-        Map<String,MpnInfo> triggerList = mpnCache.get(key);
+    private void addToMpnCache(String key, String trigger, MpnSubscription info) {
+        Map<String,MpnSubscription> triggerList = mpnCache.get(key);
         if (triggerList == null) {
-            triggerList = new HashMap<String,MpnInfo>();
+            triggerList = new HashMap<String,MpnSubscription>();
             mpnCache.put(key, triggerList);
         }
         triggerList.put(trigger, info);
     }
     
-    private void removeFromMpnCache(MpnInfo info) {
-        String key = info.getTableInfo().getGroup();
-        Map<String,MpnInfo> triggerList = mpnCache.get(key);
+    private void removeFromMpnCache(String key, String trigger) {
+        Map<String,MpnSubscription> triggerList = mpnCache.get(key);
         if (triggerList == null) {
             //not in list
             return;
         }
         
-        String trigger = info.getTriggerExpression();
         triggerList.remove(trigger);
         
         if (triggerList.isEmpty()) {
@@ -608,8 +606,8 @@ public class LightstreamerClient {
         }
     }
     
-    private MpnInfo getFromMpnCache(MpnInfo info) { //using PendingOp instead of using MpnInfo to exploit the shortcuts
-        Map<String,MpnInfo> keyCache = mpnCache.get(info.getTableInfo().getGroup());
+    private MpnSubscription getFromMpnCache(MpnInfo info) { 
+    	Map<String,MpnSubscription> keyCache = mpnCache.get(info.getTableInfo().getGroup());
         if (keyCache == null) {
             return null;
         }
@@ -680,33 +678,34 @@ public class LightstreamerClient {
         //if listener is null this makes no much sense, anyway we run it to eventually clear 
         //Suspended/Triggered subscriptions from the local cache
         
-        Map <String,MpnInfo> active = mpnCache.get(key);
+        Map <String,MpnSubscription> active = mpnCache.get(key);
         if (active != null) {
-            Iterator<Map.Entry<String,MpnInfo>> entries = active.entrySet().iterator();
+            Iterator<Map.Entry<String,MpnSubscription>> entries = active.entrySet().iterator();
             while (entries.hasNext()) {
                 
-                Map.Entry<String,MpnInfo> entry = entries.next();
+                Map.Entry<String,MpnSubscription> entry = entries.next();
                 
-                MpnInfo toCheck = entry.getValue();
+                MpnSubscription toCheck = entry.getValue();
+                
                 boolean alive = isMpnSubscriptionAlive(toCheck);
                 if (!alive) {
                     entries.remove();
                     if (listener != null) {
-                        notifyMpnStatusListener(false, toCheck.getTriggerExpression(), listener);
+                        notifyMpnStatusListener(false, toCheck.getMpnInfo().getTriggerExpression(), listener);
                     }
                 } else if (listener != null) {
-                    notifyMpnStatusListener(true, toCheck.getTriggerExpression(), listener);
+                    notifyMpnStatusListener(true, toCheck.getMpnInfo().getTriggerExpression(), listener);
                 }
             }
         }
     }
     
-    private boolean isMpnSubscriptionAlive(MpnInfo toCheck) 
+    private boolean isMpnSubscriptionAlive(MpnSubscription toCheck) 
             throws SubscrException, PushServerException, PushUserException, PushConnException { //from eventsThread 
         
-        MpnStatus status = null;
-        try {
-            status = client.inquireMpnStatus(toCheck.getMpnKey());
+    	MpnStatusInfo statusInfo;
+    	try {
+    		statusInfo = toCheck.checkStatus();
         } catch (PushUserException e) {
              if (e.getErrorCode() == 45 || e.getErrorCode() == 46) {
                  //not active anymore
@@ -716,14 +715,8 @@ public class LightstreamerClient {
              }
         } 
         
-        
         //if the current status is not active we can deactivate this subscription
-        if (status == MpnStatus.Suspended || status == MpnStatus.Triggered) {
-            return false;
-        } else {
-            //otherwise we're good to go
-            return true;
-        }
+    	return statusInfo.getSubscriptionStatus() == MpnSubscriptionStatus.Active;
         
     }
     
@@ -745,21 +738,25 @@ public class LightstreamerClient {
        
         
         //check if we're already in the desired status
-        MpnInfo cachedInfo = getFromMpnCache(op.info);
+        MpnSubscription cachedInfo = getFromMpnCache(op.info);
         if ((cachedInfo!=null) == op.activate) { //this version avoids an extra request to the server
             Log.d(TAG_MPN,"MPN subscriptions status for " + op.key + "-> " + op.trigger + " already in the desired status");
            
         } else {
+        	
+        	String key = op.info.getTableInfo().getGroup();
+            String trigger = op.info.getTriggerExpression();
  
             if (op.activate) {
                 Log.d(TAG_MPN,"Activating MPN subscriptions status for " + op.key + " -> " + op.trigger);
-                client.activateMpn(op.info);
-                addToMpnCache(op.info);
+                MpnSubscription mpnSub = client.activateMpn(op.info,false);
+                
+                addToMpnCache(key, trigger, mpnSub);
                 Log.d(TAG_MPN,"MPN subscription activation for " + op.key + " --> " + op.trigger + " OK");
             } else {
                 Log.d(TAG_MPN,"Deactivating MPN subscriptions status for " + op.key + " -> " + op.trigger);
-                client.deactivateMpn(cachedInfo.getMpnKey()); //TODO is it possible 45/46 here?
-                removeFromMpnCache(cachedInfo);
+                cachedInfo.deactivate();
+                removeFromMpnCache(key,trigger);
                 Log.d(TAG_MPN,"MPN subscription activation/deactivation for " + op.key + " --> " + op.trigger + " OK");
             }
         }
