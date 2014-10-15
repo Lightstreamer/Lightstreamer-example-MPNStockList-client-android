@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lightstreamer.demo.android"
-    android:versionCode="102"
+    android:versionCode="104"
     android:versionName="2.0" >
 
     <!-- GCM requires Android SDK version 2.2 (API level 8) or above. -->
