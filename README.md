@@ -73,28 +73,11 @@ Once the project has been imported, a couple of dependencies have to be satisfie
 Please follow the related guides: [Google Play Services lib](https://developer.android.com/google/play-services/setup.html) and 
 [v7 Support Library](https://developer.android.com/tools/support-library/setup.html).
 
-### Push Notifications
-
-* Before running the application for the first time, you might want to fill the `senderId` constant in the `res/values/strings.xml` file 
-with your own [GCM sender ID](http://developer.android.com/google/gcm/gs.html).
-* It is also required that the Lightstreamer Server pointed by the demo application is properly configured to handle Push Notification
-Subscriptions. See the server documentation for further details.
- 
-You can skip these steps: in this case, push notifications will be disabled. 
-
 ### Compile and Run
 
 A full local deploy of this app requires a Lightstreamer Server 6.0 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration. A detailed step by step guide for setting up the server and configuring the client is available in the README of the following project:
 
 * [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Weswit/Lightstreamer-example-MPNStockListMetadata-adapter-java)
-
-
-### Deploy
-  
-You may run the demo against your local server or using our online server at http://push.lightstreamer.com:80. The server to which the demo will connect to is configured in the `res/values/strings.xml` file.
-In the former case, the example requires that the [QUOTE_ADAPTER](https://github.com/Weswit/Lightstreamer-example-Stocklist-adapter-java) and [LiteralBasedProvider](https://github.com/Weswit/Lightstreamer-example-ReusableMetadata-adapter-java) have to be deployed in your local Lightstreamer server instance. 
-The factory configuration of Lightstreamer server already provides this adapter deployed. Extra configuration on the server to enable
-Push Notification might be needed.<br>
 
 ## See Also
 
