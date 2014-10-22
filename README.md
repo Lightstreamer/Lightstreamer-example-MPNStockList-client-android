@@ -110,5 +110,5 @@ Push Notification might be needed.<br>
 
 ## Lightstreamer Compatibility Notes
 
-* Compatible with Lightstreamer Android Client API v. 1.1 or newer.
+* Compatible with Lightstreamer Android Client API v. 1.2 or newer.
 * For Lightstreamer Allegro (+ Android Client API support), Presto, Vivace.
