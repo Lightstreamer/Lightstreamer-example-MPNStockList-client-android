@@ -121,9 +121,7 @@ public class StockListDemo extends ActionBarActivity implements
         
         this.handler = new Handler();
         
-        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.HONEYCOMB) {
-            hideActionBarTitle();//TODO do it with styles
-        }
+        getSupportActionBar().setTitle(R.string.lightstreamer);
         
         setContentView(R.layout.stocks);
 
@@ -226,12 +224,6 @@ public class StockListDemo extends ActionBarActivity implements
         }
     }
     
-    
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void hideActionBarTitle() {
-        getActionBar().setDisplayShowTitleEnabled(false);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
