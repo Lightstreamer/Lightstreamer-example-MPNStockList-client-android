@@ -415,7 +415,7 @@ public class DetailsFragment extends Fragment {
             }
             
             double triggerDouble = -1;
-            if (trigger != null) {
+            if (trigger != null && !trigger.equals("")) {
                 try {
                     triggerDouble = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length()+TRIGGER_GT.length()));
                 } catch(NumberFormatException e) {
