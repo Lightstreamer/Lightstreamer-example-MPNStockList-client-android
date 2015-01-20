@@ -429,7 +429,9 @@ public class DetailsFragment extends Fragment {
             } else {
                 handler.post(new Runnable() {
                     public void run() {
-                        toggle.setChecked(activated);
+                        if (toggle != null) { //toggle can be null if we're in landscape mode
+                            toggle.setChecked(activated);
+                        }
                     }
                 });
             }
