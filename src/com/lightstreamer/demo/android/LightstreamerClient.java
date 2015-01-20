@@ -611,7 +611,11 @@ public class LightstreamerClient {
         if (keyCache == null) {
             return null;
         }
-        return keyCache.get(info.getTriggerExpression());
+        String trigger = info.getTriggerExpression();
+        if (trigger == null) {
+            trigger = "";
+        }
+        return keyCache.get(trigger);
     }
     
     private void handlePendingMpnOps() { //from eventsThread
@@ -746,6 +750,9 @@ public class LightstreamerClient {
         	
         	String key = op.info.getTableInfo().getGroup();
             String trigger = op.info.getTriggerExpression();
+            if (trigger == null) {
+                trigger = "";
+            }
  
             if (op.activate) {
                 Log.d(TAG_MPN,"Activating MPN subscriptions status for " + op.key + " -> " + op.trigger);
@@ -780,7 +787,12 @@ public class LightstreamerClient {
         public PendingOp(MpnInfo info, boolean activate) {
             this.info = info;
             this.key = info.getTableInfo().getGroup();
-            this.trigger = info.getTriggerExpression();
+            String trigger = info.getTriggerExpression();
+            if (trigger == null) {
+                trigger = "";
+            }
+            this.trigger = trigger;
+           
             this.activate = activate;
         }
     }
