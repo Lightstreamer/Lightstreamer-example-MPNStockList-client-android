@@ -1,5 +1,5 @@
 <!-- 
-     Copyright 2014 Weswit Srl
+     Copyright (c) Lightstreamer Srl
     
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
         threshold is being set while the red line represent the currently set threshold. Once fired the threshold will
         be deactivated.</string>
     <string name="about_sources">Navigate the sources of the demo application on github 
-        github.com/Weswit/Lightstreamer-example-MPNStockList-client-android and check out our website 
+        github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android and check out our website 
         www.lightstreamer.com</string>
     <string name="about_plot">Live charts are plotted using androidplot androidplot.com</string>
     
