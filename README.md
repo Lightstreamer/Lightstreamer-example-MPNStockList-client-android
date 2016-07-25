@@ -93,5 +93,5 @@ A full local deploy of this app requires a Lightstreamer Server 6.0 or greater i
 
 ## Lightstreamer Compatibility Notes
 
-* Compatible with Lightstreamer Android Client API v. 1.2 or newer.
+* Compatible with Lightstreamer Android Client API v. 1.2. Not yet compatible with Lightstreamer Android Client API Unified version.
 * For Lightstreamer Allegro (+ Android Client API support), Presto, Vivace.
