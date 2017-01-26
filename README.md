@@ -50,34 +50,54 @@ Check out the sources for further explanations.
 
 ## Install
 
-Binaries for the application are not provided, but it may be downloaded from the Google Play Store at [this address](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android). The downloaded app will connect to Lightstreamer's online demo server.
+If you want to install a version of this demo pointing to your local Lightstreamer Server and running into 
+an [Android Virtual Device](http://developer.android.com/tools/devices/emulator.html), follow these steps:
+
+* Note that, as prerequisite, the [Lightstreamer - Stock-List Demo - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-Stocklist-adapter-java) 
+has to be deployed on your local Lightstreamer Server instance. Please check out that project and follow the installation 
+instructions provided with it. 
+* Launch Lightstreamer Server.
+* Download the `deploy.zip` file, which you can find in the [deploy release](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/releases) 
+of this project and extract the `Android_StockListDemo.apk` file.
+* Locate or install the [Android SDK](http://developer.android.com/sdk/index.html)
+* Install the `Android_StockListDemo.apk` in your emulator:
+  * Execute the emulator (Android SDK/SDK Manager->Tools->Manage AVDs...->New then Start)
+  * Open the console and move to the platform-tools folder of SDK directory.
+  * Then type the following command:
+    ```
+    adb install [.apk path]
+    ```
+* Look up the demo in your virtual device and launch it.
+
+*Note that the demo targets the Lightstreamer server @ http://10.0.2.2:8080 because 10.0.2.2 is the special alias to your host loopback interface.*
 
 ## Build
 
-To build your own version of the demo, please consider that this example is comprised of the following folders:
-* `app/src/main/java` Contains the sources to build the Java-for-Android application.
-* `app/src/main/res` Contains the images and other resourced needed to the demo. 
-* `app/libs` Drop here the `ls-android-client.jar` from the Lighstreamer SDK for Android Clients and
-`androidplot-core.jar` from the Androidplot library, to be used for the build process.
+### Setup the IDE
 
-The demo has also references to the [Google Play Services lib](https://developer.android.com/google/play-services/setup.html) 
-and to the [v7 Support Library](https://developer.android.com/tools/support-library/setup.html).
+Note that you can skip this section and build the application without using any IDE. 
+
+To open the project in [Android Studio](https://developer.android.com/sdk/installing/studio.html), import the provided files and drop in `app/libs` the library `ls-android-client.jar` from the Lighstreamer SDK for Android Clients.
+
+### Deploy
   
-### Getting Started
+You may run the demo against your local server or using our online server at http://push.lightstreamer.com:80. The server to which the demo will connect to is configured in the `app/src/main/res/values/strings.xml` file.
 
-You can import the sources on a new project on [Eclipse](http://www.eclipse.org/) (provided you installed the necessary
-[ADT plugin](http://developer.android.com/sdk/eclipse-adt.html)) or on [Android Studio](https://developer.android.com/sdk/installing/studio.html).
-In the former case, you'll need to separately download the [Android SDK](http://developer.android.com/sdk/).
+A full local deploy of this app requires 
 
-Once the project has been imported, a couple of dependencies have to be satisfied: `android-support-v7-appcompat` and `google-play-services_lib`.
-Please follow the related guides: [Google Play Services lib](https://developer.android.com/google/play-services/setup.html) and 
-[v7 Support Library](https://developer.android.com/tools/support-library/setup.html).
+* a Lightstreamer Server 6.0 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration (a detailed step by step guide for setting up the server and configuring the client is available in the README of the project [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockListMetadata-adapter-java))
 
-### Compile and Run
+* the deployment of the [QUOTE_ADAPTER](https://github.com/Lightstreamer/Lightstreamer-example-Stocklist-adapter-java) and the [LiteralBasedProvider](https://github.com/Lightstreamer/Lightstreamer-example-ReusableMetadata-adapter-java) (already provided by Lightstreamer server) in your local Lightstreamer server instance.
 
-A full local deploy of this app requires a Lightstreamer Server 6.0 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration. A detailed step by step guide for setting up the server and configuring the client is available in the README of the following project:
+### Build
 
-* [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockListMetadata-adapter-java)
+To build your own version of the demo you can launch the provided gradle script from the command line or from the IDE itself.
+As an example you can build and install a debug version of the application in an emulator (or device) by running
+```
+gradlew installDebug
+```
+
+You might also use a different build tool (e.g.: Maven, Ant, etc.) by converting the provided Gradle build files.
 
 ## See Also
 
