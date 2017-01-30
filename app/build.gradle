@@ -5,12 +5,13 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.lightstreamer.demo.android"
-        minSdkVersion 21
-        targetSdkVersion 23
-        multiDexEnabled true
+        applicationId "com.lightstreamer.simple_demo.android"
+        minSdkVersion 10
+        targetSdkVersion 22
+        versionCode 12
+        versionName "2.1.0"
     }
-	/*signingConfigs {
+    /*signingConfigs {
         release {
             storeFile file(System.getenv("KSTORE"))
             storePassword System.getenv("KSTOREPWD")
@@ -21,7 +22,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // signingConfig signingConfigs.release
         }
     }
@@ -35,8 +36,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.google.android.gms:play-services:10.0.1'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.androidplot:androidplot-core:0.6.1'
+    compile 'com.lightstreamer:ls-android-client:3.0.0'
 }

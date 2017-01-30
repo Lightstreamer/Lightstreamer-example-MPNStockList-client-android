@@ -1,5 +1,6 @@
 # Lightstreamer - Stock-List Demo with GCM Push Notifications - Android Client
 
+
 This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://www.lightstreamer.com/docs/client_android_api/index.html)
 to subscribe to real-time updates and GCM push notifications.
 
@@ -77,7 +78,7 @@ of this project and extract the `Android_StockListDemo.apk` file.
 
 Note that you can skip this section and build the application without using any IDE. 
 
-To open the project in [Android Studio](https://developer.android.com/sdk/installing/studio.html), import the provided files and drop in `app/libs` the library `ls-android-client.jar` from the Lighstreamer SDK for Android Clients.
+To open the project in [Android Studio](https://developer.android.com/sdk/installing/studio.html), import the provided Gradle project and drop in `app/libs` the library `ls-android-client.jar` from the Lighstreamer SDK for Android Clients.
 
 ### Deploy
   
@@ -91,7 +92,7 @@ A full local deploy of this app requires
 
 ### Build
 
-To build your own version of the demo you can launch the provided gradle script from the command line or from the IDE itself.
+To build your own version of the demo you can launch the provided Gradle script from the command line or from the IDE itself.
 As an example you can build and install a debug version of the application in an emulator (or device) by running
 ```
 gradlew installDebug
