@@ -15,7 +15,7 @@ A simpler version, without GCM support is also available: [Stock-List Demo - And
 
 ![QR](qrcode.png)
 
-###[![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android)
+### [![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android)
 (To install the app from the Google Play Store, you can also use the above QR code)
 
 
