@@ -114,6 +114,6 @@ You might also use a different build tool (e.g.: Maven, Ant, etc.) by converting
 
 ## Lightstreamer Compatibility Notes
 
-* Compatible with Lightstreamer Android Client API v. 1.2. Not yet compatible with Lightstreamer Android Client API Unified version.
+* Compatible with Lightstreamer Android Client API v. 1.2. Push Notifications compatible with Lightstreamer Server up to version 6.1. Not compatible with Lightstreamer Android Client API Unified version.
 * For Lightstreamer Allegro (+ Android Client API support), Presto, Vivace.
 * This example is based on Android 5 or later; for a version of this example based on Android 2.3 or later, please refer to [this release](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/releases/tag/last-eclipse-based).
