@@ -9,13 +9,13 @@ A simpler version, without GCM support is also available: [Stock-List Demo - And
 
 ## Live Demo
 
-[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android)
+[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android.fcm)
  
-[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android)
+[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android.fcm)
 
 ![QR](qrcode.png)
 
-### [![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android)
+### [![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android.fcm)
 (To install the app from the Google Play Store, you can also use the above QR code)
 
 
