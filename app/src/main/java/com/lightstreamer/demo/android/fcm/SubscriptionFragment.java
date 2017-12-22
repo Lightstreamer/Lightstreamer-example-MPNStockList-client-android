@@ -13,71 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
-import com.lightstreamer.demo.android.LightstreamerClient.LightstreamerClientProxy;
-import com.lightstreamer.ls_client.mpn.MpnInfo;
+import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
-import android.app.Activity;
+import com.lightstreamer.demo.android.fcm.DetailsFragment.ItemSubscription;
+
 import android.util.Log;
 
-public class SubscriptionFragment /*extends Fragment*/ {
+public class SubscriptionFragment {
 
-    private static final String TAG = "SubscriptionFragment";
-    
-    private LightstreamerClientProxy lsClient;
-    private Subscription subscription;
+    private ItemSubscription subscription;
     private boolean subscribed = false;
     private boolean running = false;
     
-    protected synchronized void setSubscription(Subscription subscription) {
+    synchronized void setSubscription(ItemSubscription subscription) {
         if (this.subscription != null && subscribed) {
             Log.d(TAG,"Replacing subscription");
-            this.lsClient.removeSubscription(this.subscription);
+            this.subscription.unsubscribeStock();
         }
         Log.d(TAG,"New subscription " + subscription);
         this.subscription = subscription;
         
         if (running) {
-            this.lsClient.addSubscription(this.subscription);
-            this.lsClient.retrieveMpnStatus(this.subscription.getTableInfo().getGroup());
+            this.subscription.subscribeStock();
         }
     }
     
-    protected synchronized void activateMPN(MpnInfo info) {
-        this.lsClient.activateMPN(info);
+    synchronized void activateMPN(ItemSubscription info) {
+        info.subscribeTick();
     }
     
-    protected synchronized void deactivateMPN(MpnInfo info) {
-        this.lsClient.deactivateMPN(info);
+    synchronized void deactivateMPN(ItemSubscription info) {
+        info.unsubscribeTick();
     }
     
-    public synchronized void onResume() {
-        //subscribe
-        if (this.lsClient != null && this.subscription != null) {
-            this.lsClient.addSubscription(this.subscription);
+    synchronized void onResume() {
+        if (this.subscription != null) {
+            this.subscription.subscribeStock();
+            this.subscription.onResume();
             subscribed = true;
-            this.lsClient.retrieveMpnStatus(this.subscription.getTableInfo().getGroup());
         }
         running = true;
     }
     
-    
-    public synchronized void onPause() {
-        //unsubscribe
-        if (this.lsClient != null && this.subscription != null) {
-            this.lsClient.removeSubscription(this.subscription);
+    synchronized void onPause() {
+        if (this.subscription != null) {
+            this.subscription.unsubscribeStock();
             subscribed = false;
         }
         running = false;
-    }
-    
-    public synchronized void onAttach(Activity activity) {
-        try {
-            lsClient = (LightstreamerClientProxy) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement LightstreamerClientProxy");
-        }
     }
 }

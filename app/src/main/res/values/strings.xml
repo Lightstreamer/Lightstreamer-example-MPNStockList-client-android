@@ -15,7 +15,7 @@
 -->
 <resources>
 
-    <string name="app_name">Lightstreamer GCM Stock Demo</string>
+    <string name="app_name">Lightstreamer Stock Demo</string>
     <string name="sender_id">410908809197</string>
     <string name="no_data">N/A</string>
     <string name="stop">Pause Lightstreamer Connection</string>
@@ -42,6 +42,6 @@
     <string name="push_notifications">Push Notifications</string>
     <string name="lightstreamer">Lightstreamer</string>
     
-    <string name="host">http://push.lightstreamer.com</string>
+    <string name="host">http://10.0.2.2:8080</string>
     
 </resources>

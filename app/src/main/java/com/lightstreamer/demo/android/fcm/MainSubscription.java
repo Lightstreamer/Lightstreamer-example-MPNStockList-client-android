@@ -13,42 +13,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
+
+import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
 import java.util.ArrayList;
+
+import com.lightstreamer.client.ItemUpdate;
 
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ListView;
 
-import com.lightstreamer.demo.android.LightstreamerClient.MpnStatusListener;
-import com.lightstreamer.ls_client.ExtendedTableInfo;
-import com.lightstreamer.ls_client.HandyTableListener;
-import com.lightstreamer.ls_client.SubscrException;
-import com.lightstreamer.ls_client.SubscribedTableKey;
-import com.lightstreamer.ls_client.UpdateInfo;
+/**
+ * A subscription of a list of stocks showed by {@link StocksFragment}.
+ */
+class MainSubscription {
 
-class MainSubscription implements Subscription, HandyTableListener {
-
-    private static final String TAG = "MainSubscription";
+    private final com.lightstreamer.client.Subscription listSubscription;
+    private final Context context = new Context();
     
-    private SubscribedTableKey key;
-    private ExtendedTableInfo tableInfo;
-   
+    public MainSubscription(final ArrayList<StockForList> list) {
+        listSubscription = new com.lightstreamer.client.Subscription("MERGE", StocksFragment.items, StocksFragment.subscriptionFields);
+        listSubscription.setRequestedSnapshot("yes");
+        listSubscription.setDataAdapter("QUOTE_ADAPTER");
+        listSubscription.setRequestedMaxFrequency("1");
+        listSubscription.addListener(new Utils.VoidSubscriptionListener() {
+          @Override
+            public void onSubscription() {
+                Log.d(TAG, "Subscribed to main subscription");
+            }
+            
+            @Override
+            public void onSubscriptionError(int code, String message) {
+                Log.d(TAG, "Unable to subscribe to main subscription: " + message);
+            }
 
-    private ArrayList<StockForList> list;
-
-    private Context context = new Context();
+            @Override
+            public void onUnsubscription() {
+                Log.d(TAG, "Unsubscribed from main subscription");
+            }
+            
+            @Override
+            public void onItemUpdate(ItemUpdate newData) {
+                Log.v(TAG, "Update for main subscription");
+                final StockForList toUpdate = list.get(newData.getItemPos() - 1);
+                toUpdate.update(newData, context);
+            }
+        });
+    }
     
-    public MainSubscription(ArrayList<StockForList> list) {
-        this.list = list;
-        try {
-            this.tableInfo = new ExtendedTableInfo(StocksFragment.items, "MERGE", StocksFragment.subscriptionFields , true);
-            this.tableInfo.setDataAdapter("QUOTE_ADAPTER");
-            this.tableInfo.setRequestedMaxFrequency(1);
-        } catch (SubscrException e) {
-            Log.wtf(TAG, "I'm pretty sure MERGE is compatible with the snapshot request!");
-        }
+    public void subscribe() {
+        Log.d(TAG, "Subscribing to main subscription...");
+        LsClient.instance.subscribe(listSubscription);
+    }
+    
+    public void unsubscribe() {
+        Log.d(TAG, "Unsubscribing from main subscription...");
+        LsClient.instance.unsubscribe(listSubscription);
     }
     
     public void changeContext(Handler handler, ListView listView) {
@@ -56,66 +78,8 @@ class MainSubscription implements Subscription, HandyTableListener {
         this.context.listView = listView;
     }
     
-
-    @Override
-    public HandyTableListener getTableListener() {
-        return this;
-    }
-
-    @Override
-    public SubscribedTableKey getTableKey() {
-        return key;
-    }
-
-    @Override
-    public ExtendedTableInfo getTableInfo() {
-        return this.tableInfo;
-    }
-
-    @Override
-    public void setTableKey(SubscribedTableKey key) {
-        this.key = key;
-    }
-
-
-
-    @Override
-    public void onRawUpdatesLost(int arg0, String arg1, int arg2) {
-        Log.wtf(TAG,"Not expecting lost updates");
-    }
-
-    @Override
-    public void onSnapshotEnd(int itemPos, String itemName) {
-        Log.v(TAG,"Snapshot end for " + itemName);
-    }
-
-    @Override
-    public void onUnsubscr(int itemPos, String itemName) {
-        Log.v(TAG,"Unsubscribed " + itemName);
-    }
-
-    @Override
-    public void onUnsubscrAll() {
-        Log.v(TAG,"Unsubscribed all");
-    }
-
-    @Override
-    public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
-        Log.v(TAG,"Update for " + itemName);
-        final StockForList toUpdate = list.get(itemPos-1);
-        toUpdate.update(newData,this.context);
-    }
-    
-    
     public class Context {
         public Handler handler;
         public ListView listView;
     }
-
-    @Override
-    public MpnStatusListener getMpnStatusListener() {
-        //not interested
-        return null;
-    }
-    
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
@@ -25,21 +25,20 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import android.content.Context;
-import android.graphics.Color;
-
 import com.androidplot.util.PixelUtils;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
-import com.lightstreamer.ls_client.UpdateInfo;
+import com.lightstreamer.client.ItemUpdate;
+
+import android.content.Context;
+import android.graphics.Color;
 
 public class Chart {
     
     private Map<Double,FixedYSeries> fixedLines = new HashMap<Double,FixedYSeries>();
-    private Map<Double,FixedYSeries> tempFixedLines = new HashMap<Double,FixedYSeries>();
     
     LineAndPointFormatter fixedRedLineFormatter;
     LineAndPointFormatter fixedGreenLineFormatter;
@@ -80,7 +79,6 @@ public class Chart {
         double max = maxY;
         
         adjustToFixedLine(fixedLines);
-        adjustToFixedLine(tempFixedLines);
         
         dynamicPlot.setRangeBoundaries(min, max, BoundaryMode.FIXED);
     }
@@ -105,42 +103,25 @@ public class Chart {
         }
     }
     
-    private FixedYSeries moving;
-    
-    public void setMovingTriggerLine(double trigger) {
-        if (moving == null) {
-            moving = new FixedYSeries();
-            this.dynamicPlot.addSeries(moving, fixedGreenLineFormatter);
-        }
-        moving.fix(trigger);
-        this.redraw();
-    }
-    
-    public void endMovingTriggerLine(double trigger) {
-        synchronized(this.fixedLines) {
-            this.dynamicPlot.removeSeries(moving);
-            moving = null;
-            FixedYSeries fixedLine = fixedLines.get(trigger);
-            if (fixedLine != null) {
-                return;
-            }
-            addFixedLine(tempFixedLines,trigger,fixedGreenLineFormatter);
-        }
-        this.redraw();
-    }
-    
-    public void setTriggerLine(double trigger) {
-        synchronized(this.fixedLines) {
-            removeFixedLine(tempFixedLines,trigger);
-            addFixedLine(fixedLines,trigger,fixedRedLineFormatter);
-        }
-        this.redraw();
-    }
-    
     public void removeTriggerLine(double trigger) {
         synchronized(this.fixedLines) {
-            removeFixedLine(tempFixedLines,trigger);
             removeFixedLine(fixedLines,trigger);
+        }
+        this.redraw();
+    }
+    
+    public void setGreenLine(double trigger) {
+        synchronized(this.fixedLines) {
+            removeFixedLine(fixedLines, trigger);
+            addFixedLine(fixedLines, trigger, fixedGreenLineFormatter);
+        }
+        this.redraw();
+    }
+    
+    public void setRedLine(double trigger) {
+        synchronized(this.fixedLines) {
+            removeFixedLine(fixedLines, trigger);
+            addFixedLine(fixedLines, trigger, fixedRedLineFormatter);
         }
         this.redraw();
     }
@@ -195,9 +176,9 @@ public class Chart {
         this.redraw();
     }
     
-    public void addPoint(UpdateInfo newData) {
-        String lastPrice = newData.getNewValue("last_price");
-        String time = newData.getNewValue("time");
+    public void addPoint(ItemUpdate newData) {
+        String lastPrice = newData.getValue("last_price");
+        String time = newData.getValue("time");
         this.addPoint(time,lastPrice);
     }
     
@@ -206,11 +187,6 @@ public class Chart {
         
         synchronized(this.fixedLines) {
             Iterator<Map.Entry<Double,FixedYSeries>> cleanIterator = fixedLines.entrySet().iterator();
-            while(cleanIterator.hasNext()) {
-                this.dynamicPlot.removeSeries(cleanIterator.next().getValue());
-                cleanIterator.remove();
-            }
-            cleanIterator = tempFixedLines.entrySet().iterator();
             while(cleanIterator.hasNext()) {
                 this.dynamicPlot.removeSeries(cleanIterator.next().getValue());
                 cleanIterator.remove();

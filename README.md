@@ -1,10 +1,10 @@
-# Lightstreamer - Stock-List Demo with GCM Push Notifications - Android Client
+# Lightstreamer - Stock-List Demo with FCM Push Notifications - Android Client
 
 
-This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://www.lightstreamer.com/docs/client_android_api/index.html)
-to subscribe to real-time updates and GCM push notifications.
+This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://docs.lightstreamer.com/api/ls-android-client/latest_4_0/)
+to subscribe to real-time updates and FCM push notifications.
 
-A simpler version, without GCM support is also available: [Stock-List Demo - Android Client](https://github.com/Lightstreamer/Lightstreamer-example-AdvStockList-client-android)
+A simpler version, without FCM support is also available: [Stock-List Demo - Android Client](https://github.com/Lightstreamer/Lightstreamer-example-AdvStockList-client-android)
 
 
 ## Live Demo
@@ -28,26 +28,23 @@ Touch a row opens a new panel with the detailed information, updated in real-tim
 
 Touch the chart to setup a new trigger for push notifications.
     
-The demo is ready to receive Mobile Push Notification through [Google Cloud Messaging for Android](https://developer.android.com/google/gcm/index.html).
+The demo is ready to receive Mobile Push Notification through [Firebase Cloud Messaging for Android](https://firebase.google.com/docs/cloud-messaging/).
 
 ### Dig the Code
 
-* `StockListDemo.java` is the entry point and only `Activity` of the application. It contains two `Fragment`s, the status of
-the application, and acts as a proxy to the LightstreamerClient instance. The two `Fragment` are both visible if the application
-runs on tablet; on the contrary, only one `Fragment` is visible and are exchanged based on the user interaction
-* `LightstreamerClient.java` handles the connection to the Lightstreamer server and the Subscription/Unsubscription requests
+* `StockListDemo.java` is the entry point and only `Activity` of the application. It contains two `Fragment`s. Both fragments are visible if the application runs on tablet, while on smartphone only one `Fragment` at a time is visible.
+* `LsClient.java` handles the connection to the Lightstreamer server and the Subscription/Unsubscription requests
 issued by the various part of the application.
 * `SubscriptionFragment.java` represents a `Fragment` containing a subscription that is started/stopped based on the lifecycle of 
 the `Fragment`. Please note that this class does not actually extend `Fragment`.
 * `StocksFragment.java` and `DetailsFragment.java` are the classes representing the two fragments of the application. 
-* `GcmIntentService.java` is the class dedicated to receive the Push Notifications, to create the notification for the system, and 
-to attach to it an Intent capable of launching the Demo application focused on the notified item.
+* `MyFirebaseMessagingService.java` is the class dedicated to receive the Push Notifications, to create the notification for the system, and to attach to it an Intent capable of launching the Demo application focused on the notified item.
 * `Chart.java` wraps the AndroidPlot APIs to plot the real-time chart on the details fragment.
 
 
 Check out the sources for further explanations.
   
-*NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://www.lightstreamer.com/docs/client_android_api/index.html) as a reference. If in trouble check out the [specific Lightstreamer forum](http://forums.lightstreamer.com/forumdisplay.php?33-Android-Client-API).*
+*NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://docs.lightstreamer.com/api/ls-android-client/latest_4_0/) as a reference. If in trouble check out the [specific Lightstreamer forum](https://forums.lightstreamer.com/forumdisplay.php?11-Client-APIs).*
 
 ## Install
 
@@ -58,7 +55,7 @@ an [Android Virtual Device](http://developer.android.com/tools/devices/emulator.
 has to be deployed on your local Lightstreamer Server instance. Please check out that project and follow the installation 
 instructions provided with it. 
 * Launch Lightstreamer Server.
-* Download the `deploy.zip` file, which you can find in the [deploy release](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/releases) 
+* Download the `deploy.zip` file, which you can find in the latest [deploy release](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/releases) 
 of this project and extract the `Android_StockListDemo.apk` file.
 * Locate or install the [Android SDK](http://developer.android.com/sdk/index.html)
 * Install the `Android_StockListDemo.apk` in your emulator:
@@ -78,7 +75,7 @@ of this project and extract the `Android_StockListDemo.apk` file.
 
 Note that you can skip this section and build the application without using any IDE. 
 
-To open the project in [Android Studio](https://developer.android.com/sdk/installing/studio.html), import the provided Gradle project and drop in `app/libs` the library `ls-android-client.jar` from the Lighstreamer SDK for Android Clients.
+Import the provided Gradle project in [Android Studio](https://developer.android.com/sdk/installing/studio.html).
 
 ### Deploy
   
@@ -86,7 +83,7 @@ You may run the demo against your local server or using our online server at htt
 
 A full local deploy of this app requires 
 
-* a Lightstreamer Server 6.0 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration (a detailed step by step guide for setting up the server and configuring the client is available in the README of the project [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockListMetadata-adapter-java))
+* a Lightstreamer Server 7.0 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration (a detailed step by step guide for setting up the server and configuring the client is available in the README of the project [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockListMetadata-adapter-java))
 
 * the deployment of the [QUOTE_ADAPTER](https://github.com/Lightstreamer/Lightstreamer-example-Stocklist-adapter-java) and the [LiteralBasedProvider](https://github.com/Lightstreamer/Lightstreamer-example-ReusableMetadata-adapter-java) (already provided by Lightstreamer server) in your local Lightstreamer server instance.
 
@@ -114,6 +111,6 @@ You might also use a different build tool (e.g.: Maven, Ant, etc.) by converting
 
 ## Lightstreamer Compatibility Notes
 
-* Compatible with Lightstreamer Android Client API v. 1.2. Push Notifications compatible with Lightstreamer Server up to version 6.1. Not compatible with Lightstreamer Android Client API Unified version.
+* Compatible with Lightstreamer Android Client (Unified API Version) v. 4.0.0 or newer.
 * For Lightstreamer Allegro (+ Android Client API support), Presto, Vivace.
-* This example is based on Android 5 or later; for a version of this example based on Android 2.3 or later, please refer to [this release](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/releases/tag/last-eclipse-based).
+* For a version of this example compatible with Lightstreamer Android Client API version 1.x, please refer to [this branch](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/tree/for-client-1).

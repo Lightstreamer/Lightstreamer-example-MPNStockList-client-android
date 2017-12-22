@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
+
+import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.lightstreamer.demo.android.LightstreamerClient.LightstreamerClientProxy;
-import com.lightstreamer.demo.android.LightstreamerClient.StatusChangeListener;
-import com.lightstreamer.ls_client.LSClient;
-import com.lightstreamer.ls_client.mpn.MpnInfo;
-import com.lightstreamer.ls_client.mpn.MpnRegistrationException;
-import com.lightstreamer.ls_client.mpn.MpnRegistrationIdChangeInfo;
-import com.lightstreamer.ls_client.mpn.MpnRegistrationIdStatus;
-import com.lightstreamer.ls_client.mpn.MpnRegistrationListener;
+import com.lightstreamer.demo.android.fcm.LsClient.Status;
+import com.lightstreamer.demo.android.fcm.LsClient.StatusChangeListener;
+import com.lightstreamer.log.system_out.SystemOutLogProvider;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
@@ -50,20 +45,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-
+/**
+ * Application entry point.
+ */
 public class StockListDemo extends ActionBarActivity implements 
     StocksFragment.onStockSelectedListener, 
-    StatusChangeListener, 
-    LightstreamerClientProxy {
+    StatusChangeListener {
 
-    private static final String TAG = "StockListDemo";
-    
     private boolean userDisconnect = false;
-    private LightstreamerClient lsClient = new LightstreamerClient();
-    private boolean pnEnabled = false;
     
     private GestureDetectorCompat mDetector; 
-    
     
     private Handler handler;
 
@@ -71,53 +62,22 @@ public class StockListDemo extends ActionBarActivity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        lsClient.setServer(getResources().getString(R.string.host));
+        Log.d(TAG, "=== Starting demo");
+
+        // comment the following two lines if the log is too verbose
+        SystemOutLogProvider prov = new SystemOutLogProvider();
+        com.lightstreamer.client.LightstreamerClient.setLoggerProvider(prov);
         
         checkPlayServices();
         
+        String serverAddress = getResources().getString(R.string.host);
+        String adapterName = "DEMO";
         String senderId = getResources().getString(R.string.sender_id);
-        
-        try {
-            LSClient.registerForMpn(getApplicationContext(), senderId, new MpnRegistrationListener(){
+        LsClient.instance.initClient(serverAddress, adapterName, getApplicationContext(), senderId);
 
-                @Override
-                public void registrationFailed(Exception e) {
-                    Log.e(TAG,"Can't register MPN ID, push notifications are disabled",e);
-                    enablePN(false);
-                }
-
-                @Override
-                public void registrationIdChangeFailed(Exception e) {
-                    Log.e(TAG,"Can't change MPN ID, push notifications are disabled",e);
-                    enablePN(false);
-                }
-
-                @Override
-                public void registrationIdChangeSucceeded(
-                        MpnRegistrationIdChangeInfo arg0) {
-                    Log.v(TAG,"MPN ID changed");
-                    enablePN(true);
-                    
-                }
-
-                @Override
-                public void registrationSucceeded(String arg0,
-                        MpnRegistrationIdStatus arg1) {
-                    Log.d(TAG,"MPN ID registered");
-                    enablePN(true);
-                }
-                
-            });
-        } catch (MpnRegistrationException e) {
-            Log.e(TAG, "Can't register MPN, push notifications are disabled",e);
-            enablePN(false);
-        } 
-        
-        
         GestureControls gs = new GestureControls();
         mDetector = new GestureDetectorCompat(this,gs);
         mDetector.setOnDoubleTapListener(gs);
-        
         
         this.handler = new Handler();
         
@@ -139,18 +99,6 @@ public class StockListDemo extends ActionBarActivity implements
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, firstFragment).commit();
-        } 
-
-        
-        
-    }
-    
-    private void enablePN(boolean enabled) {
-        pnEnabled = enabled;
-        lsClient.enablePN(enabled);
-        DetailsFragment detailsFrag = getDetailsFragment();
-        if (detailsFrag != null) {
-            detailsFrag.enablePN(enabled);
         }
     }
     
@@ -175,17 +123,17 @@ public class StockListDemo extends ActionBarActivity implements
     @Override
     public void onPause() {
         super.onPause();
-        this.stop(true);
+        LsClient.instance.stop(true);
     }
     
     @Override 
     public void onResume() {
         super.onResume();
         checkPlayServices();
-        handler.post(new StatusChange(lsClient.getStatus()));
-        lsClient.setListener(this);
+        handler.post(new StatusChange(LsClient.instance.getStatus()));
+        LsClient.instance.setListener(this);
         if (!userDisconnect) {
-            this.start();
+            LsClient.instance.start();
         }
         
         int openItem = getIntentItem();
@@ -243,7 +191,6 @@ public class StockListDemo extends ActionBarActivity implements
         return true;
     }
     
-    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
@@ -251,13 +198,13 @@ public class StockListDemo extends ActionBarActivity implements
             Log.i(TAG,"Stop");
             userDisconnect = true;
             supportInvalidateOptionsMenu();
-            this.stop(false);
+            LsClient.instance.stop(false);
             return true;
         } else if (itemId == R.id.start) {
             Log.i(TAG,"Start");
             userDisconnect = false;
             supportInvalidateOptionsMenu();
-            this.start();
+            LsClient.instance.start();
             return true;
         } else if (itemId == R.id.about) {
             new AboutDialog().show(getSupportFragmentManager(), null);
@@ -295,7 +242,6 @@ public class StockListDemo extends ActionBarActivity implements
             DetailsFragment newFragment = new DetailsFragment();
             Bundle args = new Bundle();
             args.putInt(DetailsFragment.ARG_ITEM, item);
-            args.putBoolean(DetailsFragment.ARG_PN_CONTROLS, pnEnabled);
             newFragment.setArguments(args);
             
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -322,16 +268,16 @@ public class StockListDemo extends ActionBarActivity implements
     //Status handling
 
     @Override
-    public void onStatusChange(int status) {
+    public void onStatusChange(Status status) {
         handler.post(new StatusChange(status));
         
     }
     
     private class StatusChange implements Runnable {
 
-        private int status;
+        private Status status;
 
-        public StatusChange(int status) {
+        public StatusChange(Status status) {
             this.status = status;
         }
         
@@ -353,27 +299,27 @@ public class StockListDemo extends ActionBarActivity implements
             
             switch(status) {
             
-                case LightstreamerClient.STALLED: {
+                case STALLED: {
                     applyStatus(R.drawable.status_stalled,R.string.status_stalled);
                     break;
                 }
-                case LightstreamerClient.STREAMING: {
+                case STREAMING: {
                     applyStatus(R.drawable.status_connected_streaming,R.string.status_streaming);
                     break;
                 }
-                case LightstreamerClient.POLLING: {
+                case POLLING: {
                     applyStatus(R.drawable.status_connected_polling,R.string.status_polling);
                     break;
                 }
-                case LightstreamerClient.DISCONNECTED: {
+                case DISCONNECTED: {
                     applyStatus(R.drawable.status_disconnected,R.string.status_disconnected);
                     break;
                 }
-                case LightstreamerClient.CONNECTING: {
+                case CONNECTING: {
                     applyStatus(R.drawable.status_disconnected,R.string.status_connecting);
                     break;
                 }
-                case LightstreamerClient.WAITING: {
+                case WAITING: {
                     applyStatus(R.drawable.status_disconnected,R.string.status_waiting);
                     break;
                 }
@@ -404,47 +350,6 @@ public class StockListDemo extends ActionBarActivity implements
         }
         
     }
-    
-    
-
-    @Override
-    public void start() {
-        lsClient.start();
-    }
-
-    @Override
-    public void stop(boolean applyPause) {
-        lsClient.stop(applyPause);
-    }
-
-    @Override
-    public void addSubscription(Subscription sub) {
-        lsClient.addSubscription(sub);
-    }
-
-    @Override
-    public void removeSubscription(Subscription sub) {
-        lsClient.removeSubscription(sub);
-    }
-
-    @Override
-    public void activateMPN(MpnInfo info) {
-        lsClient.activateMPN(info);
-    }
-
-    @Override
-    public void deactivateMPN(MpnInfo info) {
-        lsClient.deactivateMPN(info);
-    }
-    
-    @Override
-    public void retrieveMpnStatus(String key) {
-        lsClient.retrieveMpnStatus(key);
-    }
-
-    
-    
-    
     
     //we simply use this class to listen for double taps in which case we reveal/hide 
     //a textual version of the connection status

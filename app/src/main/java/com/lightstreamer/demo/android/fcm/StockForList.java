@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
 import java.text.DecimalFormat;
 
 import android.view.View;
 import android.widget.ListView;
 
-import com.lightstreamer.demo.android.MainSubscription.Context;
-import com.lightstreamer.demo.android.StocksAdapter.RowHolder;
-import com.lightstreamer.ls_client.UpdateInfo;
+import com.lightstreamer.demo.android.fcm.MainSubscription.Context;
+import com.lightstreamer.demo.android.fcm.StocksAdapter.RowHolder;
+import com.lightstreamer.client.ItemUpdate;
 
+/**
+ * A row of {@link StocksFragment}. 
+ */
 public class StockForList {
     
     private String stockName = "N/A";
@@ -45,18 +48,18 @@ public class StockForList {
         this.pos = pos;
     }
     
-    public void update(UpdateInfo newData, final Context context) {
+    public void update(ItemUpdate newData, final Context context) {
         boolean isSnapshot = newData.isSnapshot();
         if (newData.isValueChanged("stock_name")) {
-            stockName = newData.getNewValue("stock_name");
+            stockName = newData.getValue("stock_name");
             stockNameColor = isSnapshot ? R.color.snapshot_highlight : R.color.higher_highlight;
         }
         if (newData.isValueChanged("time")) {
-            time = newData.getNewValue("time");
+            time = newData.getValue("time");
             timeColor = isSnapshot ? R.color.snapshot_highlight : R.color.higher_highlight;
         }
         if (newData.isValueChanged("last_price")) {
-            double newPrice = Double.parseDouble(newData.getNewValue("last_price"));
+            double newPrice = Double.parseDouble(newData.getValue("last_price"));
             lastPrice = format.format(newPrice);
             
             if (isSnapshot) {
@@ -141,9 +144,6 @@ public class StockForList {
                 fillColor(holder);
             }
         }
-        
-        
-        
     }
     
 }

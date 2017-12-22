@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
 import java.util.HashMap;
 
 import android.os.Handler;
 import android.widget.TextView;
 
-import com.lightstreamer.ls_client.UpdateInfo;
+import com.lightstreamer.client.ItemUpdate;
 
+/**
+ * Class updating the fragment {@link DetailsFragment}.
+ */
 public class Stock {
 
     //var fieldsList = ["last_price", "time", "pct_change", "bid_quantity", "bid", "ask", "ask_quantity", "min", "max", "ref_price", "open_price", "stock_name", 
     
     private HashMap<String,TextView> holder = null;
     private HashMap<String,UpdateRunnable> turnOffRunnables = new HashMap<String,UpdateRunnable>();
+    private HashMap<String, String> oldUpdates = new HashMap<String, String>();
 
     private String[] numericFields;
     private String[] otherFields;
@@ -69,12 +73,12 @@ public class Stock {
         return this.lastPrice;
     }
     
-    public void update(UpdateInfo newData, Handler handler) {
+    public void update(ItemUpdate newData, Handler handler) {
         this.updateView(newData, handler, numericFields, true);
         this.updateView(newData, handler, otherFields, false);
         
         //save lastPrice
-        String value = newData.getNewValue("last_price");
+        String value = newData.getValue("last_price");
         try {
             this.lastPrice = Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
@@ -85,12 +89,12 @@ public class Stock {
         chart.addPoint(newData);
     }
     
-    private void updateView(UpdateInfo newData, Handler handler, String[] fields, boolean numeric) {
+    private void updateView(ItemUpdate newData, Handler handler, String[] fields, boolean numeric) {
         boolean snapshot = newData.isSnapshot();
         for (int i=0; i<fields.length; i++) {
             
             if (newData.isValueChanged(fields[i])) {
-                String value = newData.getNewValue(fields[i]);
+                String value = newData.getValue(fields[i]);
                 TextView field = holder.get(fields[i]);
                 
                 if (field != null) {
@@ -100,7 +104,7 @@ public class Stock {
                     if (!snapshot ) {
                         // update cell color 
                         if (numeric) {
-                            String oldValue = newData.getOldValue(fields[i]);
+                            String oldValue = oldUpdates.get(fields[i]);
                             try {
                                 double valueNum = Double.parseDouble(value);
                                 double oldValueNum = Double.parseDouble(oldValue);
@@ -133,6 +137,7 @@ public class Stock {
                     handler.postDelayed(turnOff, 600);
                 }
                 
+                oldUpdates.put(fields[i], value);
             }
         }
     }

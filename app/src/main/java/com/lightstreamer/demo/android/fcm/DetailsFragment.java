@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
+import static com.lightstreamer.demo.android.fcm.Utils.TAG;
+
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map.Entry;
 
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
-import com.lightstreamer.demo.android.LightstreamerClient.MpnStatusListener;
-import com.lightstreamer.ls_client.ExtendedTableInfo;
-import com.lightstreamer.ls_client.HandyTableListener;
-import com.lightstreamer.ls_client.SubscrException;
-import com.lightstreamer.ls_client.SubscribedTableKey;
-import com.lightstreamer.ls_client.UpdateInfo;
-import com.lightstreamer.ls_client.mpn.MpnInfo;
+import com.lightstreamer.client.ItemUpdate;
+import com.lightstreamer.client.mpn.MpnSubscription;
+import com.lightstreamer.client.mpn.util.MpnBuilder;
 
 import android.app.Activity;
 import android.graphics.RectF;
@@ -38,14 +38,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+/**
+ * A fragment displaying the details of a stock.
+ */
 public class DetailsFragment extends Fragment {
-    
-    private static final String TAG = "Details";
     
     public final static String[] numericFields = {"last_price", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
     public final static String[] otherFields = {"stock_name", "time"};
@@ -64,9 +65,7 @@ public class DetailsFragment extends Fragment {
     int currentItem = 0;
 
     private ItemSubscription currentSubscription = null;
-
     private View toggleContainer;
-    private boolean pnEnabled;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,14 +78,11 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
         
-        pnEnabled = false;
-
         // If activity recreated (such as from screen rotate), restore
         // the previous article selection set by onSaveInstanceState().
         // This is primarily necessary when in the two-pane layout.
         if (savedInstanceState != null) {
             currentItem = savedInstanceState.getInt(ARG_ITEM);
-            pnEnabled = savedInstanceState.getBoolean(ARG_PN_CONTROLS);
         }
         
 
@@ -96,7 +92,7 @@ public class DetailsFragment extends Fragment {
         toggle = (ToggleButton)view.findViewById(R.id.pn_switch);
         toggleContainer = view.findViewById(R.id.toggle_container);
         
-        this.enablePN(pnEnabled);
+        this.enablePN();
 
         holder.put("stock_name",(TextView)view.findViewById(R.id.d_stock_name));
         holder.put("last_price",(TextView)view.findViewById(R.id.d_last_price));
@@ -117,12 +113,6 @@ public class DetailsFragment extends Fragment {
             
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (!pnEnabled) {
-                    //push notifications not enabled, ignore the touch
-                    return false;
-                }
-                
-                
                 v.performClick();
                 
                 int action = event.getActionMasked();
@@ -137,7 +127,7 @@ public class DetailsFragment extends Fragment {
                     if (currentSubscription != null) {
                         double triggerVal = widget.getYVal(touchY);
                        
-                        
+                        /*
                         chart.setMovingTriggerLine(triggerVal);
                         if (action == MotionEvent.ACTION_UP) {
                             triggerVal =  Math.round(triggerVal*100.0)/100.0;
@@ -147,6 +137,12 @@ public class DetailsFragment extends Fragment {
                             //go on the network only after the touch has been released
                             subscriptionHandling.activateMPN(getMpnInfo(triggerVal));
                         }
+                        */
+                        if (action == MotionEvent.ACTION_UP) {
+                            triggerVal =  Math.round(triggerVal*100.0)/100.0;
+                            currentSubscription.toggleTrigger(triggerVal);
+                        }
+                        
                     } else {
                         Log.v(TAG,"touch ignored");
                     }
@@ -162,11 +158,13 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
+        
+        chart.onResume(this.getActivity());
+        
         Bundle args = getArguments();
         if (args != null) {
             updateStocksView(args.getInt(ARG_ITEM));
-            enablePN(args.getBoolean(ARG_PN_CONTROLS));
+            enablePN();
         } else if (currentItem != 0) {
             updateStocksView(currentItem);
         }
@@ -182,22 +180,20 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        
         chart.onResume(this.getActivity());
+        
         this.subscriptionHandling.onResume();
     }
     
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        this.subscriptionHandling.onAttach(activity);
     }
     
     
     public void updateStocksView(int item) {
         if (item != currentItem || this.currentSubscription == null) {
-            if (this.currentSubscription != null) {
-                this.currentSubscription.disable();
-            }
             this.currentSubscription = new ItemSubscription("item"+item);
             this.subscriptionHandling.setSubscription(this.currentSubscription);
             
@@ -215,77 +211,28 @@ public class DetailsFragment extends Fragment {
         boolean on = toggle.isChecked();
         if (currentItem != 0) {
             if (on) {
-                Log.v(TAG,"PN enabled for item" + currentItem);
-                this.subscriptionHandling.activateMPN(getMpnInfo(-1));
+                Log.v(TAG,"PN enabled for " + currentSubscription.getGroup());
+                subscriptionHandling.activateMPN(currentSubscription);
             } else {
-                Log.v(TAG,"PN disabled for item" +currentItem);
-                this.subscriptionHandling.deactivateMPN(getMpnInfo(-1));
+                Log.v(TAG,"PN disabled for " + currentSubscription.getGroup());
+                subscriptionHandling.deactivateMPN(currentSubscription);
             }
             
         }
     }
     
-    public void enablePN(boolean enabled) {
-        this.pnEnabled = enabled;
-        this.showToggle(enabled);
+    public void enablePN() {
+        this.showToggle(true);
     }
     
-    private MpnInfo getMpnInfo(double trigger) {
-        
-        ExtendedTableInfo tableInfo = this.currentSubscription.getTableInfo();
-        
-        Map<String, String> data= new HashMap<String, String>();
-        data.put("stock_name", "${stock_name}");
-        data.put("last_price", "${last_price}");
-        data.put("time", "${time}");
-        data.put("item", tableInfo.getItems()[0]);
-        
-        ExtendedTableInfo clone = null;
-        try {
-            clone = new ExtendedTableInfo(tableInfo.getItems(), "MERGE", mpnSubscriptionFields , false);
-        } catch (SubscrException e) {
-            Log.wtf(TAG, "can't happen");
-        }
-        clone.setDataAdapter("QUOTE_ADAPTER");
-        
-        MpnInfo info = new MpnInfo(clone,"Stock update",data);
-        info.setDelayWhileIdle("false");
-        info.setTimeToLive("300");
-        
-        //this.getLastPrice()
-        
-        info.setTriggerExpression(triggetToString(trigger,this.currentSubscription.getLastPrice()));
-        
-        
-        return info;
-    }
-    
-    public static final String TRIGGER_HEAD = "Double.parseDouble($[2])";
-    public static final String TRIGGER_LT = "<=";
-    public static final String TRIGGER_GT = ">=";
-    
-    public String triggetToString(double triggerVal, double current) {
-        String trigger = null;
-        if (triggerVal >= 0) {
-            trigger = TRIGGER_HEAD;
-            if (triggerVal < current) {
-                trigger += TRIGGER_LT; 
-            } else {
-                trigger += TRIGGER_GT;
-            }
-            
-            trigger += triggerVal;
-        }
-        
-        return trigger; 
-    }
-   
-
     private void showToggle(final boolean show) {
-        
         if (toggleContainer == null) {
             //onCreateView will set it (or the layout does not contain it)
             return;
+        }
+        
+        if (currentSubscription != null) {
+            
         }
         
         handler.post(new Runnable() {
@@ -305,142 +252,212 @@ public class DetailsFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putInt(ARG_ITEM, currentItem);
-        outState.putBoolean(ARG_PN_CONTROLS, this.pnEnabled);
     }
     
     
-    private class ItemSubscription implements Subscription {
+    class ItemSubscription {
+        
+        private static final String TRIGGER_HEAD = "Double.parseDouble($[2])";
+        private static final String TRIGGER_LT = "<=";
+        private static final String TRIGGER_GT = ">=";
     
         private final Stock stock;
-        private ExtendedTableInfo tableInfo;
-        private SubscribedTableKey key;
-        private StockListener listener;
-        
+        private final com.lightstreamer.client.Subscription stockSubscription;
+        private volatile MpnSubscription tickSubscription;
+        private final Map<Double, MpnSubscription> triggers = Collections.synchronizedMap(new HashMap<Double, MpnSubscription>());
+
         public ItemSubscription(String item) {
-            this.stock = new Stock(item,numericFields,otherFields);
+            stock = new Stock(item,numericFields,otherFields);
             stock.setHolder(holder);
             stock.setChart(chart);
                      
-            this.listener = new StockListener(stock);
+            stockSubscription = new com.lightstreamer.client.Subscription("MERGE", new String[] {item}, subscriptionFields);
+            stockSubscription.setRequestedSnapshot("yes");
+            stockSubscription.setDataAdapter("QUOTE_ADAPTER");
+            stockSubscription.addListener(new Utils.VoidSubscriptionListener() {
+                @Override
+                public void onSubscription() {
+                    Log.d(TAG, "Subscribed to " + getGroup());
+                }
+                
+                @Override
+                public void onSubscriptionError(int code, String message) {
+                    Log.d(TAG, "Unable to subscribe to " + getGroup() + ": " + message);
+                }
+                
+                @Override
+                public void onUnsubscription() {
+                    Log.d(TAG, "Unsubscribed from " + getGroup());
+                }
+                
+                @Override
+                public void onItemUpdate(ItemUpdate newData) {
+                    Log.v(TAG,"Update for " + getGroup());
+                    stock.update(newData, handler);
+                }
+            });
             
-            try {
-                this.tableInfo = new ExtendedTableInfo(new String[] {item}, "MERGE", subscriptionFields , true);
-                this.tableInfo.setDataAdapter("QUOTE_ADAPTER");
-            } catch (SubscrException e) {
-                Log.wtf(TAG, "I'm pretty sure MERGE is compatible with the snapshot request!");
+            /* resume MPN subscriptions */
+            List<MpnSubscription> subs = LsClient.instance.getMpnSubscriptions();
+            String thisGroup = getGroup();
+            for (MpnSubscription sub : subs) {
+                if (sub.getItemGroup().equals(thisGroup)) {
+                    if (sub.getTriggerExpression() == null) {
+                        /* resume tick subscription (it is the only one without a trigger condition) */
+                        Log.d(TAG, "Resume MPN " + thisGroup);
+                        setTickSubscription(sub);
+                    } else {
+                        /* resume triggers */
+                        Log.d(TAG, "Resume MPN " + thisGroup + " trigger: " + sub.getTriggerExpression());
+                        addTrigger(sub);
+                    }
+                }
+            }
+        }
+        
+        public void subscribeTick() {
+            if (tickSubscription == null) {
+                MpnSubscription info = createMpnSubscription();
+                info.addListener(new Utils.VoidMpnSubscriptionListener() {
+                    @Override
+                    public void onSubscriptionError(int code, String message) {
+                        Log.e(TAG, "Unable to subscribe MPN tick for " + getGroup() + ". Cause: " + message);
+                        handler.post(new Runnable() {
+                            public void run() {
+                                if (toggle != null) {
+                                    toggle.setChecked(false);
+                                }
+                            }
+                        });
+                    }
+                });
+                setTickSubscription(info);
+            }
+            LsClient.instance.subscribe(tickSubscription);
+        }
+        
+        public void unsubscribeTick() {
+            assert tickSubscription != null;
+            LsClient.instance.unsubscribe(tickSubscription);
+            setTickSubscription(null);
+        }
+        
+        public void toggleTrigger(final double triggerVal) {
+            MpnSubscription sub = triggers.remove(triggerVal);
+            if (sub != null) {
+                /* remove the old trigger */
+                chart.removeTriggerLine(triggerVal);
+                LsClient.instance.unsubscribe(sub);
+                
+            } else {
+                /* add a new trigger */
+                sub = createMpnSubscription();
+                sub.addListener(new Utils.VoidMpnSubscriptionListener() {
+                    @Override
+                    public void onTriggered() {
+                        Log.d(TAG, "Fire trigger " + triggerVal);
+                        chart.setRedLine(triggerVal);
+                    }
+                });
+                sub.setTriggerExpression(triggetToString(triggerVal, getLastPrice()));
+                LsClient.instance.subscribe(sub);
+                
+                chart.setGreenLine(triggerVal);
+                triggers.put(triggerVal, sub);                
             }
         }
 
-        public void disable() {
-            this.listener.disable();
-        }
-
-        @Override
-        public HandyTableListener getTableListener() {
-            return this.listener;
-        }
-
-        @Override
-        public SubscribedTableKey getTableKey() {
-            return  this.key;
-        }
-
-        @Override
-        public ExtendedTableInfo getTableInfo() {
-            return this.tableInfo;
-        }
-
-        @Override
-        public void setTableKey(SubscribedTableKey key) {
-            this.key = key;
-        }
-
-        @Override
-        public MpnStatusListener getMpnStatusListener() {
-            return this.listener;
+        private MpnSubscription createMpnSubscription() {
+            MpnSubscription sub = new MpnSubscription(stockSubscription);
+            Map<String, String> data= new HashMap<String, String>();
+            data.put("stock_name", "${stock_name}");
+            data.put("last_price", "${last_price}");
+            data.put("time", "${time}");
+            data.put("item", stockSubscription.getItems()[0]);
+            String format = new MpnBuilder()
+                    .data(data)
+                    .build();
+            sub.setNotificationFormat(format);
+            return sub;
         }
         
+        public void subscribeStock() {
+            Log.d(TAG, "Subscribing to " + getGroup() + "...");
+            LsClient.instance.subscribe(stockSubscription);
+        }
+        
+        public void unsubscribeStock() {
+            Log.d(TAG, "Unsubscribing from " + getGroup() + "...");
+            LsClient.instance.unsubscribe(stockSubscription);
+        }
+        
+        public void onResume() {
+            /* draw trigger lines */
+            synchronized (triggers) {                
+                for (Entry<Double, MpnSubscription> entry : triggers.entrySet()) {
+                    double triggerVal = entry.getKey();
+                    MpnSubscription sub = entry.getValue();
+                    if (sub.isTriggered()) {
+                        chart.setRedLine(triggerVal);
+                    } else {
+                        chart.setGreenLine(triggerVal);
+                    }
+                }
+            }
+            /* set label to PN button */
+            final boolean arePushNotificationsEnabled = tickSubscription != null;
+            handler.post(new Runnable() {
+                public void run() {
+                    if (toggle != null) { //toggle can be null if we're in landscape mode
+                        toggle.setChecked(arePushNotificationsEnabled);
+                    }
+                }
+            });
+        }
+        
+        private void setTickSubscription(MpnSubscription sub) {
+            this.tickSubscription = sub;
+        }
+        
+        private void addTrigger(MpnSubscription sub) {
+            String trigger = sub.getTriggerExpression();
+            assert trigger != null;
+            final double triggerDouble = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length() + TRIGGER_GT.length()));
+            if (! sub.isTriggered()) {
+                sub.addListener(new Utils.VoidMpnSubscriptionListener() {
+                    @Override
+                    public void onTriggered() {
+                        Log.d(TAG, "Fire trigger " + triggerDouble);
+                        chart.setRedLine(triggerDouble);
+                    }
+                });
+            }
+            triggers.put(triggerDouble, sub);
+        }
+        
+        private String triggetToString(double triggerVal, double current) {
+            String trigger = null;
+            if (triggerVal >= 0) {
+                trigger = TRIGGER_HEAD;
+                if (triggerVal < current) {
+                    trigger += TRIGGER_LT; 
+                } else {
+                    trigger += TRIGGER_GT;
+                }
+                
+                trigger += triggerVal;
+            }
+            
+            return trigger; 
+        }
+        
+        public String getGroup() {
+            return stockSubscription.getItems()[0];
+        }
 
         public double getLastPrice() {
             return this.stock.getLastPrice(); 
         }
     }
-    
-    private class StockListener implements HandyTableListener, MpnStatusListener {
-        
-        private AtomicBoolean disabled = new AtomicBoolean(false);
-        private final Stock stock;
-        
-        public StockListener(Stock stock) {
-            this.stock = stock;
-        }
-        
-        public void disable() {
-            disabled.set(true);
-        }
-        
-        @Override
-        public void onRawUpdatesLost(int arg0, String arg1, int arg2) {
-            Log.wtf(TAG,"Not expecting lost updates");
-        }
-
-        @Override
-        public void onSnapshotEnd(int itemPos, String itemName) {
-            Log.v(TAG,"Snapshot end for " + itemName);
-        }
-
-        @Override
-        public void onUnsubscr(int itemPos, String itemName) {
-            Log.v(TAG,"Unsubscribed " + itemName);
-        }
-
-        @Override
-        public void onUnsubscrAll() {
-            Log.v(TAG,"Unsubscribed all");
-        }
-
-        @Override
-        public void onUpdate(int itemPos, String itemName, UpdateInfo newData) {
-            if (disabled.get()) {
-                return;
-            }
-            Log.v(TAG,"Update for " + itemName);
-            this.stock.update(newData,handler);
-        }
-
-        @Override
-        public void onMpnStatusChanged(final boolean activated, String trigger) {
-            if (disabled.get()) {
-                return;
-            }
-            
-            double triggerDouble = -1;
-            if (trigger != null && !trigger.equals("")) {
-                try {
-                    triggerDouble = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length()+TRIGGER_GT.length()));
-                } catch(NumberFormatException e) {
-                    Log.wtf(TAG, "Unexpected trigger set: " + trigger);
-                }
-                if (activated) {
-                    chart.setTriggerLine(triggerDouble);
-                } else {
-                    chart.removeTriggerLine(triggerDouble);
-                }
-            } else {
-                handler.post(new Runnable() {
-                    public void run() {
-                        if (toggle != null) { //toggle can be null if we're in landscape mode
-                            toggle.setChecked(activated);
-                        }
-                    }
-                });
-            }
-            
-        }
-        
-        
-    }
-
-    
 
 }

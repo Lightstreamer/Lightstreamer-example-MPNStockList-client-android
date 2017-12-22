@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.lightstreamer.demo.android;
+package com.lightstreamer.demo.android.fcm;
 
 import java.util.ArrayList;
-
-import com.lightstreamer.demo.android.LightstreamerClient.LightstreamerClientProxy;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -28,6 +26,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+/**
+ * A fragment displaying a list of stocks.
+ */
 public class StocksFragment extends ListFragment {
     
     onStockSelectedListener listener;
@@ -46,7 +47,6 @@ public class StocksFragment extends ListFragment {
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time"};
     
     private Handler handler;
-    LightstreamerClientProxy lsClient;
     
     private static ArrayList<StockForList> list;
     
@@ -88,34 +88,25 @@ public class StocksFragment extends ListFragment {
         
     }
     
-    
-    
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         
-        try {
-             lsClient = (LightstreamerClientProxy) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement LightstreamerClientProxy");
-        }
-        lsClient.addSubscription(mainSubscription);
+        mainSubscription.subscribe();
       
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception.
         try {
             listener = (onStockSelectedListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnHeadlineSelectedListener");
+            throw new ClassCastException(activity.toString() + " must implement OnHeadlineSelectedListener");
         }
     }
     
     @Override
     public void onDetach() {
         super.onDetach();
-        lsClient.removeSubscription(mainSubscription);
+        mainSubscription.unsubscribe();
     }
 
     @Override
@@ -126,7 +117,4 @@ public class StocksFragment extends ListFragment {
         // Set the item as checked to be highlighted when in two-pane layout
         getListView().setItemChecked(position, true);
     }
-    
-    
-
 }
