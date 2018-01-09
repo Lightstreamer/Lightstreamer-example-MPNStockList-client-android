@@ -57,17 +57,39 @@ public class LsClient {
         client.addListener(new Utils.VoidClientListener() {
             @Override
             public void onStatusChange(String status) {
-                if (status.equals("DISCONNECTED")) {
+                switch (status) {
+                    case "CONNECTING":
+                        setStatus(Status.CONNECTING);
+                        break;
+                    case "CONNECTED:STREAM-SENSING":
+                        setStatus(Status.CONNECTING);
+                        break;
+                    case "DISCONNECTED":
                     setStatus(Status.DISCONNECTED);
-                    
-                } else if (status.startsWith("CONNECTED")) {
-                    Status lastConnectionStatus;
-                    if (status.endsWith("POLLING")) {
-                        lastConnectionStatus = Status.POLLING;
-                    } else {
-                        lastConnectionStatus = Status.STREAMING;
-                    }
-                    setStatus(lastConnectionStatus);
+                        break;
+                    case "DISCONNECTED:WILL-RETRY":
+                        setStatus(Status.DISCONNECTED);
+                        break;
+                    case "CONNECTED:HTTP-STREAMING":
+                        setStatus(Status.STREAMING);
+                        break;
+                    case "CONNECTED:WS-STREAMING":
+                        setStatus(Status.STREAMING);
+                        break;
+                    case "CONNECTED:HTTP-POLLING":
+                        setStatus(Status.POLLING);
+                        break;
+                    case "CONNECTED:WS-POLLING":
+                        setStatus(Status.POLLING);
+                        break;
+                    case "DISCONNECTED:TRYING-RECOVERY":
+                        setStatus(Status.DISCONNECTED);
+                        break;
+                    case "STALLED":
+                        setStatus(Status.STALLED);
+                        break;
+                    default:
+                        Log.wtf(TAG, "Received unexpected connection status: " + status);
                 }
             }
         });
