@@ -1,7 +1,7 @@
 # Lightstreamer - Stock-List Demo with FCM Push Notifications - Android Client
 
 
-This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://docs.lightstreamer.com/api/ls-android-client/latest_4_0/)
+This project contains a full example of an Android application that employs the [Lightstreamer Android Client library](http://docs.lightstreamer.com/api/ls-android-client/latest/)
 to subscribe to real-time updates and FCM push notifications.
 
 A simpler version, without FCM support is also available: [Stock-List Demo - Android Client](https://github.com/Lightstreamer/Lightstreamer-example-AdvStockList-client-android)
@@ -44,7 +44,7 @@ the `Fragment`. Please note that this class does not actually extend `Fragment`.
 
 Check out the sources for further explanations.
   
-*NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://docs.lightstreamer.com/api/ls-android-client/latest_4_0/) as a reference. If in trouble check out the [specific Lightstreamer forum](https://forums.lightstreamer.com/forumdisplay.php?11-Client-APIs).*
+*NOTE: Not all the functionalities of the Lightstreamer Android Java client are exposed by the classes listed above. You can easily expand those functionalities using the [Android Client API](http://docs.lightstreamer.com/api/ls-android-client/latest/) as a reference. If in trouble check out the [specific Lightstreamer forum](https://forums.lightstreamer.com/forumdisplay.php?11-Client-APIs).*
 
 ## Install
 
@@ -112,5 +112,5 @@ You might also use a different build tool (e.g.: Maven, Ant, etc.) by converting
 ## Lightstreamer Compatibility Notes
 
 * Compatible with Lightstreamer Android Client (Unified API Version) v. 4.0.0 or newer.
-* For Lightstreamer Allegro (+ Android Client API support), Presto, Vivace.
+* For Lightstreamer Server version 7.0 or greater. Ensure that Android Client API is supported by Lightstreamer Server license configuration.
 * For a version of this example compatible with Lightstreamer Android Client API version 1.x, please refer to [this branch](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/tree/for-client-1).
