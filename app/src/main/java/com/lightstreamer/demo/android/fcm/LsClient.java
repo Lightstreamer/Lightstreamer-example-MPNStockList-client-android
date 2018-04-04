@@ -65,7 +65,7 @@ public class LsClient {
                         setStatus(Status.CONNECTING);
                         break;
                     case "DISCONNECTED":
-                    setStatus(Status.DISCONNECTED);
+                        setStatus(Status.DISCONNECTED);
                         break;
                     case "DISCONNECTED:WILL-RETRY":
                         setStatus(Status.DISCONNECTED);
