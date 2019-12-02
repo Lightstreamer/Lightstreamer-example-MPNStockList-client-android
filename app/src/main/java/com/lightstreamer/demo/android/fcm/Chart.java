@@ -28,13 +28,18 @@ import java.util.concurrent.TimeUnit;
 import com.androidplot.util.PixelUtils;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
+import com.androidplot.xy.RectRegion;
+import com.androidplot.xy.StepMode;
+import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
 import com.lightstreamer.client.ItemUpdate;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
+
+import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
 public class Chart {
     
@@ -50,6 +55,9 @@ public class Chart {
     
     double maxY = 0; 
     double minY = 0;
+
+    Number minX = 0;
+    Number maxX = 0;
     
     private final static int MAX_SERIES_SIZE = 40;
     
@@ -86,20 +94,20 @@ public class Chart {
     public void setPlot(final XYPlot dynamicPlot) {
         if (this.dynamicPlot != dynamicPlot) {
             this.dynamicPlot = dynamicPlot;
-            dynamicPlot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
-            dynamicPlot.setRangeStep(XYStepMode.SUBDIVIDE, 5);
-            dynamicPlot.getLegendWidget().setVisible(false);
+            dynamicPlot.setDomainStep(StepMode.SUBDIVIDE, 4);
+            dynamicPlot.setRangeStep(StepMode.SUBDIVIDE, 6);
+            dynamicPlot.getLegend().setVisible(false);
             
             dynamicPlot.getBackgroundPaint().setColor(Color.BLACK);
-            dynamicPlot.getGraphWidget().getBackgroundPaint().setColor(Color.BLACK);
-            dynamicPlot.getGraphWidget().getGridBackgroundPaint().setColor(Color.BLACK);
-            
-            dynamicPlot.getGraphWidget().getDomainLabelPaint().setColor(Color.WHITE);
-            dynamicPlot.getGraphWidget().getRangeLabelPaint().setColor(Color.WHITE);
+            dynamicPlot.getGraph().getBackgroundPaint().setColor(Color.BLACK);
+            dynamicPlot.getGraph().getGridBackgroundPaint().setColor(Color.BLACK);
+
+            dynamicPlot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.BOTTOM).getPaint().setColor(Color.WHITE);
+            dynamicPlot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).getPaint().setColor(Color.WHITE);
 
             this.adjustYBoundaries();
             
-            dynamicPlot.setDomainValueFormat(new FormatDateLabel());
+            dynamicPlot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.BOTTOM).setFormat(new FormatDateLabel());
         }
     }
     
@@ -250,12 +258,12 @@ public class Chart {
 
         @Override
         public Number getX(int index) {
-            Number min = dynamicPlot.getCalculatedMinX();
+            Number min = minX;
             if (index == 0) {
                 return min;
             } else {
-                Number res = dynamicPlot.getCalculatedMaxX();
-                if (res == min) {
+                Number res = maxX;
+                if (res.equals(min)) {
                     res = res.intValue()+1;
                 }
                 return res;
@@ -312,7 +320,10 @@ public class Chart {
             String[] pieces = time.split(":");
             int intTime = Integer.parseInt(pieces[0])*60*60 + Integer.parseInt(pieces[1])*60 + Integer.parseInt(pieces[2]);
             times.add(intTime);
-            
+            maxX = intTime;
+            if (minX.intValue() == 0) {
+                minX = intTime;
+            }
         }
 
         public void reset() {

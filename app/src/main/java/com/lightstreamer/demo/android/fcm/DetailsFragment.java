@@ -15,20 +15,6 @@
  */
 package com.lightstreamer.demo.android.fcm;
 
-import static com.lightstreamer.demo.android.fcm.Utils.TAG;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.androidplot.xy.XYGraphWidget;
-import com.androidplot.xy.XYPlot;
-import com.lightstreamer.client.ItemUpdate;
-import com.lightstreamer.client.mpn.MpnSubscription;
-import com.lightstreamer.client.mpn.util.MpnBuilder;
-
 import android.app.Activity;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -43,11 +29,27 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.androidplot.xy.XYGraphWidget;
+import com.androidplot.xy.XYPlot;
+import com.lightstreamer.client.ItemUpdate;
+import com.lightstreamer.client.mpn.MpnDeviceInterface;
+import com.lightstreamer.client.mpn.MpnSubscription;
+import com.lightstreamer.client.mpn.util.MpnBuilder;
+
+import org.jdeferred.DoneCallback;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 /**
  * A fragment displaying the details of a stock.
  */
 public class DetailsFragment extends Fragment {
-    
+
+    private final static String TAG = Utils.TAG + "." + "Details";
+
     public final static String[] numericFields = {"last_price", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
     public final static String[] otherFields = {"stock_name", "time"};
     public final static String[] subscriptionFields = {"stock_name", "last_price", "time", "pct_change","bid_quantity", "bid", "ask", "ask_quantity", "min", "max","open_price"};
@@ -58,7 +60,7 @@ public class DetailsFragment extends Fragment {
     HashMap<String, TextView> holder =  new HashMap<String, TextView>();
     Chart chart = new Chart();
     ToggleButton toggle;
-    
+
     public static final String ARG_ITEM = "item";
     public static final String ARG_PN_CONTROLS = "pn_controls";
     
@@ -69,6 +71,7 @@ public class DetailsFragment extends Fragment {
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
         handler = new Handler();
@@ -77,6 +80,7 @@ public class DetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
         
         // If activity recreated (such as from screen rotate), restore
         // the previous article selection set by onSaveInstanceState().
@@ -120,24 +124,12 @@ public class DetailsFragment extends Fragment {
                 float touchY = event.getY();
                 float touchX = event.getX();
                 
-                XYGraphWidget widget = plot.getGraphWidget();
+                XYGraphWidget widget = plot.getGraph();
                 RectF gridRect = widget.getGridRect();
                 if(gridRect.contains(touchX, touchY)){
                     
                     if (currentSubscription != null) {
-                        double triggerVal = widget.getYVal(touchY);
-                       
-                        /*
-                        chart.setMovingTriggerLine(triggerVal);
-                        if (action == MotionEvent.ACTION_UP) {
-                            triggerVal =  Math.round(triggerVal*100.0)/100.0;
-                            chart.endMovingTriggerLine(triggerVal);
-                            
-                            Log.d(TAG,"Touch released @ " + triggerVal);
-                            //go on the network only after the touch has been released
-                            subscriptionHandling.activateMPN(getMpnInfo(triggerVal));
-                        }
-                        */
+                        double triggerVal = plot.getYVal(touchY).doubleValue();
                         if (action == MotionEvent.ACTION_UP) {
                             triggerVal =  Math.round(triggerVal*100.0)/100.0;
                             currentSubscription.toggleTrigger(triggerVal);
@@ -157,6 +149,7 @@ public class DetailsFragment extends Fragment {
     
     @Override
     public void onStart() {
+        Log.d(TAG, "onStart");
         super.onStart();
         
         chart.onResume(this.getActivity());
@@ -172,6 +165,7 @@ public class DetailsFragment extends Fragment {
     
     @Override
     public void onPause() {
+        Log.d(TAG, "onPause");
         super.onPause();
         chart.onPause();
         this.subscriptionHandling.onPause();
@@ -179,6 +173,7 @@ public class DetailsFragment extends Fragment {
     
     @Override
     public void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
         
         chart.onResume(this.getActivity());
@@ -188,6 +183,7 @@ public class DetailsFragment extends Fragment {
     
     @Override
     public void onAttach(Activity activity) {
+        Log.d(TAG, "onAttach");
         super.onAttach(activity);
     }
     
@@ -231,10 +227,6 @@ public class DetailsFragment extends Fragment {
             return;
         }
         
-        if (currentSubscription != null) {
-            
-        }
-        
         handler.post(new Runnable() {
             public void run() {
                 if (toggleContainer == null) {
@@ -249,6 +241,7 @@ public class DetailsFragment extends Fragment {
     
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
 
         outState.putInt(ARG_ITEM, currentItem);
@@ -264,9 +257,11 @@ public class DetailsFragment extends Fragment {
         private final Stock stock;
         private final com.lightstreamer.client.Subscription stockSubscription;
         private volatile MpnSubscription tickSubscription;
-        private final Map<Double, MpnSubscription> triggers = Collections.synchronizedMap(new HashMap<Double, MpnSubscription>());
+
+        private volatile MpnDeviceInterface mpnDevice;
 
         public ItemSubscription(String item) {
+            Log.d(TAG, "new ItemSubscription " + item);
             stock = new Stock(item,numericFields,otherFields);
             stock.setHolder(holder);
             stock.setChart(chart);
@@ -292,27 +287,9 @@ public class DetailsFragment extends Fragment {
                 
                 @Override
                 public void onItemUpdate(ItemUpdate newData) {
-                    Log.v(TAG,"Update for " + getGroup());
                     stock.update(newData, handler);
                 }
             });
-            
-            /* resume MPN subscriptions */
-            List<MpnSubscription> subs = LsClient.instance.getMpnSubscriptions();
-            String thisGroup = getGroup();
-            for (MpnSubscription sub : subs) {
-                if (sub.getItemGroup().equals(thisGroup)) {
-                    if (sub.getTriggerExpression() == null) {
-                        /* resume tick subscription (it is the only one without a trigger condition) */
-                        Log.d(TAG, "Resume MPN " + thisGroup);
-                        setTickSubscription(sub);
-                    } else {
-                        /* resume triggers */
-                        Log.d(TAG, "Resume MPN " + thisGroup + " trigger: " + sub.getTriggerExpression());
-                        addTrigger(sub);
-                    }
-                }
-            }
         }
         
         public void subscribeTick() {
@@ -343,27 +320,37 @@ public class DetailsFragment extends Fragment {
         }
         
         public void toggleTrigger(final double triggerVal) {
-            MpnSubscription sub = triggers.remove(triggerVal);
-            if (sub != null) {
-                /* remove the old trigger */
-                chart.removeTriggerLine(triggerVal);
-                LsClient.instance.unsubscribe(sub);
-                
-            } else {
+            Log.d(TAG, "Toggle trigger " + triggerVal);
+            final String trigger = String.format(Locale.US, "%.2f", triggerVal);
+            boolean found = false;
+            List<MpnSubscription> ls = LsClient.instance.getMpnSubscriptions();
+            for (MpnSubscription sub: ls) {
+                if (sub.getTriggerExpression() == null) {
+                    continue;
+                }
+                String subTrigger = stringToTrigger(sub);
+                if (subTrigger.equals(trigger)) {
+                    /* remove the old trigger */
+                    Log.d(TAG, "Remove trigger " + trigger + " subId=" + sub.getSubscriptionId());
+                    LsClient.instance.unsubscribe(sub);
+                    chart.removeTriggerLine(triggerVal);
+                    found = true;
+                }
+            }
+            if (! found) {
                 /* add a new trigger */
-                sub = createMpnSubscription();
+                Log.d(TAG, "Add trigger (and listener) " + trigger);
+                final MpnSubscription sub = createMpnSubscription();
+                sub.setTriggerExpression(triggerToString(triggerVal, getLastPrice()));
                 sub.addListener(new Utils.VoidMpnSubscriptionListener() {
                     @Override
                     public void onTriggered() {
-                        Log.d(TAG, "Fire trigger " + triggerVal);
+                        Log.d(TAG, "Fire trigger " + triggerVal + " subId=" + sub.getSubscriptionId());
                         chart.setRedLine(triggerVal);
                     }
                 });
-                sub.setTriggerExpression(triggetToString(triggerVal, getLastPrice()));
                 LsClient.instance.subscribe(sub);
-                
                 chart.setGreenLine(triggerVal);
-                triggers.put(triggerVal, sub);                
             }
         }
 
@@ -392,18 +379,32 @@ public class DetailsFragment extends Fragment {
         }
         
         public void onResume() {
-            /* draw trigger lines */
-            synchronized (triggers) {                
-                for (Entry<Double, MpnSubscription> entry : triggers.entrySet()) {
-                    double triggerVal = entry.getKey();
-                    MpnSubscription sub = entry.getValue();
-                    if (sub.isTriggered()) {
-                        chart.setRedLine(triggerVal);
-                    } else {
-                        chart.setGreenLine(triggerVal);
-                    }
-                }
-            }
+             /* listen to onSubscriptionsUpdated event to be notified when a trigger is added/removed */
+            LsClient.instance
+                    .getMpnDevice()
+                    .done(new DoneCallback<MpnDeviceInterface>() {
+                        @Override
+                        public void onDone(MpnDeviceInterface device) {
+                            if (device != mpnDevice) {
+                                Log.d(TAG, "Add device listener");
+                                mpnDevice = device;
+                                mpnDevice.addListener(new Utils.VoidMpnDeviceListener() {
+                                    @Override
+                                    public void onSubscriptionsUpdated() {
+                                        refreshTriggers();
+                                    }
+                                });
+                            }
+                            refreshTriggers();
+                        }
+                    });
+        }
+
+        public void onPause() {
+        }
+        
+        private void setTickSubscription(MpnSubscription sub) {
+            this.tickSubscription = sub;
             /* set label to PN button */
             final boolean arePushNotificationsEnabled = tickSubscription != null;
             handler.post(new Runnable() {
@@ -415,27 +416,7 @@ public class DetailsFragment extends Fragment {
             });
         }
         
-        private void setTickSubscription(MpnSubscription sub) {
-            this.tickSubscription = sub;
-        }
-        
-        private void addTrigger(MpnSubscription sub) {
-            String trigger = sub.getTriggerExpression();
-            assert trigger != null;
-            final double triggerDouble = Double.parseDouble(trigger.substring(TRIGGER_HEAD.length() + TRIGGER_GT.length()));
-            if (! sub.isTriggered()) {
-                sub.addListener(new Utils.VoidMpnSubscriptionListener() {
-                    @Override
-                    public void onTriggered() {
-                        Log.d(TAG, "Fire trigger " + triggerDouble);
-                        chart.setRedLine(triggerDouble);
-                    }
-                });
-            }
-            triggers.put(triggerDouble, sub);
-        }
-        
-        private String triggetToString(double triggerVal, double current) {
+        private String triggerToString(double triggerVal, double current) {
             String trigger = null;
             if (triggerVal >= 0) {
                 trigger = TRIGGER_HEAD;
@@ -445,10 +426,14 @@ public class DetailsFragment extends Fragment {
                     trigger += TRIGGER_GT;
                 }
                 
-                trigger += triggerVal;
+                trigger += String.format(Locale.US, "%.2f", triggerVal);
             }
             
             return trigger; 
+        }
+
+        private String stringToTrigger(MpnSubscription sub) {
+            return sub.getTriggerExpression().substring(TRIGGER_HEAD.length() + 2);
         }
         
         public String getGroup() {
@@ -458,6 +443,41 @@ public class DetailsFragment extends Fragment {
         public double getLastPrice() {
             return this.stock.getLastPrice(); 
         }
+
+        void refreshTriggers() {
+            Log.d(TAG, "Refresh triggers");
+            List<MpnSubscription> subs = LsClient.instance.getMpnSubscriptions();
+            String thisGroup = getGroup();
+            for (final MpnSubscription sub : subs) {
+                if (sub.getItemGroup().equals(thisGroup)) {
+                    if (sub.getTriggerExpression() == null) {
+                        /* resume tick subscription (it is the only one without a trigger condition) */
+                        Log.d(TAG, "Resume tick");
+                        setTickSubscription(sub);
+                    } else {
+                        /* resume triggers */
+                        final double triggerDouble = Double.parseDouble(stringToTrigger(sub));
+                        Log.d(TAG, "Resume trigger " + triggerDouble + " subId=" + sub.getSubscriptionId() + " isTriggered=" + sub.isTriggered());
+                        if (sub.isTriggered()) {
+                            chart.setRedLine(triggerDouble);
+                        } else {
+                            if (sub.getListeners().size() == 0) {
+                                Log.d(TAG, "Add listener to trigger " + triggerDouble + " subId=" + sub.getSubscriptionId());
+                                sub.addListener(new Utils.VoidMpnSubscriptionListener() {
+                                    @Override
+                                    public void onTriggered() {
+                                        Log.d(TAG, "Fire trigger " + triggerDouble + " subId=" + sub.getSubscriptionId());
+                                        chart.setRedLine(triggerDouble);
+                                    }
+                                });
+                            }
+                            chart.setGreenLine(triggerDouble);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
 }

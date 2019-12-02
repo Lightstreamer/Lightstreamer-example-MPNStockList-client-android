@@ -56,7 +56,6 @@ class MainSubscription {
             
             @Override
             public void onItemUpdate(ItemUpdate newData) {
-                Log.v(TAG, "Update for main subscription");
                 final StockForList toUpdate = list.get(newData.getItemPos() - 1);
                 toUpdate.update(newData, context);
             }

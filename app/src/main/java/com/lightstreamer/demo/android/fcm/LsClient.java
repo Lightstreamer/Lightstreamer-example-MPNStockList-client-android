@@ -15,20 +15,35 @@
  */
 package com.lightstreamer.demo.android.fcm;
 
-import static com.lightstreamer.demo.android.fcm.Utils.TAG;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.lightstreamer.client.LightstreamerClient;
+import com.lightstreamer.client.Subscription;
+import com.lightstreamer.client.mpn.MpnDeviceInterface;
+import com.lightstreamer.client.mpn.MpnSubscription;
+import com.lightstreamer.client.mpn.android.MpnDevice;
+
+import org.jdeferred.Deferred;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.lightstreamer.client.LightstreamerClient;
-import com.lightstreamer.client.Subscription;
-import com.lightstreamer.client.mpn.MpnSubscription;
-import com.lightstreamer.client.mpn.android.MpnDevice;
-
-import android.content.Context;
-import android.util.Log;
-
 import javax.annotation.Nonnull;
+
+import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
 /**
  * Singleton class embedding a {@link LightstreamerClient}.
@@ -47,11 +62,13 @@ public class LsClient {
 
     private volatile Context context;
 
-    private volatile String senderId;
+    private volatile Activity activity;
+
+    private volatile Deferred<MpnDeviceInterface, Object, Object> deferredDevice;
     
     private LsClient() {}
 
-    public void initClient(String pushServerUrl, String adapterName, Context context, String senderId) {
+    public void initClient(String pushServerUrl, String adapterName, Context context, Activity activity) {
         Log.i(TAG, "Init Lightstreamer client");
         client = new com.lightstreamer.client.LightstreamerClient(pushServerUrl, adapterName);
         client.addListener(new Utils.VoidClientListener() {
@@ -94,7 +111,7 @@ public class LsClient {
             }
         });
         this.context = context;
-        this.senderId = senderId;
+        this.activity = activity;
     }
     
     public void subscribe(Subscription sub) {
@@ -120,36 +137,66 @@ public class LsClient {
     public void setListener(StatusChangeListener statusListener) {
         this.statusListener = statusListener;
     }
+
+    public Promise<MpnDeviceInterface, Object, Object> getMpnDevice() {
+        return deferredDevice.promise();
+    }
     
     public synchronized void start() {
+        deferredDevice = new DeferredObject<>();
         Log.d(TAG, "Connecting to server...");
         if (expectingConnected.compareAndSet(false,true)) {
             setStatus(Status.CONNECTING);
             client.connect();
             Log.i(TAG, "Creating MPN device");
-            MpnDevice.create(context, senderId, new MpnDevice.MpnDeviceCreationListener() {
-                @Override
-                public void onSuccess(@Nonnull MpnDevice device) {
-                    device.addListener(new Utils.VoidMpnDeviceListener() {
-                        @Override
-                        public void onRegistrationFailed(int code, String message) {
-                            Log.d(TAG, "Can't register MPN ID, push notifications are disabled: " + message);
-                        }
 
-                        @Override
-                        public void onRegistered() {
-                            Log.d(TAG,"MPN ID registered");
-                        }
-                    });
-                    client.registerForMpn(device);
-                }
-
+            FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                 @Override
-                public void onFailure(@Nonnull Exception e) {
-                    Log.e(TAG, "Can't obtain a token", e);
+                public void onComplete(final Task<InstanceIdResult> task) {
+                    if (task.isSuccessful()) {
+                        MpnDevice device = new MpnDevice(context, task.getResult().getToken());
+                        device.addListener(new Utils.VoidMpnDeviceListener() {
+                            @Override
+                            public void onRegistrationFailed(final int code, final String message) {
+                                Log.d(TAG, "Can't register MPN, push notifications are disabled: " + message);
+                                showAlert("Can't register push notifications: " + code + " - " + message);
+                            }
+
+                            @Override
+                            public void onRegistered() {
+                                Log.d(TAG,"MPN registered");
+                            }
+                        });
+                        client.registerForMpn(device);
+                        deferredDevice.resolve(device);
+                    } else {
+                        Exception e = task.getException();
+                        Log.e(TAG, "Can't obtain a token", e);
+                        showAlert("Can't obtain a token: " + e);
+                        deferredDevice.reject(e);
+                    }
                 }
             });
         }
+    }
+
+    void showAlert(final String msg) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+                alertDialog.setTitle("Alert");
+                alertDialog.setMessage(msg);
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+            }
+        });
     }
     
     public synchronized void stop(boolean applyPause) {

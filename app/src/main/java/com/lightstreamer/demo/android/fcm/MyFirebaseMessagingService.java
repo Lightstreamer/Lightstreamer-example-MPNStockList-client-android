@@ -20,10 +20,13 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -37,6 +40,7 @@ import static com.lightstreamer.demo.android.fcm.Utils.TAG;
  */
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
+    public static final String CH_ID = "lightstreamer_ch1";
     public static final int NOTIFICATION_ID = 1;
 
     @Override
@@ -84,17 +88,33 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         intent.putExtras(extras);
         
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-        .setSmallIcon(R.drawable.ic_stat_gcm)
-        .setContentTitle("Stock Notification")
-        .setStyle(new NotificationCompat.BigTextStyle()
-        .bigText(msg))
-        .setContentText(msg)
-        .setAutoCancel(true);
 
-        mBuilder.setContentIntent(contentIntent);
-        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        Notification notification;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CH_ID, "lightstreamer_ch", importance);
+            channel.setDescription("Demo notifications");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+
+            notification = new Notification.Builder(this, CH_ID)
+                            .setSmallIcon(R.drawable.ic_stat_gcm)
+                            .setContentTitle("Stock Notification")
+                            .setStyle(new Notification.BigTextStyle().bigText(msg))
+                            .setContentText(msg)
+                            .setAutoCancel(true)
+                            .setContentIntent(contentIntent)
+                            .build();
+        } else {
+            notification = new NotificationCompat.Builder(this, CH_ID)
+                            .setSmallIcon(R.drawable.ic_stat_gcm)
+                            .setContentTitle("Stock Notification")
+                            .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
+                            .setContentText(msg)
+                            .setAutoCancel(true)
+                            .setContentIntent(contentIntent)
+                            .build();
+        }
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
     }
 }

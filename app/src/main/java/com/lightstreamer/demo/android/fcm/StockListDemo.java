@@ -24,6 +24,7 @@ import com.lightstreamer.demo.android.fcm.LsClient.Status;
 import com.lightstreamer.demo.android.fcm.LsClient.StatusChangeListener;
 import com.lightstreamer.log.system_out.SystemOutLogProvider;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
@@ -72,8 +73,7 @@ public class StockListDemo extends ActionBarActivity implements
         
         String serverAddress = getResources().getString(R.string.host);
         String adapterName = "DEMO";
-        String senderId = getResources().getString(R.string.sender_id);
-        LsClient.instance.initClient(serverAddress, adapterName, getApplicationContext(), senderId);
+        LsClient.instance.initClient(serverAddress, adapterName, getApplicationContext(), this);
 
         GestureControls gs = new GestureControls();
         mDetector = new GestureDetectorCompat(this,gs);

@@ -3,10 +3,14 @@
 buildscript {
     repositories {
         jcenter()
+        maven {
+            url "https://maven.google.com"
+        }
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
-        classpath 'com.google.gms:google-services:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.google.gms:google-services:4.0.1'
     }
 }
 
@@ -15,6 +19,9 @@ allprojects {
         jcenter()
         maven {
             url "https://www.lightstreamer.com/repo/maven"
+        }
+        maven {
+            url "https://maven.google.com"
         }
     }
 }

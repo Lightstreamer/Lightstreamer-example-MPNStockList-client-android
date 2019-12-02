@@ -15,6 +15,7 @@
      limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ap="http://schemas.android.com/apk/res-auto"
     android:id="@+id/details"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -46,25 +47,16 @@
             android:id="@+id/mySimpleXYPlot"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            androidPlot.domainLabel=""
-            androidPlot.rangeLabel=""
-            androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size"
-            androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
-            androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
-            androidPlot.graphWidget.marginTop="15dp"
-            androidPlot.graphWidget.marginLeft="15dp"
-            androidPlot.graphWidget.marginBottom="15dp"
-            androidPlot.graphWidget.marginRight="30dp"
-            androidPlot.graphWidget.rangeLabelPaint.textSize="@dimen/range_tick_label_font_size"
-            androidPlot.graphWidget.rangeOriginLabelPaint.textSize="@dimen/range_tick_label_font_size"
-            androidPlot.graphWidget.domainLabelPaint.textSize="@dimen/domain_tick_label_font_size"
-            androidPlot.graphWidget.domainOriginLabelPaint.textSize="@dimen/domain_tick_label_font_size"
-            androidPlot.legendWidget.textPaint.textSize="@dimen/legend_text_font_size"
-            androidPlot.legendWidget.iconSizeMetrics.heightMetric.value="15dp"
-            androidPlot.legendWidget.iconSizeMetrics.widthMetric.value="15dp"
-            androidPlot.legendWidget.heightMetric.value="25dp"
-            androidPlot.legendWidget.positionMetrics.anchor="right_bottom"
-            androidPlot.graphWidget.gridLinePaint.color="#000000"/>
+             ap:lineLabels="left|bottom"
+             ap:graphMarginTop="0dp"
+             ap:graphMarginLeft="20dp"
+             ap:graphMarginBottom="20dp"
+             ap:graphMarginRight="0dp"
+             ap:lineLabelInsetLeft="-15dp"
+             ap:lineLabelInsetBottom="-15dp"
+             ap:lineLabelTextSizeLeft="@dimen/range_label_font_size"
+             ap:lineLabelTextSizeBottom="@dimen/domain_label_font_size"
+            />
          
          
      </LinearLayout>

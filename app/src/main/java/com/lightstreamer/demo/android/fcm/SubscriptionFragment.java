@@ -60,6 +60,7 @@ public class SubscriptionFragment {
     synchronized void onPause() {
         if (this.subscription != null) {
             this.subscription.unsubscribeStock();
+            this.subscription.onPause();
             subscribed = false;
         }
         running = false;

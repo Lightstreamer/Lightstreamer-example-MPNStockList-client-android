@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 public class Utils {
     
-    public static final String TAG = "StockListDemoMPN";
+    public static final String TAG = "LsDemo";
     
     public static class VoidMpnDeviceListener implements MpnDeviceListener {
         @Override
