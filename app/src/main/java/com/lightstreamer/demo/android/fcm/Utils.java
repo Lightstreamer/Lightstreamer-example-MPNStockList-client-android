@@ -4,8 +4,6 @@ import com.lightstreamer.client.mpn.MpnDeviceInterface;
 import com.lightstreamer.client.mpn.MpnDeviceListener;
 import com.lightstreamer.client.mpn.MpnSubscription;
 
-import javax.annotation.Nullable;
-
 public class Utils {
     
     public static final String TAG = "LsDemo";
@@ -83,7 +81,7 @@ public class Utils {
         @Override
         public void onSubscriptionError(int code, String message) {}
         @Override
-        public void onUnsubscriptionError(int i, @Nullable String s) {}
+        public void onUnsubscriptionError(int i, String s) {}
         @Override
         public void onTriggered() {}
         @Override

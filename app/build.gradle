@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.lightstreamer.demo.android.fcm"
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion 23
+        targetSdkVersion 29
         versionCode 16
         versionName "2.3.0"
         multiDexEnabled true
@@ -38,9 +38,9 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    implementation 'com.lightstreamer:ls-log-adapter-java:1.0.1'
+    implementation 'com.lightstreamer:ls-log-adapter-java:1.0.2'
     implementation 'com.lightstreamer:java-system-out-log:1.0.2'
-    implementation 'com.lightstreamer:ls-android-client:4.2.0'
+    implementation 'com.lightstreamer:ls-android-client:4.2.2'
 
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-iid:17.0.4'

@@ -41,8 +41,6 @@ import org.jdeferred.impl.DeferredObject;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.Nonnull;
-
 import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
 /**
