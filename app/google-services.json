@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:484272051642:android:dcaa432ea1cb3a4d",
         "android_client_info": {
-          "package_name": "com.lightstreamer.demo.android.fcm"
+          "package_name": "com.lightstreamer.push_demo.android.fcm"
         }
       },
       "oauth_client": [

@@ -4,7 +4,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        applicationId "com.lightstreamer.demo.android.fcm"
+        applicationId "com.lightstreamer.push_demo.android.fcm"
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 16
