@@ -22,434 +22,425 @@
     android:background="@color/background"
     android:baselineAligned="false"
     android:orientation="vertical">
-    
-    <TextView
-        android:id="@+id/d_stock_name"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="16dp"
-        android:text="@string/details"
-        android:textSize="25sp"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        />
-    
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/d_stock_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="@string/details"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_clearTriggers"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:onClick="onClearTriggersBtnClicked"
+            android:text="Clear Triggers" />
+
+    </LinearLayout>
+
     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="5"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_vertical"
-         android:orientation="horizontal" >
-         
-         <com.androidplot.xy.XYPlot
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.androidplot.xy.XYPlot
             android:id="@+id/mySimpleXYPlot"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-             ap:lineLabels="left|bottom"
-             ap:graphMarginTop="0dp"
-             ap:graphMarginLeft="20dp"
-             ap:graphMarginBottom="20dp"
-             ap:graphMarginRight="0dp"
-             ap:lineLabelInsetLeft="-15dp"
-             ap:lineLabelInsetBottom="-15dp"
-             ap:lineLabelTextSizeLeft="@dimen/range_label_font_size"
-             ap:lineLabelTextSizeBottom="@dimen/domain_label_font_size"
-             />
-         
-      
-         
-     </LinearLayout>
-    
-     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="1"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_vertical"
-         android:orientation="horizontal" >
-            
-         <TextView 
-            android:text="@string/last_price"
+            ap:graphMarginBottom="20dp"
+            ap:graphMarginLeft="20dp"
+            ap:graphMarginRight="0dp"
+            ap:graphMarginTop="0dp"
+            ap:lineLabelInsetBottom="-15dp"
+            ap:lineLabelInsetLeft="-15dp"
+            ap:lineLabelTextSizeBottom="@dimen/domain_label_font_size"
+            ap:lineLabelTextSizeLeft="@dimen/range_label_font_size"
+            ap:lineLabels="left|bottom" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
             android:layout_width="0dp"
-            android:layout_weight="3"
             android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="5dp"
+            android:layout_weight="3"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
+            android:text="@string/last_price"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/d_last_price"
-            android:text="@string/no_data"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
+            android:paddingStart="0dp"
+            android:paddingLeft="0dp"
+            android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
+            android:textColor="@color/white"
             android:textSize="18sp"
-            android:paddingLeft="0dp"
-            android:paddingStart="0dp"
-            android:paddingRight="15dp"
-            android:paddingEnd="15dp"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-             />
-        
-        <TextView 
-            android:text="@string/time"
+            android:textStyle="bold" />
+
+        <TextView
             android:layout_width="0dp"
-            android:layout_weight="2"
             android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="5dp"
+            android:layout_weight="2"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
+            android:text="@string/time"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
-        <TextView 
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/d_time"
-            android:text="@string/no_data"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="3"
             android:gravity="right"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-            
-     </LinearLayout>
-     
-     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="1"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_vertical"
-         android:orientation="horizontal" >
-        
-         
-         <TextView 
-            android:text="@string/pct_change"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+
+        <TextView
             android:layout_width="0dp"
-            android:layout_weight="3"
             android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="5dp"
+            android:layout_weight="3"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
+            android:text="@string/pct_change"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/d_pct_change"
-            android:text="@string/no_data"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:textSize="18sp"
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
+            android:paddingLeft="0dp"
+            android:paddingEnd="15dp"
             android:paddingRight="15dp"
-            android:paddingEnd="15dp" 
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/open_price"
-            android:textSize="18sp" 
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
-        <TextView 
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/d_open_price"
-            android:text="@string/no_data"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-            
-     </LinearLayout>
-     
-     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="1"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_vertical"
-         android:orientation="horizontal" >
-        
-         <TextView
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/bid"
-            android:textSize="18sp" 
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/d_bid"
-            android:text="@string/no_data"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:textSize="18sp"
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
+            android:paddingLeft="0dp"
+            android:paddingEnd="15dp"
             android:paddingRight="15dp"
-            android:paddingEnd="15dp" 
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/ask"
-            android:textSize="18sp"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
-        <TextView 
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/d_ask"
-            android:text="@string/no_data"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-            
-     </LinearLayout>
-     
-     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="1"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_vertical"
-         android:orientation="horizontal" >
-        
-         <TextView
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/bid_quantity"
-            android:textSize="18sp" 
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/d_bid_quantity"
-            android:text="@string/no_data"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:textSize="18sp"
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/ask_quantity"
-            android:textSize="18sp" 
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
-        <TextView 
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/d_ask_quantity"
-            android:text="@string/no_data"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-            
-     </LinearLayout>
-     
-     <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="1"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_vertical"
-         android:orientation="horizontal" >
-        
-         <TextView
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/min"
-            android:textSize="18sp" 
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/d_min"
-            android:text="@string/no_data"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:textSize="18sp"
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:paddingLeft="5dp"
             android:paddingStart="5dp"
-            android:paddingRight="0dp"
+            android:paddingLeft="5dp"
             android:paddingEnd="0dp"
+            android:paddingRight="0dp"
             android:text="@string/max"
-            android:textSize="18sp" 
             android:textColor="@color/white"
-            android:textStyle="bold"
-            />
-        
-        <TextView 
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/d_max"
-            android:text="@string/no_data"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="right"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" 
-            android:paddingLeft="0dp"
             android:paddingStart="0dp"
-            android:paddingRight="15dp"
+            android:paddingLeft="0dp"
             android:paddingEnd="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/no_data"
             android:textColor="@color/white"
-            android:textStyle="bold"    
-            />
-            
-     </LinearLayout>
-     
-     <LinearLayout
-         android:id="@+id/toggle_container"
-         android:layout_width="match_parent"
-         android:layout_height="0dp"
-         android:layout_weight="2"
-         android:background="@color/background"
-         android:baselineAligned="false"
-         android:gravity="center_horizontal"
-         android:orientation="vertical" >
-        
-         <View
-             android:layout_width="fill_parent"
-             android:layout_height="1dp"
-             android:background="@color/separator" />
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-         <TextView
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:text="@string/push_notifications"
-             android:textColor="@color/white"
-             android:textSize="18sp"
-             android:textStyle="bold" />
-         
-         <ToggleButton
-             android:id="@+id/pn_switch"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:text="@+id/push_notifications" 
-             android:onClick="onTogglePNClicked"
-             />
-         
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/toggle_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:background="@color/background"
+        android:baselineAligned="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/separator" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/push_notifications"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ToggleButton
+            android:id="@+id/pn_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onTogglePNClicked"
+            android:text="@+id/push_notifications" />
+
     </LinearLayout>
 
 

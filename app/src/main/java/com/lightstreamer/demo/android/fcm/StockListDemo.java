@@ -265,6 +265,14 @@ public class StockListDemo extends ActionBarActivity implements
         
     }
      
+    public void onClearTriggersBtnClicked(View view) {
+        Log.v(TAG,"Clear Triggers Button clicked");
+        DetailsFragment detailsFrag = getDetailsFragment();
+        if (detailsFrag != null) {
+            detailsFrag.clearTriggers();
+        }
+    }
+     
     //Status handling
 
     @Override

@@ -217,6 +217,10 @@ public class DetailsFragment extends Fragment {
         }
     }
     
+    public void clearTriggers() {
+        currentSubscription.unsubscribeTriggers();
+    }
+    
     public void enablePN() {
         this.showToggle(true);
     }
@@ -317,6 +321,35 @@ public class DetailsFragment extends Fragment {
             assert tickSubscription != null;
             LsClient.instance.unsubscribe(tickSubscription);
             setTickSubscription(null);
+        }
+
+        public void unsubscribeTriggers() {
+            String thisGroup = getGroup();
+            List<MpnSubscription> ls = LsClient.instance.getMpnSubscriptions();
+            for (MpnSubscription sub: ls) {
+                if (sub.getTriggerExpression() == null) {
+                    continue;
+                }
+                if (!sub.getItemGroup().equals(thisGroup)) {
+                    continue;
+                }
+
+                String trigger = stringToTrigger(sub);
+                final double triggerVal = Double.valueOf(trigger);
+                sub.addListener(new Utils.VoidMpnSubscriptionListener() {
+                    @Override
+                    public void onUnsubscription() {
+                        chart.removeTriggerLine(triggerVal);
+                    }
+
+                    @Override
+                    public void onUnsubscriptionError(int i, String s) {
+                        chart.removeTriggerLine(triggerVal);
+                    }
+                });
+                Log.d(TAG, "Remove trigger " + sub.getTriggerExpression() + " subId=" + sub.getSubscriptionId());
+                LsClient.instance.unsubscribe(sub);
+            }
         }
         
         public void toggleTrigger(final double triggerVal) {
