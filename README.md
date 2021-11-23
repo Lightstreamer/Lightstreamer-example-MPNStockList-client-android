@@ -15,7 +15,7 @@ A simpler version, without FCM support is also available: [Stock-List Demo - And
 
 ![QR](qrcode.png)
 
-### [![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://market.android.com/details?id=com.lightstreamer.demo.android.fcm)
+### [![](http://demos.lightstreamer.com/site/img/play.png) View live demo](https://play.google.com/store/apps/details?id=com.lightstreamer.push_demo.android.fcm)
 (To install the app from the Google Play Store, you can also use the above QR code)
 
 
