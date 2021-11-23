@@ -9,9 +9,9 @@ A simpler version, without FCM support is also available: [Stock-List Demo - And
 
 ## Live Demo
 
-[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android.fcm)
+[![screenshot](screen_android_large.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.push_demo.android.fcm)
  
-[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.demo.android.fcm)
+[![tablet screenshot](screen_android_tablet.png)](https://play.google.com/store/apps/details?id=com.lightstreamer.push_demo.android.fcm)
 
 ![QR](qrcode.png)
 
