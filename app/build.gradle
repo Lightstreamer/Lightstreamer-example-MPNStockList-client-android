@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.lightstreamer.push_demo.android.fcm"
         minSdkVersion 23
-        targetSdkVersion 30
-        versionCode 17
-        versionName "2.4.0"
+        targetSdkVersion 33
+        versionCode 18
+        versionName "2.4.1"
         multiDexEnabled true
     }
 	/*signingConfigs {

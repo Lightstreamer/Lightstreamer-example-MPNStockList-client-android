@@ -19,7 +19,7 @@
             android:name="com.lightstreamer.demo.android.fcm.StockListDemo"
             android:label="@string/app_name" 
             android:launchMode="singleTop"
-            >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -27,7 +27,8 @@
         </activity>
 
         <service
-            android:name="com.lightstreamer.demo.android.fcm.MyFirebaseMessagingService">
+            android:name="com.lightstreamer.demo.android.fcm.MyFirebaseMessagingService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
