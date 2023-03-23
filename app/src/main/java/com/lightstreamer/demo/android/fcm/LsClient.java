@@ -30,9 +30,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.lightstreamer.client.LightstreamerClient;
 import com.lightstreamer.client.Subscription;
-import com.lightstreamer.client.mpn.MpnDeviceInterface;
 import com.lightstreamer.client.mpn.MpnSubscription;
-import com.lightstreamer.client.mpn.android.MpnDevice;
+import com.lightstreamer.client.mpn.MpnDevice;
 
 import org.jdeferred.Deferred;
 import org.jdeferred.Promise;
@@ -62,7 +61,7 @@ public class LsClient {
 
     private volatile Activity activity;
 
-    private volatile Deferred<MpnDeviceInterface, Object, Object> deferredDevice;
+    private volatile Deferred<MpnDevice, Object, Object> deferredDevice;
     
     private LsClient() {}
 
@@ -136,7 +135,7 @@ public class LsClient {
         this.statusListener = statusListener;
     }
 
-    public Promise<MpnDeviceInterface, Object, Object> getMpnDevice() {
+    public Promise<MpnDevice, Object, Object> getMpnDevice() {
         return deferredDevice.promise();
     }
     

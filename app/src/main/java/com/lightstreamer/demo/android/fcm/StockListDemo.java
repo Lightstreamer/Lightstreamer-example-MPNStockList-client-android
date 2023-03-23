@@ -22,7 +22,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.lightstreamer.demo.android.fcm.LsClient.Status;
 import com.lightstreamer.demo.android.fcm.LsClient.StatusChangeListener;
-import com.lightstreamer.log.system_out.SystemOutLogProvider;
+import com.lightstreamer.log.ConsoleLogLevel;
+import com.lightstreamer.log.ConsoleLoggerProvider;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -65,8 +66,7 @@ public class StockListDemo extends ActionBarActivity implements
         
         Log.d(TAG, "=== Starting demo");
 
-        // comment the following two lines if the log is too verbose
-        SystemOutLogProvider prov = new SystemOutLogProvider();
+        ConsoleLoggerProvider prov = new ConsoleLoggerProvider(ConsoleLogLevel.WARN);
         com.lightstreamer.client.LightstreamerClient.setLoggerProvider(prov);
         
         checkPlayServices();

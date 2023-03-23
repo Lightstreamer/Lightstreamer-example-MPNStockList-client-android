@@ -1,8 +1,6 @@
 package com.lightstreamer.demo.android.fcm;
 
-import com.lightstreamer.client.mpn.MpnDeviceInterface;
 import com.lightstreamer.client.mpn.MpnDeviceListener;
-import com.lightstreamer.client.mpn.MpnSubscription;
 
 public class Utils {
     
@@ -22,16 +20,16 @@ public class Utils {
         @Override
         public void onResumed() {}
         @Override
-        public void onListenStart(MpnDeviceInterface device) {}
+        public void onListenStart() {}
         @Override
-        public void onListenEnd(MpnDeviceInterface device) {}
+        public void onListenEnd() {}
     }
     
     public static class VoidClientListener implements com.lightstreamer.client.ClientListener {
         @Override
-        public void onListenEnd(com.lightstreamer.client.LightstreamerClient client) {}
+        public void onListenEnd() {}
         @Override
-        public void onListenStart(com.lightstreamer.client.LightstreamerClient client) {}
+        public void onListenStart() {}
         @Override
         public void onServerError(int errorCode, String errorMessage) {}
         @Override
@@ -54,9 +52,9 @@ public class Utils {
         @Override
         public void onItemUpdate(com.lightstreamer.client.ItemUpdate itemUpdate) {}
         @Override
-        public void onListenEnd(com.lightstreamer.client.Subscription subscription) {}
+        public void onListenEnd() {}
         @Override
-        public void onListenStart(com.lightstreamer.client.Subscription subscription) {}
+        public void onListenStart() {}
         @Override
         public void onSubscription() {}
         @Override
@@ -69,11 +67,13 @@ public class Utils {
     
     public static class VoidMpnSubscriptionListener implements com.lightstreamer.client.mpn.MpnSubscriptionListener {
         @Override
-        public void onListenEnd(MpnSubscription client) {}
+        public void onListenEnd() {}
         @Override
-        public void onListenStart(MpnSubscription client) {}
+        public void onListenStart() {}
         @Override
         public void onPropertyChanged(String propertyName) {}
+        @Override
+        public void onModificationError(int code, String message, String propertyName) {}
         @Override
         public void onStatusChanged(String status, long timestamp) {}
         @Override

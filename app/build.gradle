@@ -33,14 +33,16 @@ android {
         exclude 'META-INF/INDEX.LIST'
         exclude 'META-INF/io.netty.versions.properties'
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    implementation 'com.lightstreamer:ls-log-adapter-java:1.0.2'
-    implementation 'com.lightstreamer:java-system-out-log:1.0.2'
-    implementation 'com.lightstreamer:ls-android-client:4.2.2'
+    implementation 'com.lightstreamer:ls-android-client:5.0.0-beta.1'
 
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-iid:17.0.4'

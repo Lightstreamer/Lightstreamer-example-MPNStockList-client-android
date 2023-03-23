@@ -32,9 +32,9 @@ import android.widget.ToggleButton;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.lightstreamer.client.ItemUpdate;
-import com.lightstreamer.client.mpn.MpnDeviceInterface;
 import com.lightstreamer.client.mpn.MpnSubscription;
-import com.lightstreamer.client.mpn.util.MpnBuilder;
+import com.lightstreamer.client.mpn.MpnBuilder;
+import com.lightstreamer.client.mpn.MpnDevice;
 
 import org.jdeferred.DoneCallback;
 
@@ -262,7 +262,7 @@ public class DetailsFragment extends Fragment {
         private final com.lightstreamer.client.Subscription stockSubscription;
         private volatile MpnSubscription tickSubscription;
 
-        private volatile MpnDeviceInterface mpnDevice;
+        private volatile MpnDevice mpnDevice;
 
         public ItemSubscription(String item) {
             Log.d(TAG, "new ItemSubscription " + item);
@@ -415,9 +415,9 @@ public class DetailsFragment extends Fragment {
              /* listen to onSubscriptionsUpdated event to be notified when a trigger is added/removed */
             LsClient.instance
                     .getMpnDevice()
-                    .done(new DoneCallback<MpnDeviceInterface>() {
+                    .done(new DoneCallback<MpnDevice>() {
                         @Override
-                        public void onDone(MpnDeviceInterface device) {
+                        public void onDone(MpnDevice device) {
                             if (device != mpnDevice) {
                                 Log.d(TAG, "Add device listener");
                                 mpnDevice = device;
