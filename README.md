@@ -83,7 +83,7 @@ You may run the demo against your local server or using our online server at htt
 
 A full local deploy of this app requires 
 
-* a Lightstreamer Server 7.1 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration (a detailed step by step guide for setting up the server and configuring the client is available in the README of the project [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockListMetadata-adapter-java))
+* a Lightstreamer Server 7.3.2 or greater installation with appropriate Mobile Push Notifications (MPN) module configuration (a detailed step by step guide for setting up the server and configuring the client is available in the README of the project [Lightstreamer - MPN Stock-List Demo Metadata - Java Adapter](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockListMetadata-adapter-java))
 
 * the deployment of the [QUOTE_ADAPTER](https://github.com/Lightstreamer/Lightstreamer-example-Stocklist-adapter-java) and the [LiteralBasedProvider](https://github.com/Lightstreamer/Lightstreamer-example-ReusableMetadata-adapter-java) (already provided by Lightstreamer server) in your local Lightstreamer server instance.
 
@@ -109,7 +109,8 @@ gradlew installDebug
 
 ## Lightstreamer Compatibility Notes
 
-* Compatible with Lightstreamer Android Client (Unified API Version) v. 4.2.0 or newer.
-* For Lightstreamer Server version 7.1 or greater. Ensure that Android Client API is supported by Lightstreamer Server license configuration.
+* Compatible with Lightstreamer Android Client (Unified API Version) v. 5.0.0 or newer.
+* For Lightstreamer Server version 7.3.2 or greater. Ensure that Android Client API is supported by Lightstreamer Server license configuration.
+* For a version of this example compatible with Lightstreamer Android Client API version 4.x, please refer to [this branch](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/tree/for-client-4).
 * For a version of this example compatible with Lightstreamer Server 7.0, please refer to [this branch](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/tree/server-7.0).
 * For a version of this example compatible with Lightstreamer Android Client API version 1.x, please refer to [this branch](https://github.com/Lightstreamer/Lightstreamer-example-MPNStockList-client-android/tree/for-client-1).
