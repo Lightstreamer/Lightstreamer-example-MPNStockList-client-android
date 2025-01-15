@@ -43,7 +43,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    implementation 'com.lightstreamer:ls-android-client:5.0.0-beta.3'
+    implementation 'com.lightstreamer:ls-android-client:5.0.0'
 
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-iid:17.0.4'
@@ -52,7 +52,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-base:16.1.0'
 
     implementation 'com.android.support:appcompat-v7:23.4.0'
-    implementation 'com.androidplot:androidplot-core:1.5.6'
+    implementation 'com.androidplot:androidplot-core:1.5.11'
     implementation 'org.jdeferred:jdeferred-android:1.2.6'
 }
 
