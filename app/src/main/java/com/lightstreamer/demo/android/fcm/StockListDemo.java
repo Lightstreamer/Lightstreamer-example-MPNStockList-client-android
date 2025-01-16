@@ -25,16 +25,18 @@ import com.lightstreamer.demo.android.fcm.LsClient.StatusChangeListener;
 import com.lightstreamer.log.ConsoleLogLevel;
 import com.lightstreamer.log.ConsoleLoggerProvider;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GestureDetectorCompat;
-import android.support.v7.app.ActionBarActivity;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -47,10 +49,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentTransaction;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 /**
  * Application entry point.
  */
-public class StockListDemo extends ActionBarActivity implements 
+public class StockListDemo extends AppCompatActivity implements
     StocksFragment.onStockSelectedListener, 
     StatusChangeListener {
 
@@ -101,6 +110,36 @@ public class StockListDemo extends ActionBarActivity implements
                     .add(R.id.fragment_container, firstFragment).commit();
         }
     }
+
+    // [START ask_post_notifications]
+    // Declare the launcher at the top of your Activity/Fragment:
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    //PERMISSION GRANTED DO SOMETHING
+                } else {
+                    //EXPLAIN TO USER WHY PERMISSION ARE NECESSARY FOR FUNCTINALITY
+                }
+            });
+
+    private void askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // TODO: display an educational UI explaining to the user the features that will be enabled
+                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
+                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                //       If the user selects "No thanks," allow the user to continue without notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+    // [END ask_post_notifications]
     
     private int getIntentItem() {
         int openItem = 0;
@@ -116,6 +155,7 @@ public class StockListDemo extends ActionBarActivity implements
     
     @Override 
     public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         Log.d(TAG,"New intent received");
         setIntent(intent);
     }

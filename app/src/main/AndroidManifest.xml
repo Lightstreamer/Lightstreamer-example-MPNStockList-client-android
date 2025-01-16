@@ -28,7 +28,7 @@
 
         <service
             android:name="com.lightstreamer.demo.android.fcm.MyFirebaseMessagingService"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
