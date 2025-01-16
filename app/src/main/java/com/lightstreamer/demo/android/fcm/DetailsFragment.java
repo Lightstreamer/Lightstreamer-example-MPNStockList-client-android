@@ -482,6 +482,9 @@ public class DetailsFragment extends Fragment {
             List<MpnSubscription> subs = LsClient.instance.getMpnSubscriptions();
             String thisGroup = getGroup();
             for (final MpnSubscription sub : subs) {
+                if (sub.getItemGroup() == null) {
+                    continue;
+                }
                 if (sub.getItemGroup().equals(thisGroup)) {
                     if (sub.getTriggerExpression() == null) {
                         /* resume tick subscription (it is the only one without a trigger condition) */
