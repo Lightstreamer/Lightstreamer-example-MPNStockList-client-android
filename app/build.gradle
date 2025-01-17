@@ -43,7 +43,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    implementation 'com.lightstreamer:ls-android-client:5.0.0'
+    implementation 'com.lightstreamer:ls-android-client:5.2.1'
 
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-iid:17.0.4'
