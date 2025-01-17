@@ -109,18 +109,19 @@ public class StockListDemo extends AppCompatActivity implements
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, firstFragment).commit();
         }
+
+        askNotificationPermission();
     }
 
     // [START ask_post_notifications]
-    // Declare the launcher at the top of your Activity/Fragment:
     private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    //PERMISSION GRANTED DO SOMETHING
-                } else {
-                    //EXPLAIN TO USER WHY PERMISSION ARE NECESSARY FOR FUNCTINALITY
-                }
-            });
+        registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                Log.d(TAG, "Notification Permission granted");
+            } else {
+                Log.d(TAG, "Notification Permission NOT granted");
+            }
+        });
 
     private void askNotificationPermission() {
         // This is only necessary for API level >= 33 (TIRAMISU)
@@ -129,10 +130,20 @@ public class StockListDemo extends AppCompatActivity implements
                     PackageManager.PERMISSION_GRANTED) {
                 // FCM SDK (and your app) can post notifications.
             } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                // TODO: display an educational UI explaining to the user the features that will be enabled
-                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
-                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
-                //       If the user selects "No thanks," allow the user to continue without notifications.
+                // Display dialog explaining to the user the features that will be enabled
+                // by them granting the POST_NOTIFICATION permission. This UI provides the user
+                // "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                // If the user selects "No thanks," allow the user to continue without notifications.
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Notification Permission Needed")
+                    .setMessage("This app requires notification permissions to keep you updated with the latest stock information.")
+                    .setPositiveButton("OK",
+                            // display a popup asking the user to allow or deny notifications
+                            (dialog, id) -> requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS))
+                    .setNegativeButton("No thanks",
+                            (dialog, id) -> dialog.dismiss())
+                    .create()
+                    .show();
             } else {
                 // Directly ask for the permission
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
