@@ -59,7 +59,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             if (item != null) {
                 item = item.substring(4);
                 try {
-                    itemNum = Integer.valueOf(item);
+                    itemNum = Integer.parseInt(item);
                 } catch(NumberFormatException nfe) {
                     // not what I expected
                 }
@@ -81,40 +81,28 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // Put the message into a notification and post it.
     // This is just one simple example of what you might choose to do with a message
     private void sendNotification(String msg, Bundle extras) {
-        NotificationManager mNotificationManager = (NotificationManager)
-                this.getSystemService(Context.NOTIFICATION_SERVICE);
-
         Intent intent = new Intent(this, StockListDemo.class);
         intent.putExtras(extras);
         
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        Notification notification;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CH_ID, "lightstreamer_ch", importance);
             channel.setDescription("Demo notifications");
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
-
-            notification = new Notification.Builder(this, CH_ID)
-                            .setSmallIcon(R.drawable.ic_stat_gcm)
-                            .setContentTitle("Stock Notification")
-                            .setStyle(new Notification.BigTextStyle().bigText(msg))
-                            .setContentText(msg)
-                            .setAutoCancel(true)
-                            .setContentIntent(contentIntent)
-                            .build();
-        } else {
-            notification = new NotificationCompat.Builder(this, CH_ID)
-                            .setSmallIcon(R.drawable.ic_stat_gcm)
-                            .setContentTitle("Stock Notification")
-                            .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
-                            .setContentText(msg)
-                            .setAutoCancel(true)
-                            .setContentIntent(contentIntent)
-                            .build();
         }
-        mNotificationManager.notify(NOTIFICATION_ID, notification);
+
+        Notification notification = new NotificationCompat.Builder(this, CH_ID)
+            .setSmallIcon(R.drawable.ic_stat_gcm)
+            .setContentTitle("Stock Notification")
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
+            .setContentText(msg)
+            .setAutoCancel(true)
+            .setContentIntent(contentIntent)
+            .build();
+
+        ((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notification);
     }
 }
