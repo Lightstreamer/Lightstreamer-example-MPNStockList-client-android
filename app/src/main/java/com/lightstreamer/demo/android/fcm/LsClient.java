@@ -39,6 +39,7 @@ import org.jdeferred.impl.DeferredObject;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.lightstreamer.demo.android.fcm.Utils.TAG;
 
@@ -62,6 +63,8 @@ public class LsClient {
     private volatile Activity activity;
 
     private volatile Deferred<MpnDevice, Object, Object> deferredDevice;
+
+    private final AtomicInteger mpnRegistrationAttempt = new AtomicInteger();
     
     private LsClient() {}
 
@@ -140,17 +143,23 @@ public class LsClient {
     }
     
     public synchronized void start() {
+        int currentMpnRegistrationAttempt = mpnRegistrationAttempt.incrementAndGet();
         deferredDevice = new DeferredObject<>();
         Log.d(TAG, "Connecting to server...");
         if (expectingConnected.compareAndSet(false,true)) {
             setStatus(Status.CONNECTING);
             client.connect();
-            Log.i(TAG, "Creating MPN device");
+            Log.d(TAG, "Registering MPN (attempt " + currentMpnRegistrationAttempt + ")...");
 
             FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                 @Override
                 public void onComplete(final Task<InstanceIdResult> task) {
+                    if (currentMpnRegistrationAttempt != mpnRegistrationAttempt.get()) {
+                        Log.d(TAG, "Aborting MPN registration attempt " + currentMpnRegistrationAttempt);
+                        return;
+                    }
                     if (task.isSuccessful()) {
+                        Log.d(TAG, "Completing MPN registration attempt " + currentMpnRegistrationAttempt + "...");
                         MpnDevice device = new MpnDevice(context, task.getResult().getToken());
                         device.addListener(new Utils.VoidMpnDeviceListener() {
                             @Override
