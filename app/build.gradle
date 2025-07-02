@@ -6,9 +6,9 @@ android {
     defaultConfig {
         applicationId "com.lightstreamer.push_demo.android.fcm"
         minSdkVersion 23
-        targetSdkVersion 34
-        versionCode 27
-        versionName "2.7.0"
+        targetSdkVersion 35
+        versionCode 28
+        versionName "2.8.0"
         multiDexEnabled true
     }
 	/*signingConfigs {
