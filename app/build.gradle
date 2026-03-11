@@ -38,12 +38,19 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace 'com.lightstreamer.demo.android.fcm'
+
+    packaging {
+        resources {
+            // Exclude OkHttp META-INF files to prevent duplicate metadata merge conflicts
+            excludes += ["META-INF/versions/9/OSGI-INF/MANIFEST.MF"]
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    implementation 'com.lightstreamer:ls-android-client:5.2.1'
+    implementation 'com.lightstreamer:ls-android-client:5.3.0'
 
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-iid:17.0.4'
